@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container py-5">
+<div class="container py-2">
     <div class="row">
 
         @include('partials.sidebar-reader')

@@ -8,6 +8,6 @@ class BookController extends Controller
 {
        public function index()
     {
-        return view('account.book');
+        return view('reader.book');
     }
 }

@@ -25,39 +25,59 @@
 								<div class="text-center mb-3">
 									<!-- Avatar -->
 									<div class="avatar avatar-xl mb-2">
-										<img class="avatar-img rounded-circle border border-2 border-white" src="assets/images/avatar/01.jpg" alt="">
+										<img class="avatar-img rounded-circle border border-2 border-white" src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('assets/images/avatar/default.png') }}" alt="">
 									</div>
-									<h6 class="mb-0">Ornella Fifa</h6>
-									<a href="account-wishlist.html#" class="text-reset text-primary-hover small">ornella@gmail.com</a>
+									<h6 class="mb-0">{{ Auth::user()->firstname }} {{ Auth::user()->lastname }}</h6>
+									<a href="" class="text-reset text-primary-hover small">{{ Auth::user()->email }}</a>
 									<hr>
 								</div>
 
 								<!-- Sidebar menu item START -->
 								<ul class="nav nav-pills-primary-soft flex-column">
 									<li class="nav-item">
-										<a class="nav-link" href="account-profile.html"><i class="bi bi-person fa-fw me-2"></i>Mon Profile</a>
+										<a class="nav-link {{ request()->is('reader/account') ? 'active' : '' }}" href="{{ url('/reader/account') }}"><i class="bi bi-person fa-fw me-2"></i>Mon Profile</a>
 									</li>
 									<li class="nav-item">
-										<a class="nav-link active" href="{{ url('/book') }}"><i class="bi bi-book fa-fw me-2"></i>Mes Livres</a>
+										<a class="nav-link {{ request()->is('reader/books') ? 'active' : '' }}" href="{{ url('/reader/books') }}"><i class="bi bi-book fa-fw me-2"></i>Mes Livres</a>
 									</li>
 									
 									<li class="nav-item">
-										<a class="nav-link" href=""><i class="bi bi-wallet fa-fw me-2"></i>Paiements</a>
+										<a class="nav-link {{ request()->is('reader/wishlist') ? 'active' : '' }}" href="{{ url('/reader/wishlist') }}"><i class="bi bi-heart fa-fw me-2"></i>Wishlist</a>
 									</li>
 									<li class="nav-item">
-										<a class="nav-link " href="{{ url('/wishlist') }}"><i class="bi bi-heart fa-fw me-2"></i>Wishlist</a>
+										<a class="nav-link {{ request()->is('reader/cart') ? 'active' : '' }}" href="{{ url('/reader/cart') }}"><i class="bi bi-cart fa-fw me-2"></i>Mon Panier</a>
 									</li>
+
 									<li class="nav-item">
-										<a class="nav-link" href="account-settings.html"><i class="bi bi-gear fa-fw me-2"></i>Settings</a>
+										<a class="nav-link {{ request()->is('reader/settings') ? 'active' : '' }}" href="{{ url('/reader/settings') }}"><i class="bi bi-gear fa-fw me-2"></i>Settings</a>
 									</li>
+									
 									<li class="nav-item">
-										<a class="nav-link" href="account-delete.html"><i class="bi bi-trash fa-fw me-2"></i>Delete Profile</a>
+										<form method="POST" action="{{ route('logout') }}">
+											@csrf
+
+											<button type="submit" class="nav-link text-danger bg-danger-soft-hover">
+												<i class="fas fa-sign-out-alt fa-fw me-2"></i>
+												Se deconnecter
+											</button>
+										</form>									
 									</li>
+
 									<li class="nav-item">
-										<a class="nav-link text-danger bg-danger-soft-hover" href="account-wishlist.html#"><i class="fas fa-sign-out-alt fa-fw me-2"></i>Sign Out</a>
+										@if(!auth()->user()->is_writer)
+										<form method="POST" action="/become-writer">
+											@csrf
+											<button class="btn btn-submit">
+												Devenir écrivain
+											</button>
+										</form>
+
+										@endif
 									</li>
 								</ul>
 								<!-- Sidebar menu item END -->
+
+								
 							</div>
 							<!-- Card body END -->
 						</div>
@@ -66,3 +86,4 @@
 				<!-- Responsive offcanvas body END -->	
 			</div>
 			<!-- Sidebar END -->
+
