@@ -291,16 +291,7 @@
 				</ul>
 
 				<!-- SEARCH BAR -->
-				<form class="kama-search mx-xl-auto">
-					<div class="input-group">
-						<input type="text"
-							class="form-control"
-							placeholder="Rechercher un livre, auteur...">
-						<button class="btn">
-							<i class="bi bi-search"></i>
-						</button>
-					</div>
-				</form>
+				
 				<!-- ACTIONS -->
 				<ul class="navbar-nav align-items-center ms-auto">
 					@auth

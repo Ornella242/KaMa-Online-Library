@@ -29238,7 +29238,7 @@ BOOK SHOW
 /* MAIN CARD */
 
 
-.deposit-card {
+/* .deposit-card {
 
     background:white;
 
@@ -29259,19 +29259,19 @@ BOOK SHOW
 
     0 25px 70px rgba(0,0,0,.10);
 
-}
+} */
 
 
 
 /* LEFT */
 
 
-.deposit-left {
+/* .deposit-left {
     padding:45px;
     background:#111827;
     border-radius: 30px;
     color:white;
-}
+} */
 
 .security-icon {
     width:65px;
@@ -29306,17 +29306,17 @@ BOOK SHOW
     font-weight:800;
 }
 
+.deposit-left h4 {
+    margin-top:20px;
+    font-size:34px;
+    color: white;
+    font-weight:800;
+}
 
 
 .deposit-left p {
-
-
     color:#cbd5e1;
-
-
     line-height:1.7;
-
-
 }
 
 
@@ -29388,7 +29388,7 @@ BOOK SHOW
 .card-method {
     flex:1;
     height:90px;
-    border:1px solid #e5e7eb;
+    border:1px solid white;
     border-radius:16px;
     display:flex;
     flex-direction:column;
@@ -29404,11 +29404,11 @@ BOOK SHOW
 
 .card-method i {
     font-size:25px;
-    color:#dc2626;
+    color:white;
 }
 
 .card-method:hover {
-    border-color:#dc2626;
+    border-color:black;
     transform:translateY(-3px);
 }
 
@@ -29418,7 +29418,7 @@ BOOK SHOW
     height:60px;
     border:none;
     border-radius:16px;
-    background:#dc2626;
+    background:black;
     color:white;
     font-size:17px;
     font-weight:700;
@@ -29426,7 +29426,8 @@ BOOK SHOW
 }
 
 .payment-button:hover {
-    background:#b91c1c;
+    background:white;
+    color: #000;
     transform:translateY(-3px);
 }
 
@@ -29434,7 +29435,7 @@ BOOK SHOW
 .secure-payment {
     margin-top:20px;
     text-align:center;
-    color:#16a34a;
+    color:white;
     font-size:14px;
 }
 

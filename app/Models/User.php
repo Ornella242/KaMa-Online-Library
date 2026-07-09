@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\VerifyEmailNotification;
 use App\Models\Book;
+use App\Models\Wallet;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -92,5 +93,33 @@ class User extends Authenticatable implements MustVerifyEmail
     public function activities()
     {
         return $this->hasMany(Activity::class);
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            if(
+                $user->role->name == 'writer' ||
+                $user->role->name == 'admin'
+            ){
+                Wallet::create([
+                    'user_id'=>$user->id,
+                    'balance'=>0,
+                    'currency'=>'USD'
+                ]);
+
+            }
+
+        });
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    public function withdrawals()
+    {
+        return $this->hasMany(Withdrawal::class);
     }
 }

@@ -69,7 +69,6 @@
                 </div>
             </div>
 
-
             <!-- SALES -->
             <div class="col-sm-6 col-xl-3">
                 <div class="revenue-card">
@@ -113,11 +112,54 @@
                 </div>
 
             </div>
+
+            <!-- Available balance -->
+            <div class="col-md-6">
+                <div class="revenue-card">
+                    <div class="revenue-icon bg-danger-soft">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <h3>
+                             {{ number_format($availableBalance, 2) }} $
+                        </h3>
+                        <p>
+                            Balance disponible
+                        </p>
+                        <span class="text-success small">
+                            <i class="bi bi-check-circle"></i>
+                            Disponible pour retrait
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Amount withdrawn -->
+            <div class="col-md-6">
+                <div class="revenue-card">
+                    <div class="revenue-icon bg-warning-soft">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <div>
+                        <h3>
+                            {{ number_format($totalWithdrawn, 2) }} $
+                        </h3>
+                        <p>
+                            Montant retiré
+                        </p>
+                        <span class="text-warning small">
+                            <i class="bi bi-clock-history"></i>
+                            Retraits effectués
+                        </span>
+                    </div>
+                </div>
+
+            </div>
         </div>
         <!-- STATISTICS END -->
 
         <!-- SALES HISTORY START -->
-
             <div class="card border-0 shadow-sm rounded-4">
                 <!-- HEADER -->
                 <div class="card-header sales-header">
@@ -312,6 +354,8 @@
                         </div>
                     <!-- SALES HISTORY END -->
             </div>
+       <!-- SALES HISTORY END -->
+
 
         <!-- PUBLICATION HISTORY START -->
             <div class="card border-0 shadow-sm rounded-4 mt-4">

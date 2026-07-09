@@ -4,18 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class Withdrawal extends Model
 {
      protected $fillable = [
+
         'user_id',
-        'book_id',
-        'reference',
         'amount',
-        'currency',
         'status',
-        'type',
         'payment_method',
-        'transaction_id'
+        'account_number'
 
     ];
 
@@ -25,8 +22,4 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function book()
-    {
-        return $this->belongsTo(Book::class);
-    }
 }

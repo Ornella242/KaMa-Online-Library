@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Writer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\Withdrawal;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -13,8 +14,6 @@ class RevenueController extends Controller
     {
 
         $userId = Auth::id();
-
-
         $totalRevenue = Payment::whereHas('book', function($q) use($userId){
 
                 $q->where('user_id', $userId);
@@ -34,6 +33,14 @@ class RevenueController extends Controller
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('amount');
+
+
+        $totalWithdrawn = Withdrawal::query()->where('user_id',$userId)
+            ->where('status','approved')
+            ->sum('amount');
+
+
+        $availableBalance = $totalRevenue - $totalWithdrawn;
 
 
         $totalSales = Payment::whereHas('book', function($q) use($userId){
@@ -96,7 +103,9 @@ class RevenueController extends Controller
                 'totalReaders',
                 'pendingAmount',
                 'purchasePayments',
-                'publicationPayments'
+                'publicationPayments',
+                'availableBalance',
+                'totalWithdrawn',
             )
         );
 
