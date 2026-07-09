@@ -115,7 +115,7 @@
 
             <!-- Available balance -->
             <div class="col-md-6">
-                <div class="revenue-card">
+                <div class="balance-card">
                     <div class="revenue-icon bg-danger-soft">
                         <i class="bi bi-wallet2"></i>
                     </div>
@@ -137,7 +137,7 @@
 
             <!-- Amount withdrawn -->
             <div class="col-md-6">
-                <div class="revenue-card">
+                <div class="withdrawn-card">
                     <div class="revenue-icon bg-warning-soft">
                         <i class="bi bi-currency-dollar"></i>
                     </div>
