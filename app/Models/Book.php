@@ -27,6 +27,11 @@ class Book extends Model
         'file_type',
         'original_file_name',
         'file_size',
+        'preview_type',
+        'preview_start_page',
+        'preview_end_page',
+        'copyright_accepted',
+        'copyright_accepted_at'
     ];
 
     public function author()
@@ -57,5 +62,10 @@ class Book extends Model
     public function activities()
     {
         return $this->hasMany(Activity::class);
+    }
+
+    public function sponsorships()
+    {
+        return $this->hasMany(BookSponsorship::class);
     }
 }

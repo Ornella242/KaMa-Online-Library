@@ -13,22 +13,25 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ReviewsController;
 use App\Http\Controllers\Writer\DashboardController as WriterDashboardController;
 use App\Http\Controllers\Writer\SettingsController as WriterSettingsController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Writer\RevenueController as WriterRevenuesController;
 use App\Http\Controllers\Writer\ActivityController as WriterActivityController;
+use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SocialProfileController;
 
 use App\Http\Controllers\Reader\SettingsController as ReaderSettingsController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Writer\BooksController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalogue', [CatalogueController::class, 'index'])->name('catalogue');
-Route::get('/detaillivre', [DetailsLivreController::class, 'index'])->name('detail');
-
+Route::get('/books/{book}', [DetailsLivreController::class, 'index'])
+    ->name('books.show');
 
 // Auth routes
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register.form');
@@ -40,6 +43,20 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
+Route::get(
+    '/book-preview/{book}',
+    [BooksController::class, 'previewPdf']
+)->name('book.preview');
+
+Route::get(
+    '/generate-preview/{book}',
+    [BooksController::class,'generatePreviewPages']
+);
+
+Route::get(
+    '/book-preview-page/{book}/{page}',
+    [BooksController::class,'previewPage']
+)->name('book.preview.page');
 
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
@@ -136,6 +153,12 @@ Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function (
         Route::get('/books/{book}/deposit',[BooksController::class, 'deposit'])
             ->name('writer.books.deposit');
 
+        Route::get('/books/{book}/boost',[BooksController::class,'boost'])
+           ->name('writer.books.boost');
+
+        Route::post('/books/{book}/boost/share',[BooksController::class,'shareBook'])
+           ->name('writer.books.boost.share');
+
         Route::delete('books/{book}', [BooksController::class, 'destroy'])
            ->name('writer.books.destroy');
 
@@ -157,9 +180,30 @@ Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function (
             return view('writer.publicite');
         })->name('writer.publicite');
 
-        
+        Route::get('/books/{book}/preview-file', 
+            [BooksController::class, 'previewFile']
+        )->name('writer.books.preview.file');
 
-    });
+        Route::get('/books/{book}/audio', 
+            [BooksController::class, 'streamAudio']
+        )->name('writer.books.audio');
+
+        Route::get(
+                '/books/{book}/sponsor',
+                [SponsorshipController::class,'create']
+            )->name('writer.books.sponsor');
+        
+        Route::post(
+            '/books/{book}/sponsorship/{plan}',
+            [SponsorshipController::class, 'store']
+        )->name('writer.sponsorship.store');
+
+        Route::get(
+            '/sponsorships/{sponsorship}/payment',
+            [SponsorshipController::class, 'payment'])
+        ->name('writer.sponsorship.payment');
+
+});
 
 Route::get('/writer/categories/{category}/subcategories',
     [BooksController::class, 'getSubcategories']
@@ -179,3 +223,35 @@ Route::post('/social-profile', [SocialProfileController::class, 'storeOrUpdate']
     ->middleware('auth');
 
 
+// admin routes
+
+Route::prefix('admin') ->middleware(['auth', 'role:admin']) ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+        Route::get('/settings', [AdminSettingsController::class, 'index']);
+        Route::get('/users/show/{user}', [UserController::class, 'show'])
+        ->name('admin.show');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+        ->name('admin.users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])
+        ->name('admin.users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])
+        ->name('admin.users.destroy');
+        Route::get('/users/create', [UserController::class, 'create'])
+            ->name('admin.users.create');
+
+        Route::post('/users', [UserController::class, 'store'])
+            ->name('admin.users.store');
+
+});
+
+Route::put('/admin/change-password', [UserController::class, 'changePassword'])
+    ->middleware('auth')
+    ->name('admin.password.update');
+
+Route::put('/admin/account', [UserController::class, 'updateProfile'])
+    ->middleware('auth')
+    ->name('admin.account.update');
+
+Route::get('/admin/users', [UserController::class, 'index'])
+    ->middleware('auth')
+    ->name('admin.users');

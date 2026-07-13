@@ -4,15 +4,22 @@ namespace App\Http\Controllers\Writer;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Spatie\PdfToImage\Pdf;
 use App\Models\Book;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use App\Models\Subcategory;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Imagick;
+
+
 
 class BooksController extends Controller
 {
+
+
     /**
      * Liste des livres de l'auteur connecté
      */
@@ -116,6 +123,8 @@ class BooksController extends Controller
         return response()->json($subcategories);
     }
 
+   
+
     /**
      * Enregistrer un nouveau livre
      */
@@ -132,7 +141,6 @@ class BooksController extends Controller
                 'exists:subcategories,id'
             ],
             'short_description' => 'required|string',
-            'long_description' => 'required|string',
             'type' => [
                 'required',
                 'in:ebook,audio'
@@ -160,7 +168,8 @@ class BooksController extends Controller
             'cover_image' => [
                 'required',
                 'image',
-                'max:2048'
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120'
             ],
 
             'ebook_file' => [
@@ -176,8 +185,27 @@ class BooksController extends Controller
                 'mimes:mp3',
                 'max:102400'
             ],
+            'preview_type' => 'required|in:text,pages',
+            'long_description' => 'required_if:preview_type,text|nullable|string',
+            'preview_start_page' => 'required_if:preview_type,pages|nullable|integer|min:1',
+            'preview_end_page' => 'required_if:preview_type,pages|nullable|integer|gte:preview_start_page',
+            'copyright_accepted' => [
+                'required',
+                'accepted'
+            ],
         ]);
 
+        if ($request->preview_type === 'pages') {
+            $totalPreviewPages = $request->preview_end_page - $request->preview_start_page + 1;
+            if ($totalPreviewPages > 5) {
+                return back()
+                    ->withErrors([
+                        'preview_end_page' => 'Vous pouvez sélectionner au maximum 5 pages.'
+                    ])
+                    ->withInput();
+            }
+        }
+        
 
         // Upload couverture
         $coverPath = $request
@@ -205,52 +233,61 @@ class BooksController extends Controller
 
         if($request->type === 'ebook'){
             $filePath = $file->storeAs(
-            'books/files/ebooks',
+            'ebooks',
             $fileName,
-            'public'
+            'local'
         );
         } else {
                $filePath = $file->storeAs(
-            'books/files/audios',
+            'audios',
             $fileName,
-            'public'
+            'local'
         );
         }
      
 
        $fileSize = $file->getSize();
 
-        Book::create([
-
+       $book = Book::create([
             // auteur connecté
             'user_id' => Auth::id(),
             'category_id' => $request->category_id,
             'subcategory_id' => $request->subcategory_id,
             'title' => $request->title,
             'short_description' => $request->short_description,
-            'long_description' => $request->long_description,
+            'long_description' => $request->preview_type == 'text'
+                                ? $request->long_description
+                                : null,
+            'preview_type' => $request->preview_type,
+            'preview_start_page' => $request->preview_type == 'pages'
+                ? $request->preview_start_page
+                : null,
+            'preview_end_page' => $request->preview_type == 'pages'
+                ? $request->preview_end_page
+                : null,
             'duration' => $request->duration,
             'type' => $request->type,
             'price' => $request->price,
             'pages' => $request->pages,
             'language' => $request->language,
             'publication_year' => $request->publication_year,
-
             // fichiers
             'cover_image' => $coverPath,
-
             'file_path' => $filePath,
-
             'original_file_name' => $file->getClientOriginalName(),
-
             'file_type' => $file->getClientOriginalExtension(),
-
             'file_size' => $file->getSize(),
- 
-            // statut initial
             'status' => 'draft',
-
+            'copyright_accepted' => true,
+            'copyright_accepted_at' => now(),
         ]);
+
+        if (
+            $book->type === 'ebook' &&
+            $book->preview_type === 'pages'
+        ) {
+            $this->generatePreviewPages($book);
+        }
 
         return redirect()
             ->route('writer.books')
@@ -262,7 +299,10 @@ class BooksController extends Controller
 
     public function show(Book $book)
     {
-        return view('writer.books.show', compact('book'));
+        $previewStart = $book->preview_start_page;
+        $previewEnd = $book->preview_end_page;
+        return view('writer.books.show', compact('book','previewStart',
+        'previewEnd'));
     }
 
     public function edit(Book $book)
@@ -280,6 +320,187 @@ class BooksController extends Controller
 
     public function update(Request $request, Book $book)
     {
+       if ($book->status === 'under_review') {
+
+            $request->validate([
+
+                'category_id' => [
+                    'required',
+                    'exists:categories,id'
+                ],
+
+                'subcategory_id' => [
+                    'required',
+                    'exists:subcategories,id'
+                ],
+
+                'language' => [
+                    'required',
+                    'string',
+                    'max:50'
+                ],
+
+                'publication_year' => [
+                    'required',
+                    'digits:4'
+                ],
+
+                'price' => [
+                    'required',
+                    'numeric',
+                    'min:0'
+                ],
+
+                'short_description' => [
+                    'required',
+                    'string'
+                ],
+
+               'preview_type' => [
+                    'required_if:type,ebook',
+                    'nullable',
+                    'in:text,pages'
+                ],
+
+                'long_description' => [
+                    'required_if:preview_type,text',
+                    'nullable',
+                    'string'
+                ],
+
+               'preview_start_page' => [
+                    'required_if:preview_type,pages',
+                    'nullable',
+                    'integer',
+                    'min:1'
+                ],
+
+                'preview_end_page' => [
+                    'required_if:preview_type,pages',
+                    'nullable',
+                    'integer',
+                    'gte:preview_start_page'
+                ],
+
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Sauvegarde ancien aperçu
+            |--------------------------------------------------------------------------
+            */
+
+            $oldPreviewType = $book->preview_type;
+
+            $oldStartPage = $book->preview_start_page;
+
+            $oldEndPage = $book->preview_end_page;
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Vérification changement aperçu
+            |--------------------------------------------------------------------------
+            */
+
+            $previewChanged =
+                $oldPreviewType !== $request->preview_type ||
+                $oldStartPage != $request->preview_start_page ||
+                $oldEndPage != $request->preview_end_page;
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Mise à jour informations autorisées
+            |--------------------------------------------------------------------------
+            */
+
+            $book->update([
+
+                'category_id' => $request->category_id,
+
+                'subcategory_id' => $request->subcategory_id,
+
+                'language' => $request->language,
+
+                'publication_year' => $request->publication_year,
+
+                'price' => $request->price,
+
+                'short_description' => $request->short_description,
+
+                'preview_type' => $book->type === 'audio'
+                                ? 'text'
+                                : $request->preview_type,
+
+                'long_description' => $book->type === 'audio'
+                ? $request->long_description
+                : (
+                    $request->preview_type === 'text'
+                        ? $request->long_description
+                        : null
+                ),
+
+                'preview_start_page' => $book->type === 'ebook' && $request->preview_type === 'pages'
+                    ? $request->preview_start_page
+                    : null,
+
+                'preview_end_page' => $book->type === 'ebook' && $request->preview_type === 'pages'
+                    ? $request->preview_end_page
+                    : null,
+
+            ]);
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Suppression anciennes pages preview
+            |--------------------------------------------------------------------------
+            */
+
+           if (
+                $previewChanged &&
+                $oldPreviewType === 'pages'
+            ) {
+
+                Storage::disk('local')
+                    ->deleteDirectory(
+                        'books/previews/'.$book->id
+                    );
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Génération nouvelles pages preview
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $previewChanged &&
+                $book->preview_type === 'pages'
+            ) {
+
+                $this->generatePreviewPages($book);
+
+            }
+
+
+
+            return redirect()
+                ->route('writer.books')
+                ->with(
+                    'success',
+                    'Les informations du livre ont été mises à jour.'
+                );
+        }
+
+
+        // Code book status draft
         $request->validate([
 
             'title' => [
@@ -567,6 +788,15 @@ class BooksController extends Controller
         );
     }
 
+    public function boost(Book $book)
+    {
+        abort_if($book->user_id !== Auth::id(), 403);
+
+        $social = Auth::user()->socialProfile;
+
+        return view('writer.books.boost', compact('book', 'social'));
+    }
+
     public function dashboard()
     {
         $books = Auth::user()
@@ -594,6 +824,177 @@ class BooksController extends Controller
         return back()->with(
             'success',
             'Votre livre est en attente de paiement.'
+        );
+    }
+
+    public function generatePreviewPages(Book $book)
+    {
+
+        $pdfPath = storage_path(
+            'app/private/'.$book->file_path
+        );
+
+
+        $folder = storage_path(
+            'app/private/books/previews/'.$book->id
+        );
+
+
+        if(!file_exists($folder)){
+            mkdir($folder,0755,true);
+        }
+
+
+        $start = $book->preview_start_page;
+        $end = $book->preview_end_page;
+
+
+        for($pageNumber = $start; $pageNumber <= $end; $pageNumber++){
+
+
+            $imagick = new Imagick();
+
+
+            $imagick->setResolution(150,150);
+
+
+            // page PDF (index commence à 0)
+            $imagick->readImage(
+                $pdfPath.'['.($pageNumber-1).']'
+            );
+
+
+            $imagick->setImageFormat("webp");
+
+
+            $imagick->setImageCompressionQuality(85);
+
+
+            $imagick->writeImage(
+                $folder.'/page-'.$pageNumber.'.webp'
+            );
+
+
+            $imagick->clear();
+
+            $imagick->destroy();
+
+        }
+
+
+            return "Preview généré";
+
+    }
+
+    public function previewPage(Book $book, $page)
+    {
+
+        // Vérifier que la page demandée est autorisée
+
+        if(
+            $page < $book->preview_start_page ||
+            $page > $book->preview_end_page
+        ){
+
+            abort(403);
+
+        }
+
+
+
+        $path = storage_path(
+            'app/private/books/previews/'
+            .$book->id.
+            '/page-'.$page.'.webp'
+        );
+
+
+
+        if(!file_exists($path)){
+
+            abort(404);
+
+        }
+
+
+
+        return response()->file($path,[
+
+            'Content-Type'=>'image/webp',
+
+            'Cache-Control'=>'private, max-age=3600',
+
+            'X-Robots-Tag'=>'noindex'
+
+        ]);
+
+    }
+
+    public function previewPdf(Book $book)
+    {
+
+        abort_unless(
+            $book->preview_type === 'pages',
+            403
+        );
+
+        $path = storage_path(
+            'app/public/' . $book->file_path
+        );
+
+        if(!file_exists($path)){
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Content-Type'=>'application/pdf',
+            'Content-Disposition'=>'inline',
+            'X-Robots-Tag'=>'noindex'
+        ]);
+
+    }
+
+    public function previewFile(Book $book)
+    {
+        $this->authorize('viewFile', $book);
+
+
+        if ($book->type !== 'ebook') {
+            abort(404);
+        }
+
+
+        if (!Storage::disk('local')->exists($book->file_path)) {
+            abort(404);
+        }
+
+
+        return response()->file(
+            Storage::disk('local')->path($book->file_path)
+        );
+    }
+
+    public function streamAudio(Book $book)
+    {
+        // Vérifie que l'auteur est bien propriétaire
+        $this->authorize('viewFile', $book);
+
+
+        if ($book->type !== 'audio') {
+            abort(404);
+        }
+
+
+        if (!Storage::disk('local')->exists($book->file_path)) {
+            abort(404);
+        }
+
+
+        return response()->file(
+            Storage::disk('local')->path($book->file_path),
+            [
+                'Content-Type' => 'audio/mpeg',
+            ]
         );
     }
 

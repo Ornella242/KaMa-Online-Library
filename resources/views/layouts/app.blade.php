@@ -8,6 +8,7 @@
 	<meta name="author" content="Webestica.com">
 	<meta name="description" content="KaMa - KaMa Online Library est une librairie numérique dédiée à la valorisation de la littérature africaine. Elle propose un accès simple et rapide à une large sélection d’ouvrages d’auteurs africains, disponibles en formats ebook et audiolivre, permettant aux lecteurs de découvrir, lire et écouter des histoires authentiques issues du continent et de sa diaspora.">
 
+	@yield('meta')
 	<!-- Dark mode -->
 	<script>
 		const storedTheme = localStorage.getItem('theme')
@@ -83,11 +84,13 @@
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/glightbox/css/glightbox.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/flatpickr/css/flatpickr.min.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/choices/css/choices.min.css')}}">
-	
+	<link 
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/stepper/css/bs-stepper.min.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/quill/css/quill.snow.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/dropzone/css/dropzone.css')}}">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/page-flip/dist/css/page-flip.css">
 
 	<!-- Theme CSS -->
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
@@ -471,285 +474,255 @@
 				price ? price + " $" : "0 $";
 
 		// =========================
-// PAGES / DUREE AUDIO
-// =========================
+		// PAGES / DUREE AUDIO
+		// =========================
 
-const publicationTypeInputs = document.querySelectorAll('input[name="type"]');
+		const publicationTypeInputs = document.querySelectorAll('input[name="type"]');
 
-const pagesField = document.getElementById('pagesField');
-const durationField = document.getElementById('durationField');
+		const pagesField = document.getElementById('pagesField');
+		const durationField = document.getElementById('durationField');
 
-const pagesInput = document.getElementById('pagesInput');
-const durationInput = document.getElementById('durationInput');
-
-
-// Summary
-
-const summaryPagesBox = document.getElementById('summary_pages_box');
-const summaryDurationBox = document.getElementById('summary_duration_box');
-
-const summaryPages = document.getElementById('summary_pages');
-const summaryDuration = document.getElementById('summary_duration');
+		const pagesInput = document.getElementById('pagesInput');
+		const durationInput = document.getElementById('durationInput');
 
 
+		// Summary
 
-function updateBookTypeDisplay(type){
+		const summaryPagesBox = document.getElementById('summary_pages_box');
+		const summaryDurationBox = document.getElementById('summary_duration_box');
+
+		const summaryPages = document.getElementById('summary_pages');
+		const summaryDuration = document.getElementById('summary_duration');
 
 
-	if(type === "ebook"){
+
+		function updateBookTypeDisplay(type){
 
 
-		// Formulaire
+			if(type === "ebook"){
 
-		if(pagesField){
-			pagesField.style.display = "block";
+
+				// Formulaire
+
+				if(pagesField){
+					pagesField.style.display = "block";
+				}
+
+				if(durationField){
+					durationField.style.display = "none";
+				}
+
+
+				if(pagesInput){
+
+					pagesInput.required = true;
+
+				}
+				if(durationInput){
+
+					durationInput.required = false;
+					durationInput.value = "";
+
+				}
+				// Résumé
+
+				if(summaryPagesBox){
+
+					summaryPagesBox.style.display = "block";
+
+				}
+				if(summaryDurationBox){
+					summaryDurationBox.style.display = "none";
+				}
+			}
+			else if(type === "audio"){
+				// Formulaire
+				if(pagesField){
+
+					pagesField.style.display = "none";
+
+				}
+				if(durationField){
+					durationField.style.display = "block";
+
+				}
+				if(pagesInput){
+
+					pagesInput.required = false;
+					pagesInput.value = "";
+
+				}
+
+				if(durationInput){
+
+					durationInput.required = true;
+
+				}
+
+				// Résumé
+
+				if(summaryPagesBox){
+
+					summaryPagesBox.style.display = "none";
+
+				}
+
+
+				if(summaryDurationBox){
+
+					summaryDurationBox.style.display = "block";
+
+				}
+
+
+			}
+
+
 		}
 
-		if(durationField){
-			durationField.style.display = "none";
+
+
+		// Changement Ebook / Audio
+
+		publicationTypeInputs.forEach(input => {
+
+
+			input.addEventListener('change', function(){
+
+
+				updateBookTypeDisplay(this.value);
+
+
+			});
+
+
+		});
+
+
+
+		// Affichage initial
+
+		const checkedType = document.querySelector('input[name="type"]:checked');
+
+
+		if(checkedType){
+
+			updateBookTypeDisplay(checkedType.value);
+
 		}
 
+
+
+		// =========================
+		// UPDATE SUMMARY PAGES
+		// =========================
 
 		if(pagesInput){
 
-			pagesInput.required = true;
 
-		}
-
-
-		if(durationInput){
-
-			durationInput.required = false;
-			durationInput.value = "";
-
-		}
+			pagesInput.addEventListener('input', function(){
 
 
+				if(summaryPages){
 
-		// Résumé
+					summaryPages.innerText = this.value || "0";
 
-		if(summaryPagesBox){
-
-			summaryPagesBox.style.display = "block";
-
-		}
+				}
 
 
-		if(summaryDurationBox){
+			});
 
-			summaryDurationBox.style.display = "none";
 
 		}
 
 
 
-	}
+					// =========================
+					// UPDATE SUMMARY DUREE
+					// =========================
 
+					if(durationInput){
 
 
-	else if(type === "audio"){
+						durationInput.addEventListener('input', function(){
 
 
+							if(summaryDuration){
 
-		// Formulaire
+								summaryDuration.innerText = this.value || "00:00:00";
 
-		if(pagesField){
+							}
 
-			pagesField.style.display = "none";
 
-		}
+						});
 
-
-		if(durationField){
-
-			durationField.style.display = "block";
-
-		}
-
-
-
-		if(pagesInput){
-
-			pagesInput.required = false;
-			pagesInput.value = "";
-
-		}
-
-
-
-		if(durationInput){
-
-			durationInput.required = true;
-
-		}
-
-
-
-
-		// Résumé
-
-		if(summaryPagesBox){
-
-			summaryPagesBox.style.display = "none";
-
-		}
-
-
-		if(summaryDurationBox){
-
-			summaryDurationBox.style.display = "block";
-
-		}
-
-
-	}
-
-
-}
-
-
-
-// Changement Ebook / Audio
-
-publicationTypeInputs.forEach(input => {
-
-
-	input.addEventListener('change', function(){
-
-
-		updateBookTypeDisplay(this.value);
-
-
-	});
-
-
-});
-
-
-
-// Affichage initial
-
-const checkedType = document.querySelector('input[name="type"]:checked');
-
-
-if(checkedType){
-
-	updateBookTypeDisplay(checkedType.value);
-
-}
-
-
-
-// =========================
-// UPDATE SUMMARY PAGES
-// =========================
-
-if(pagesInput){
-
-
-	pagesInput.addEventListener('input', function(){
-
-
-		if(summaryPages){
-
-			summaryPages.innerText = this.value || "0";
-
-		}
-
-
-	});
-
-
-}
-
-
-
-			// =========================
-			// UPDATE SUMMARY DUREE
-			// =========================
-
-			if(durationInput){
-
-
-				durationInput.addEventListener('input', function(){
-
-
-					if(summaryDuration){
-
-						summaryDuration.innerText = this.value || "00:00:00";
 
 					}
+					
+					// =========================
+					// ANNEE
+					// =========================
+
+					let year = document.querySelector('[name="publication_year"]')?.value;
+					document.querySelector("#summary_year").innerText =
+						year || "----";
+
+					// =========================
+					// DESCRIPTION
+					// =========================
+
+					let description =
+						document.querySelector('[name="short_description"]')?.value;
+
+					document.querySelector("#summary_short_description").innerText =
+						description || "Aucune description disponible.";
+
+					// =========================
+					// COUVERTURE
+					// =========================
+
+					let cover =
+						document.querySelector('[name="cover_image"]');
+					if(cover && cover.files.length > 0){
+						let reader = new FileReader();
+						reader.onload = function(e){
+							document.querySelector("#summary_cover").src =
+								e.target.result;
+
+						}
+						reader.readAsDataURL(cover.files[0]);
+					}
+				}
+					document.addEventListener("input", function(e){
 
 
+						if(
+							e.target.matches(
+								'[name="title"], [name="price"], [name="pages"], [name="publication_year"], [name="short_description"]'
+							)
+						){
+
+							updateBookSummary();
+
+						}
+					});
+
+					document.addEventListener("change", function(e){
+
+
+						if(
+							e.target.matches(
+								'[name="category_id"], [name="subcategory_id"], [name="language"], [name="type"], [name="cover_image"]'
+							)
+						){
+							updateBookSummary();
+						}
+					});
+
+					// Chargement initial
+
+					updateBookSummary();
 				});
-
-
-			}
-			
-			// =========================
-			// ANNEE
-			// =========================
-
-			let year = document.querySelector('[name="publication_year"]')?.value;
-			document.querySelector("#summary_year").innerText =
-				year || "----";
-
-			// =========================
-			// DESCRIPTION
-			// =========================
-
-			let description =
-				document.querySelector('[name="short_description"]')?.value;
-
-			document.querySelector("#summary_short_description").innerText =
-				description || "Aucune description disponible.";
-
-			// =========================
-			// COUVERTURE
-			// =========================
-
-			let cover =
-				document.querySelector('[name="cover_image"]');
-			if(cover && cover.files.length > 0){
-				let reader = new FileReader();
-				reader.onload = function(e){
-					document.querySelector("#summary_cover").src =
-						e.target.result;
-
-				}
-				reader.readAsDataURL(cover.files[0]);
-			}
-		}
-			document.addEventListener("input", function(e){
-
-
-				if(
-					e.target.matches(
-						'[name="title"], [name="price"], [name="pages"], [name="publication_year"], [name="short_description"]'
-					)
-				){
-
-					updateBookSummary();
-
-				}
-			});
-
-			document.addEventListener("change", function(e){
-
-
-				if(
-					e.target.matches(
-						'[name="category_id"], [name="subcategory_id"], [name="language"], [name="type"], [name="cover_image"]'
-					)
-				){
-					updateBookSummary();
-				}
-			});
-
-			// Chargement initial
-
-			updateBookSummary();
-		});
 	</script>
 
 	<script>
@@ -783,6 +756,181 @@ if(pagesInput){
 
 		});
 	</script>
+
+	{{-- <script>
+				const bookTypes = document.querySelectorAll('input[name="type"]');
+
+		const previewType = document.getElementById('preview_type');
+
+		const previewTypeContainer = document.getElementById('previewTypeContainer');
+
+		const textPreview = document.getElementById('textPreview');
+
+		const pagesPreview = document.getElementById('pagesPreview');
+
+		function updatePreviewFields() {
+
+			const selectedType = document.querySelector('input[name="type"]:checked').value;
+
+			// Si c'est un livre audio
+			if (selectedType === 'audio') {
+
+				previewTypeContainer.classList.add('d-none');
+
+				textPreview.classList.remove('d-none');
+
+				pagesPreview.classList.add('d-none');
+
+				previewType.value = 'text';
+
+			}
+
+			// Si c'est un ebook
+			else {
+
+				previewTypeContainer.classList.remove('d-none');
+
+				if (previewType.value === 'pages') {
+
+					textPreview.classList.add('d-none');
+
+					pagesPreview.classList.remove('d-none');
+
+				} else {
+
+					textPreview.classList.remove('d-none');
+
+					pagesPreview.classList.add('d-none');
+
+				}
+
+			}
+
+		}
+
+		// changement Ebook / Audio
+		bookTypes.forEach(type => {
+			type.addEventListener('change', updatePreviewFields);
+		});
+
+		// changement Extrait texte / Pages
+		previewType.addEventListener('change', updatePreviewFields);
+
+		// chargement de la page
+		updatePreviewFields();
+	</script> --}}
+
+	<script>
+
+		const bookTypes = document.querySelectorAll('input[name="type"]');
+
+		const previewType = document.getElementById('preview_type');
+
+		const previewTypeContainer = document.getElementById('previewTypeContainer');
+
+		const textPreview = document.getElementById('textPreview');
+
+		const pagesPreview = document.getElementById('pagesPreview');
+
+		function updatePreviewFields() {
+
+			const selectedType = document.querySelector('input[name="type"]:checked');
+
+			if (!selectedType) return;
+
+			// =============================
+			// LIVRE AUDIO
+			// =============================
+
+			if (selectedType.value === 'audio') {
+
+				previewTypeContainer.classList.add('d-none');
+
+				textPreview.classList.remove('d-none');
+
+				pagesPreview.classList.add('d-none');
+
+				// On force toujours le type texte
+				previewType.value = 'text';
+
+			}
+
+			// =============================
+			// EBOOK
+			// =============================
+
+			else {
+
+				previewTypeContainer.classList.remove('d-none');
+
+				if (previewType.value === 'pages') {
+
+					textPreview.classList.add('d-none');
+
+					pagesPreview.classList.remove('d-none');
+
+				} else {
+
+					textPreview.classList.remove('d-none');
+
+					pagesPreview.classList.add('d-none');
+
+				}
+
+			}
+
+		}
+
+
+		// Changement Ebook / Audio
+		bookTypes.forEach(type => {
+
+			type.addEventListener('change', updatePreviewFields);
+
+		});
+
+
+		// Changement du type d'aperçu
+		previewType.addEventListener('change', updatePreviewFields);
+
+
+		// Initialisation
+		updatePreviewFields();
+
+	</script>
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+
+	{{-- <script>
+
+		function copyText(){
+
+			let text = `
+
+			📚 Découvrez mon nouveau livre :
+
+			{{ $book->title }}
+
+			{{ Str::limit(strip_tags($book->summary),200) }}
+
+			Disponible sur KaMa :
+
+		http://127.0.0.1:8000/detaillivre
+
+			#KaMa #Lecture
+
+			`;
+
+
+			navigator.clipboard.writeText(text);
+
+
+			alert("Texte copié, vous pouvez maintenant le partager !");
+
+
+		}
+
+
+    </script> --}}
 
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>

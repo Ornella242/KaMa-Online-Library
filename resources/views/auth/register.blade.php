@@ -22,6 +22,10 @@
                     sauvegarder vos lectures et retrouver facilement vos auteurs préférés.
                 </p>
 
+                <p>
+                    Faites découvrir vos livres et rejoignez une communauté d’écrivains.
+                </p>
+
                 <div class="register-hero-cards">
 
                     <div class="hero-card">
@@ -126,23 +130,51 @@
                     </div>
 
                     <!-- Country -->
-                    <div class="register-field">
+                    <div class="row">
+                        <div class="register-field col-md-6">
+                            <label>Pays</label>
+                            <div class="input-icon-group">
+                                <i class="bi bi-geo-alt input-icon"></i>
+                                <select 
+                                    name="country_id"
+                                    class="form-select"
+                                    required>
 
-                        <label>Pays</label>
+                                    <option value="">
+                                        Votre pays
+                                    </option>
 
-                        <div class="input-icon-group">
+                                    @foreach($countries as $country)
 
-                            <i class="bi bi-geo-alt input-icon"></i>
+                                        <option value="{{ $country->id }}">
 
-                           <input
-                                type="text"
-                                name="country"
-                                placeholder="Votre pays ex: France"
-                                required>
+                                            {{ $country->flag }} {{ $country->name }}
 
+                                        </option>
+
+                                    @endforeach
+
+                                </select>
+
+                            </div>
+                        </div>
+                        <div class="register-field col-md-6">
+                            <label>Ville</label>
+                            <div class="input-icon-group">
+
+                                <i class="bi bi-geo-alt input-icon"></i>
+
+                            <input
+                                    type="text"
+                                    name="city"
+                                    placeholder="Votre ville ex: Accra"
+                                    required>
+
+                            </div>
                         </div>
 
                     </div>
+                    
 
                      <!-- User Type -->
                     <div class="register-field">

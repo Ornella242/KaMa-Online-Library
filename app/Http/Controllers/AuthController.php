@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 use App\Models\Role;
+use App\Models\Country;
 
 use Illuminate\Http\Request;
 
@@ -14,19 +15,25 @@ class AuthController extends Controller
 
     public function showRegister()
     {
+        $countries = Country::orderBy('name')->get();
         $roles = \App\Models\Role::query()
             ->where('name', '!=', 'admin')
             ->get();
-        return view('auth.register', compact('roles'));
+        return view('auth.register', compact('roles','countries'));
     }
 
     public function register(Request $request)
     {
+
         $validated = $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname'  => 'required|string|max:255',
             'email'     => 'required|email|max:255|unique:users,email',
-            'country'   => 'required|string|max:255',
+            'country_id' => [
+                'required',
+                'exists:countries,id'
+            ],
+            'city'   => 'required|string|max:255',
             'role_id'   => 'required|exists:roles,id',
             'password'  => 'required|string|min:8|confirmed',
         ]);
@@ -35,7 +42,8 @@ class AuthController extends Controller
             'firstname' => $validated['firstname'],
             'lastname'  => $validated['lastname'],
             'email'     => $validated['email'],
-            'country'   => $validated['country'],
+            'country_id'   => $validated['country_id'],
+            'city'   => $validated['city'],
             'role_id'   => $validated['role_id'],
             'password'  => Hash::make($validated['password']),
         ]);
@@ -68,7 +76,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if ($user->role->name === 'admin') {
-                return redirect('/admin');
+                return redirect('/admin/dashboard');
             }
 
             if ($user->role->name === 'writer') {

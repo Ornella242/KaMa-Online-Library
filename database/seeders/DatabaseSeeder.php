@@ -19,18 +19,12 @@ class DatabaseSeeder extends Seeder
         {
             // User::factory(10)->create();
               $this->call([
+                UserSeeder::class,
+                CountrySeeder::class,
                 RoleSeeder::class,
                 CategorySeeder::class,
                 WalletSeeder::class,
+                SponsorshipPlanSeeder::class
             ]);
-
-            User::create([
-            'firstname' => 'Leopold-Auguste',
-            'lastname' => 'Ngomo',
-            'email' => 'ngomo@gmail.com',
-            'country' => 'Ghana',
-            'role_id' => 3,
-            'password' => Hash::make('Admin@1234'),
-        ]);
     }
 }

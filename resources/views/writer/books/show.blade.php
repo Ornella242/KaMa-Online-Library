@@ -1,5 +1,30 @@
 @extends('layouts.app')
 
+@section('meta')
+@php
+    $coverUrl = config('app.url').'/storage/'.$book->cover_image;
+    $coverUrl = config('app.url').'/storage/'.$book->cover_image;
+@endphp
+<head>
+
+<meta property="og:title" content="{{ $book->title }}">
+
+<meta property="og:description" content="{{ Str::limit(strip_tags($book->short_description),200) }}">
+
+<meta property="og:image" content="{{ config('app.url').'/storage/'.$book->cover_image }}">
+
+<meta property="og:image:secure_url" content="{{ config('app.url').'/storage/'.$book->cover_image }}">
+
+<meta property="og:type" content="book">
+
+<meta property="og:url" content="{{ config('app.url').'/books/'.$book->id }}">
+
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="twitter:image" content="{{ config('app.url').'/storage/'.$book->cover_image }}">
+
+</head>
+@endsection
 
 @section('content')
 
@@ -139,10 +164,7 @@
 
                     </div>
 
-
                     @endif
-
-
                 </div>
 
 
@@ -151,17 +173,14 @@
 
 
                 <div class="book-actions mt-4">
-
-
                     @if($book->type == 'ebook')
 
+                    <a href="{{ route('writer.books.preview.file', $book->id) }}"
+                        target="_blank"
+                        class="btn btn-danger btn-lg rounded-pill px-4">
 
-                    <a href="{{ asset('storage/'.$book->file_path) }}"
-                       target="_blank"
-                       class="btn btn-danger btn-lg rounded-pill px-4">
-
-                        <i class="bi bi-book-half me-2"></i>
-                        Lire le livre
+                            <i class="bi bi-book-half me-2"></i>
+                            Lire le livre
 
                     </a>
 
@@ -172,8 +191,10 @@
                     <audio controls class="audio-player">
 
                         <source 
-                        src="{{ asset('storage/'.$book->file_path) }}"
-                        type="audio/mpeg">
+                            src="{{ route('writer.books.audio', $book->id) }}"
+                            type="audio/mpeg">
+
+                        Votre navigateur ne supporte pas la lecture audio.
 
                     </audio>
 
@@ -213,16 +234,207 @@
 
         <div class="description-content">
 
-            {!! $book->long_description !!}
+            @if($book->preview_type == 'pages')
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div class="book-wrapper">
+                        <div id="book-preview"></div>
+                    </div>
+                </div>
+            @else
+
+            <div class="book-text-preview">
+                {!! $book->long_description !!}
+            </div>
+
+            @endif
+
+        </div>
+    </div>
+</div>
+
+
+@if($book->preview_type == 'pages')
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+
+    <script>
+
+
+        let pages = [];
+
+
+
+        // =============================
+        // COUVERTURE
+        // =============================
+
+        const cover = document.createElement("div");
+
+        cover.className="page cover";
+
+
+        cover.innerHTML = `
+
+        <img src="/storage/{{ $book->cover_image }}">
+
+        `;
+
+
+        pages.push(cover);
+
+
+
+
+        // =============================
+        // PAGES PREVIEW IMAGES
+        // =============================
+
+
+        @for(
+        $i=$previewStart;
+        $i<=$previewEnd;
+        $i++
+        )
+
+
+        const page{{ $i }} = document.createElement("div");
+
+
+        page{{ $i }}.className="page";
+
+
+        page{{ $i }}.innerHTML = `
+
+        <img src="{{ route('book.preview.page',[$book->id,$i]) }}">
+
+        `;
+
+
+
+        pages.push(page{{ $i }});
+
+
+
+        @endfor
+
+
+
+
+
+
+
+        // =============================
+        // PAGE FIN
+        // =============================
+
+
+        const finalPage=document.createElement("div");
+
+
+        finalPage.className="page preview-end-page";
+
+
+        finalPage.innerHTML=`
+
+        <div class="preview-end-content">
+
+
+        <h2>
+        Fin de l'aperçu
+        </h2>
+
+
+        <p>
+        Vous venez de lire la dernière page sélectionnée.
+        </p>
+
+
+        <h3>
+        {{ number_format($book->price,2) }} $
+        </h3>
+
+
+        <a href="#" class="btn btn-danger">
+        Acheter le livre
+        </a>
+
 
         </div>
 
-
-    </div>
-
+        `;
 
 
-</div>
 
+        pages.push(finalPage);
+
+
+
+
+
+
+
+        // =============================
+        // FLIPBOOK
+        // =============================
+
+
+        const isMobile = window.innerWidth <= 992;
+
+
+
+        const flipBook = new St.PageFlip(
+
+        document.getElementById("book-preview"),
+
+
+        {
+
+
+        width:isMobile ? 320 : 450,
+
+        height:isMobile ? 480 : 650,
+
+
+        size:"stretch",
+
+
+        minWidth:280,
+
+        maxWidth:900,
+
+
+        minHeight:400,
+
+        maxHeight:1200,
+
+
+        showCover:true,
+
+
+        usePortrait:isMobile,
+
+
+        drawShadow:true,
+
+
+        maxShadowOpacity:1,
+
+
+        flippingTime:1200,
+
+
+        mobileScrollSupport:true
+
+
+        }
+
+
+        );
+
+
+
+        flipBook.loadFromHTML(pages);
+
+    </script>
+@endif
 
 @endsection

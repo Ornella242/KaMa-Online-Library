@@ -26,7 +26,9 @@ Page Banner START -->
                     Complétez les informations de votre ouvrage afin de préparer
                     son intégration dans notre bibliothèque numérique.
                     Après validation du dépôt et paiement des frais de publication,
-                    votre livre sera officiellement disponible sur la plateforme KaMa.
+                    votre livre sera verifie et officiellement disponible sur la plateforme KaMa.
+					Faites la promotion de votre livre sur les pages KaMa avec nos offres spéciales de sponsoring.
+					Vous toucherez 80 % de vos ventes
                 </p>
 
             </div>
@@ -478,7 +480,7 @@ Steps START -->
 												<!-- SHORT DESCRIPTION -->
 												<div class="col-12">
 													<label class="form-label">
-														Description courte *
+														Résumé *
 													</label>
 													<textarea
 														name="short_description"
@@ -489,37 +491,91 @@ Steps START -->
 
 												</div>
 
-												<!-- FULL DESCRIPTION -->
-												<div class="col-12">
+												{{-- Type d'apercu --}}
+												<div class="col-12" id="previewTypeContainer">
+
 													<label class="form-label">
-														Description complète *
+														Type d'aperçu
 													</label>
 
-													<!-- Quill Toolbar -->
+													<select
+														name="preview_type"
+														id="preview_type"
+														class="form-select">
+
+														<option value="text">
+															Extrait texte du livre
+														</option>
+
+														<option value="pages">
+															Pages du livre (maximum 5 pages)
+														</option>
+
+													</select>
+
+												</div>
+
+												<!-- FULL DESCRIPTION -->
+												<div class="col-12" id="textPreview">
+
+													<label class="form-label">
+														Extrait / Morceau *
+													</label>
+
 													<div class="bg-light border border-bottom-0 rounded-top py-3 quilltoolbar">
+
 														<span class="ql-formats">
 															<button class="ql-bold"></button>
 															<button class="ql-italic"></button>
 															<button class="ql-underline"></button>
 														</span>
-														<span class="ql-formats">
-															<button class="ql-list" value="ordered"></button>
-															<button class="ql-list" value="bullet"></button>
-														</span>
 
-														<span class="ql-formats">
-															<button class="ql-link"></button>
-														</span>
 													</div>
 
-													<!-- Quill Editor -->
 													<div class="bg-white border rounded-bottom h-300px quilleditor">
 													</div>
+
 													<input 
 														type="hidden"
 														name="long_description"
 														id="long_description">
+
 												</div>
+
+												
+												<div class="col-12 d-none" id="pagesPreview">
+													<div class="row">
+														<div class="col-md-6">
+															<label class="form-label">
+																Première page
+															</label>
+
+															<input
+																type="number"
+																name="preview_start_page"
+																min="1"
+																class="form-control">
+														</div>
+
+														<div class="col-md-6">
+															<label class="form-label">
+																Dernière page
+															</label>
+
+															<input
+																type="number"
+																name="preview_end_page"
+																min="1"
+																class="form-control">
+														</div>
+													</div>
+
+													<small class="text-black">
+														Vous pouvez sélectionner au maximum 5 pages consécutives.
+													</small>
+
+												</div>
+												
 											</div>
 										</div>
 									</div>
@@ -597,6 +653,83 @@ Steps START -->
 									</div>
 									<!-- FILE UPLOAD CARD END -->
 
+									<!-- COPYRIGHT DECLARATION START -->
+
+									<div class="card book-card border-danger">
+
+										<div class="card-header border-bottom">
+
+											<h4 class="mb-0 text-white">
+												<i class="bi bi-shield-check text-danger me-2"></i>
+												Déclaration de droits d'auteur
+											</h4>
+
+										</div>
+
+
+										<div class="card-body">
+
+
+											<div class="alert alert-warning mb-4">
+
+												<i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+												<strong>Important :</strong>
+												
+												En téléversant ce livre sur KaMa Online Library,
+												vous engagez votre responsabilité concernant les droits liés
+												à cette œuvre.
+
+											</div>
+
+
+											<p class="mb-3">
+
+												Je déclare être l'auteur ou le détenteur légal des droits
+												nécessaires pour publier ce livre sur KaMa Online Library.
+
+												Je confirme que le contenu ajouté ne porte pas atteinte aux
+												droits d'auteur, droits de propriété intellectuelle ou autres
+												droits de tiers.
+
+											</p>
+
+
+											<p class="mb-3">
+												Je comprends que toute déclaration frauduleuse, publication
+												non autorisée ou violation des droits d'un tiers peut entraîner
+												le retrait du contenu, la suspension de mon compte ainsi que
+												d'éventuelles poursuites conformément aux lois applicables.
+											</p>
+
+
+
+											<div class="form-check">
+												<input
+													class="form-check-input"
+													type="checkbox"
+													id="authorDeclaration"
+													name="copyright_accepted"
+   													value="1">
+
+												<label 
+													class="form-check-label"
+													for="authorDeclaration">
+
+													Je confirme avoir lu et accepté cette déclaration et
+													j'assume la responsabilité du contenu que je publie.
+
+												</label>
+
+											</div>
+
+
+										</div>
+
+									</div>
+
+									<!-- COPYRIGHT DECLARATION END -->
+
 									<!-- BUTTONS -->
 									<div class="hstack gap-2 justify-content-between">
 										<button
@@ -608,10 +741,12 @@ Steps START -->
 
 										<button
 											type="button"
-											class="btn btn-danger next-btn px-4">
+											id="continueUploadBtn"
+											class="btn btn-danger next-btn px-4" disabled>
 											Continuer
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
+
 									</div>
 								</div>
 							</div>
@@ -829,8 +964,7 @@ Steps START -->
 
 												Votre livre sera enregistré dans la base de données KaMa.
 												Il restera invisible au public jusqu'au paiement des frais
-												de dépôt et sera ensuite soumis au processus de publication.
-
+												de dépôt et sera ensuite soumis au processus de validation avant publication.
 											</p>
 										</div>
 
@@ -843,23 +977,14 @@ Steps START -->
 
 									<div class="deposit-card">
 										<div class="deposit-left">
-
-
 											<h4>
-
 												Frais de dépôt KaMa
-
 											</h4>
-
-
 
 											<p>
 												Ces frais couvrent la préparation et la mise en ligne
 												de votre ouvrage sur la plateforme.
-
 											</p>
-
-
 
 											<ul>
 
@@ -868,30 +993,27 @@ Steps START -->
 													Vérification éditoriale
 												</li>
 
-
 												<li>
 													<i class="bi bi-check-circle-fill"></i>
 													Contrôle qualité du fichier
 												</li>
-
-
 
 												<li>
 													<i class="bi bi-check-circle-fill"></i>
 													Référencement dans la bibliothèque KaMa
 												</li>
 
-
-
 												<li>
 													<i class="bi bi-check-circle-fill"></i>
-													Publication officielle après paiement
+													Publication officielle après paiement et vérification
 												</li>
 
 
 											</ul>
 
-
+											<p class="fw-semibold text-white">
+												Le délai de publication du livre est de 15 jours à compter du jour du paiement de dépôt.
+											</p>
 										</div>
 
 										<div class="deposit-right">
@@ -950,4 +1072,117 @@ Steps START -->
 </section>
 <!-- =======================
 Steps END -->
+
+<script>
+	document.getElementById('continueUploadBtn').addEventListener('click', function () {
+
+		const fileInput = document.getElementById('bookFileInput');
+
+		if (!fileInput.files.length) {
+
+			Swal.fire({
+				icon: 'warning',
+				title: 'Fichier manquant',
+				text: 'Veuillez sélectionner le fichier PDF de votre livre avant de continuer.',
+				confirmButtonColor: '#dc3545'
+			});
+
+			return;
+		}
+
+
+		const fileName = fileInput.files[0].name;
+
+
+		Swal.fire({
+
+			title: 'Êtes-vous sûr ?',
+
+			html: `
+				<div class="text-start">
+
+					<p>
+						Vous êtes sur le point de téléverser :
+					</p>
+
+					<div class="alert alert-light border">
+						<i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>
+						<strong>${fileName}</strong>
+					</div>
+
+
+					<p class="text-danger mb-0">
+						<i class="bi bi-exclamation-triangle-fill me-1"></i>
+						Cette action est irréversible après paiement du dépôt de votre livre.
+					</p>
+
+				</div>
+			`,
+
+			icon: 'warning',
+
+			showCancelButton: true,
+
+			confirmButtonText: `
+				<i class="bi bi-cloud-arrow-up me-2"></i>
+				Oui, téléverser
+			`,
+
+			cancelButtonText: `
+				Annuler
+			`,
+
+			confirmButtonColor: '#dc3545',
+
+			cancelButtonColor: '#6c757d',
+
+			reverseButtons: true
+
+		}).then((result)=>{
+
+
+			if(result.isConfirmed){
+
+				// Passage à l'étape suivante de ton wizard
+				document.querySelector('.next-btn').click();
+
+			}
+
+
+		});
+
+
+	});
+</script>
+
+<script>
+
+const authorDeclaration = document.getElementById(
+    'authorDeclaration'
+);
+
+const continueUploadBtn = document.getElementById(
+    'continueUploadBtn'
+);
+
+
+authorDeclaration.addEventListener(
+    'change',
+    function(){
+
+        if(this.checked){
+
+            continueUploadBtn.disabled = false;
+
+        } else {
+
+            continueUploadBtn.disabled = true;
+
+        }
+
+    }
+);
+
+
+</script>
 @endsection

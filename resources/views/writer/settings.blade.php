@@ -142,68 +142,98 @@
 
                                                 <div class="row">
                                                 
-                                                    <div class="col-md-6 mb-3">
+                                                    <div class="col-md-4 mb-3">
                                                         <label class="form-label fw-semibold text-black"><i class="bi bi-flag me-2 icon-red"></i>Pays<span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control rounded-3 shadow-sm" name="country" value="{{ Auth::user()->country }}" placeholder="Enter votre pays">
+                                                              
+                                                                <select 
+                                                                    name="country_id"
+                                                                    class="form-select rounded-3 shadow-sm"
+                                                                    required>
+
+                                                                    <option value="">
+                                                                        Sélectionnez votre pays
+                                                                    </option>
+
+                                                                    @foreach($countries as $country)
+
+                                                                        <option 
+                                                                            value="{{ $country->id }}"
+                                                                            {{ old('country_id', Auth::user()->country_id) == $country->id ? 'selected' : '' }}>
+
+                                                                            {{ $country->flag }} {{ $country->name }}
+
+                                                                        </option>
+
+                                                                    @endforeach
+
+                                                                </select>
+
+                                                    </div>                
+                                                    
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <label class="form-label fw-semibold text-black"><i class="bi bi-flag me-2 icon-red"></i>Ville<span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control rounded-3 shadow-sm" name="city" value="{{ Auth::user()->city }}" placeholder="Enter votre ville">
                                                     </div>
 
-                                                    <div class="col-md-6 mb-3">
+                                                    <div class="col-md-4 mb-3">
                                                         <label class="form-label fw-semibold text-black">Selectionnez votre genre<span class="text-danger">*</span></label>
-                                                <div class="btn-group w-100" role="group">
 
-                                                        <input type="radio"
-                                                            class="btn-check"
-                                                            name="gender"
-                                                            id="male"
-                                                            value="male"
-                                                            {{ Auth::user()->gender=='male'?'checked':'' }}>
+                                                    <div class="btn-group w-100" role="group">
 
-                                                        <label class="btn btn-outline-danger rounded-start"
-                                                            for="male">
-                                                            Homme
-                                                        </label>
+                                                            <input type="radio"
+                                                                class="btn-check"
+                                                                name="gender"
+                                                                id="male"
+                                                                value="male"
+                                                                {{ Auth::user()->gender=='male'?'checked':'' }}>
 
-                                                        <input type="radio"
-                                                            class="btn-check"
-                                                            name="gender"
-                                                            id="female"
-                                                            value="female"
-                                                            {{ Auth::user()->gender=='female'?'checked':'' }}>
+                                                            <label class="btn btn-outline-danger rounded-start"
+                                                                for="male">
+                                                                Homme
+                                                            </label>
 
-                                                        <label class="btn btn-outline-danger"
-                                                            for="female">
-                                                            Femme
-                                                        </label>
+                                                            <input type="radio"
+                                                                class="btn-check"
+                                                                name="gender"
+                                                                id="female"
+                                                                value="female"
+                                                                {{ Auth::user()->gender=='female'?'checked':'' }}>
 
-                                                        <input type="radio"
-                                                            class="btn-check"
-                                                            name="gender"
-                                                            id="other"
-                                                            value="other"
-                                                            {{ Auth::user()->gender=='other'?'checked':'' }}>
+                                                            <label class="btn btn-outline-danger"
+                                                                for="female">
+                                                                Femme
+                                                            </label>
 
-                                                        <label class="btn btn-outline-danger rounded-end"
-                                                            for="other">
-                                                            Autre
-                                                        </label>
+                                                            <input type="radio"
+                                                                class="btn-check"
+                                                                name="gender"
+                                                                id="other"
+                                                                value="other"
+                                                                {{ Auth::user()->gender=='other'?'checked':'' }}>
+
+                                                            <label class="btn btn-outline-danger rounded-end"
+                                                                for="other">
+                                                                Autre
+                                                            </label>
+
+                                                        </div>
+                                                        </div>
 
                                                     </div>
+                                                
+                                                    <div class="row">
+                                                        <!-- Email id -->
+                                                        <div class="col-md-6 MB-3">
+                                                            <label class="form-label fw-semibold text-black"><i class="bi bi-envelope-at me-2 icon-red"></i>Adresse email</label>
+                                                            <input type="email" name="email" class="form-control rounded-3 shadow-sm" value="{{ Auth::user()->email }}" placeholder="Entrez votre adresse mail">
+                                                        </div>
+                                                        <!-- Mobile number -->
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label fw-semibold text-black"><i class="bi bi-phone me-2 icon-red"></i>Numéro de téléphone</label>
+                                                            <input type="text" class="form-control rounded-3 shadow-sm" name="phone" value="{{ Auth::user()->phone }}" placeholder="Entrez votre numéro (ex: +233 0500000000)">
+                                                        </div>
                                                     </div>
-
-                                                </div>
-                                            
-                                                <div class="row">
-                                                    <!-- Email id -->
-                                                    <div class="col-md-6 MB-3">
-                                                        <label class="form-label fw-semibold text-black"><i class="bi bi-envelope-at me-2 icon-red"></i>Adresse email</label>
-                                                        <input type="email" name="email" class="form-control rounded-3 shadow-sm" value="{{ Auth::user()->email }}" placeholder="Entrez votre adresse mail">
-                                                    </div>
-                                                    <!-- Mobile number -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label fw-semibold text-black"><i class="bi bi-phone me-2 icon-red"></i>Numéro de téléphone</label>
-                                                        <input type="text" class="form-control rounded-3 shadow-sm" name="phone" value="{{ Auth::user()->phone }}" placeholder="Entrez votre numéro (ex: +233 0500000000)">
-                                                    </div>
-                                                </div>
                                             
                                                 
                                                 <!-- Save button -->
@@ -408,6 +438,15 @@
                                                             <label class="form-label"><i class="fab fa-linkedin text-instagram-gradient me-2"></i>Lien LinkedIn</label>
                                                             <input class="form-control" type="text" name="linkedin_url" value="{{ optional($social)->linkedin_url }}" placeholder="https://linkedin.com/.....">
                                                         </div>
+                                                </div>
+
+                                                 <div class="row">
+                                                        <!-- whatsapp username -->
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label"><i class="fab fa-instagram text-instagram-gradient me-2"></i> Lien Whatsapp</label>
+                                                            <input class="form-control" type="text" name="whatsApp_url" value=" " placeholder="https://whatsapp.com/.....">
+                                                        </div>
+
                                                 </div>
                                                 <!-- Button -->
                                                 <div class="d-flex justify-content-end mt-4">

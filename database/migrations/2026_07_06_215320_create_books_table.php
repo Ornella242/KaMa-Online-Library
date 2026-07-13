@@ -20,7 +20,7 @@ return new class extends Migration
                    ->onDelete('restrict');
             $table->string('title');
             $table->text('short_description');
-            $table->longText('long_description');
+            $table->longText('long_description')->nullable();
             $table->enum('type', ['ebook', 'audio']);
             $table->decimal('price', 10, 2);
             $table->integer('pages');

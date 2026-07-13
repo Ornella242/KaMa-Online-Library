@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\VerifyEmailNotification;
 use App\Models\Book;
+use App\Models\Country;
 use App\Models\Wallet;
 
 #[Fillable(['name', 'email', 'password'])]
@@ -27,7 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'firstname',
         'lastname',
         'email',
-        'country',
+        'country_id',
+        'city',
         'phone',
         'gender',
         'role_id',
@@ -52,6 +54,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Role::class);
     }
 
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
     /**
      * Helper: check role
      */
@@ -122,4 +128,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Withdrawal::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
 }

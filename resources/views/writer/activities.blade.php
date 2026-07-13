@@ -21,7 +21,7 @@
 
                     <div class="card-body p-4">
                         <div class="timeline">
-                            {{-- @php
+                            @php
                             $activities = collect([
 
                                 (object)[
@@ -84,7 +84,7 @@
                                 ]
 
                             ]);
-                            @endphp --}}
+                            @endphp
 
                             @forelse($activities as $activity)
                                <div class="activity-item">
@@ -116,7 +116,7 @@
                                 </div>
 
                                 <div class="activity-actions">
-                                    <form action="{{ route('writer.activities.destroy',$activity->id) }}" method="POST">
+                                    <form action="" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button 

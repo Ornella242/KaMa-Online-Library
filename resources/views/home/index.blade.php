@@ -29,7 +29,7 @@ Main Banner START -->
 					<!-- Buttons -->
 					<div class="hstack gap-4 flex-wrap align-items-center">
 						<!-- Button -->
-						<a href="index.html#" class="btn btn-primary-soft mb-0">Explorez le catalogue maintenant </a>
+						<a href="{{ url('/catalogue') }}" class="btn btn-primary-soft mb-0">Explorez le catalogue maintenant </a>
 						
 					</div>
 				</div>
@@ -37,7 +37,7 @@ Main Banner START -->
 				<!-- Image -->
 				<div class="col-lg-6 position-relative">
 
-					<img src="{{ asset('assets/images/bg/06.jpg') }}" class="rounded" alt="">
+					<img src="{{ asset('assets/images/KaMa.png') }}" class="rounded" alt="">
 
 					<!-- Svg decoration -->
 					<figure class="position-absolute end-0 bottom-0">
@@ -116,100 +116,43 @@ Main Banner END -->
 
 <!-- =======================
 Advertisement START -->
-<section class="pb-2 pb-lg-5">
-	<div class="container">
-		<!-- Slider START -->
-		<div class="tiny-slider arrow-round arrow-blur arrow-hover">
-			<div class="tiny-slider-inner" data-autoplay="true" data-arrow="true" data-edge="2" data-dots="false" data-items-xl="3" data-items-lg="2" data-items-md="1">
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                            <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
+@foreach($sponsoredBooks as $sponsored)
+    <section class="pb-2 pb-lg-5">
+        <div class="container">
+            <!-- Slider START -->
+            <div class="tiny-slider arrow-round arrow-blur arrow-hover">
+                <div class="tiny-slider-inner" data-autoplay="true" data-arrow="true" data-edge="2" data-dots="false" data-items-xl="3" data-items-lg="2" data-items-md="1">
+                    <!-- Slider item -->
+                    <div>
+                        <div class="card border rounded-3 overflow-hidden">
+                                <span class="ad-badge">Sponsorisé</span>
+                            <div class="row g-0 align-items-center">
 
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/01.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
+                                <!-- Image -->
+                                <div class="col-sm-6">
+                                    <img src="{{ asset('storage/'.$sponsored->book->cover_image) }}" class="card-img rounded-0" alt="{{ $sponsored->book->title }}">
+                                </div>
 
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">Atomic Habits</a></h6>
-									<p class="mb-0 author">Par James Clear</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                                <!-- Title and content -->
+                                <div class="col-sm-6">
+                                    <div class="card-body px-3">
+                                        <h6 class="card-title"><a href="{{ route('books.show', $book) }}" class="stretched-link">{{ $sponsored->book->title }}</a></h6>
+                                        <p class="mb-0 author">Par {{ $sponsored->book->author->firstname }}
+                                            {{ $sponsored->book->author->lastname }}
+                                         </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                        <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/02.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">The 5 AM Club</a></h6>
-									<p class="mb-0 author">Par Cal Newport</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                        <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/03.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">Deep Work</a></h6>
-									<p class="mb-0 author">Par Morgan Housel</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                        <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/01.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">The Psychology of Money</a></h6>
-									<p class="mb-0 author"> Par Robin Sharma</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>	
-		<!-- Slider END -->
-	</div>
-</section>
+    
+                </div>
+            </div>	
+            <!-- Slider END -->
+        </div>
+    </section>
+@endforeach
 <!-- =======================
 Advertisement END -->
 
@@ -260,7 +203,7 @@ About START -->
 					<!-- Manager -->
 					<div class="position-absolute bottom-0 start-0 ms-n3 ms-lg-n6 mb-2 z-index-1">
 						<div class="bg-mode shadow d-inline-block text-center rounded-3 position-relative p-4">
-							<span class="h3 number mb-2">500+</span>
+							<span class="h3 number mb-2">{{ $totalBooks }}</span>
 							<h6 class="fw-normal">Livres au Total </h6>
 						</div>
 					</div>
@@ -366,281 +309,86 @@ Livres à la une START-->
 		<div class="row g-4 tiny-slider arrow-round arrow-blur arrow-hover">
             <div class="tiny-slider-inner" data-autoplay="true" data-arrow="true" data-edge="2" data-dots="false" data-items-xl="3" data-items-lg="2" data-items-md="1">
             <!-- Card item START -->
-			<div class="col-md-6 col-xl-4">
-				<div class="card card-hover-shadow pb-0 h-100">
-					<!-- Overlay item -->
-					<div class="position-relative">
-						<!-- Image -->
-						<img src="{{ asset('assets/images/category/une/4by3/book4.jpg') }}" class="card-img-top featured-book-img" alt="Card image">
-						<!-- Overlay -->
-						<div class="card-img-overlay d-flex flex-column p-4 z-index-1">
-							<!-- Card overlay top -->
-							<div>
-								<span class="badge text-bg-danger">Histoire</span>
-							</div>
-							<!-- Card overlay bottom -->
-							<div class="w-100 mt-auto">
-								<span class="badge text-bg-white fs-6">300 pages</span>
-							</div>
-						</div>
-					</div>
-					<!-- Image -->
+			@foreach($books as $book)
+                <div class="col-md-6 col-xl-4">
+                    <div class="card card-hover-shadow pb-0 h-100">
+                        <!-- Image -->
+                        <div class="position-relative">
+                            <img src="{{ asset('storage/'.$book->cover_image) }}" 
+                                class="card-img-top featured-book-img" 
+                                alt="{{ $book->title }}">
 
-					<!-- Card body START -->
-					<div class="card-body px-3">
-						<!-- Title -->
-						<h5 class="card-title mb-0"><a href="tour-detail.html" class="stretched-link">Atomic Habits</a></h5>
-                        <span class="small author">Par James Clear</span>
-						
-					</div>
-					<!-- Card body END -->
-
-					<!-- Card footer START-->
-					<div class="card-footer pt-0">
-						<!-- Price and Button -->
-						<div class="d-sm-flex justify-content-sm-between align-items-center flex-wrap">
-							<!-- Price -->
-							<div class="hstack gap-2">
-								<h5 class="fw-normal price mb-0">15$</h5>
-								
-							</div>
-
-                                    <!-- Note -->
-                                <div class="book-rating mt-2 mt-sm-0">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-half"></i>
-
-                                    <span class="ms-1">4.5</span>
+                            <div class="card-img-overlay d-flex flex-column p-4 z-index-1">
+                                <div>
+                                    <span class="badge text-bg-danger">
+                                        {{ $book->category->name ?? 'Sans catégorie' }}
+                                    </span>
                                 </div>
 
-							<!-- Button -->
-							<div class="mt-2 mt-sm-0">
-								<a href="tour-grid.html#" class="btn btn-sm btn-see mb-0">Voir plus</a>    
-							</div>
-						</div>
-					</div>
+                                <div class="w-100 mt-auto">
 
-				</div>
-			</div>
-			<!-- Card item END -->
-
-		    <!-- Card item START -->
-			<div class="col-md-6 col-xl-4">
-				<div class="card card-hover-shadow pb-0 h-100">
-					<!-- Overlay item -->
-					<div class="position-relative">
-						<!-- Image -->
-						<img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" class="card-img-top featured-book-img" alt="Card image">
-						<!-- Overlay -->
-						<div class="card-img-overlay d-flex flex-column p-4 z-index-1">
-							<!-- Card overlay top -->
-							<div>
-								<span class="badge text-bg-danger">Developpement personnel</span>
-							</div>
-							<!-- Card overlay bottom -->
-							<div class="w-100 mt-auto">
-								<span class="badge text-bg-white fs-6">200 pages</span>
-							</div>
-						</div>
-					</div>
-					<!-- Image -->
-
-					<!-- Card body START -->
-					<div class="card-body px-3">
-						<!-- Title -->
-						<h5 class="card-title mb-0"><a href="tour-detail.html" class="stretched-link">The 5 AM Club</a></h5>
-                        <span class="small author">Par Robin Sharma</span>
-						
-					</div>
-					<!-- Card body END -->
-
-					<!-- Card footer START-->
-					<div class="card-footer pt-0">
-						<!-- Price and Button -->
-						<div class="d-sm-flex justify-content-sm-between align-items-center flex-wrap">
-							<!-- Price -->
-							<div class="hstack gap-2">
-								<h5 class="fw-normal price mb-0">20$</h5>
-								
-							</div>
-
-                                    <!-- Note -->
-                                <div class="book-rating mt-2 mt-sm-0">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-half"></i>
-
-                                    <span class="ms-1">4.3</span>
+                                    <span class="badge text-bg-white fs-6">
+                                        @if($book->type == 'ebook')
+                                        {{ $book->pages ?? 0 }} pages
+                                        @else
+                                        {{ $book->duration ?? 0 }} de temps
+                                        @endif
+                                    </span>
                                 </div>
-
-							<!-- Button -->
-							<div class="mt-2 mt-sm-0">
-								<a href="tour-grid.html#" class="btn btn-sm btn-see mb-0">Voir plus</a>    
-							</div>
-						</div>
-					</div>
-
-				</div>
-			</div>
-			<!-- Card item END -->
-
-            <!-- Card item START -->
-			<div class="col-md-6 col-xl-4">
-				<div class="card card-hover-shadow pb-0 h-100">
-					<!-- Overlay item -->
-					<div class="position-relative">
-						<!-- Image -->
-						<img src="{{ asset('assets/images/category/une/4by3/book6.jpg') }}" class="card-img-top featured-book-img" alt="Card image">
-						<!-- Overlay -->
-						<div class="card-img-overlay d-flex flex-column p-4 z-index-1">
-							<!-- Card overlay top -->
-							<div>
-								<span class="badge text-bg-danger">Focus</span>
-							</div>
-							<!-- Card overlay bottom -->
-							<div class="w-100 mt-auto">
-								<span class="badge text-bg-white fs-6">100 pages</span>
-							</div>
-						</div>
-					</div>
-					<!-- Image -->
-
-					<!-- Card body START -->
-					<div class="card-body px-3">
-
-                        <!-- Titre + actions -->
-                        <div class="d-flex justify-content-between align-items-start">
-
-                            <!-- Title -->
-                            <h5 class="card-title mb-1 pe-2">
-                                <a href="tour-detail.html" class="stretched-link text-dark">
-                                    Think Again
+                            </div>
+                        </div>
+                        <!-- Body -->
+                        <div class="card-body px-3">
+                            <h5 class="card-title mb-0">
+                                <a href="{{ route('books.show', $book) }}" 
+                                class="stretched-link">
+                                    {{ $book->title }}
                                 </a>
                             </h5>
 
-                            <!-- Actions -->
-                            <div class="d-flex gap-2">
+                            <span class="small author">
+                                Par {{ $book->author->firstname ?? '' }}
+                                {{ $book->author->lastname ?? '' }}
+                            </span>
+                        </div>
 
-                                <!-- Wishlist -->
-                                <a href="#" class="action-btn wishlist-btn" title="Wishlist">
-                                    <i class="bi bi-heart"></i>
-                                </a>
+                        <!-- Footer -->
+                        <div class="card-footer pt-0">
+                            <div class="d-sm-flex justify-content-sm-between align-items-center flex-wrap">
+                                <div class="hstack gap-2">
+                                    <h5 class="fw-normal price mb-0">
+                                        {{ number_format($book->price,2) }}$
+                                    </h5>
+                                </div>
 
-                                <!-- Cart -->
-                                <a href="#" class="action-btn cart-btn" title="Add to cart">
-                                    <i class="bi bi-cart"></i>
-                                </a>
+                                <div class="book-rating mt-2 mt-sm-0">
+                                    {{-- Pour l'instant pas de note dans ta table --}}
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star"></i>
 
+                                    <span class="ms-1">
+                                        4.0
+                                    </span>
+
+                                </div>
+
+                                <div class="mt-2 mt-sm-0">
+                                    <a href="{{ route('books.show', $book) }}" 
+                                    class="btn btn-sm btn-see mb-0">
+                                        Voir plus
+                                    </a>
+                                </div>
                             </div>
 
                         </div>
 
-                        <!-- Author -->
-                        <span class="small author">Par Adam Grant</span>
-
                     </div>
-					<!-- Card body END -->
-
-					<!-- Card footer START-->
-					<div class="card-footer pt-0">
-						<!-- Price and Button -->
-						<div class="d-sm-flex justify-content-sm-between align-items-center flex-wrap">
-							<!-- Price -->
-							<div class="hstack gap-2">
-								<h5 class="fw-normal price mb-0">10$</h5>
-								
-							</div>
-
-                                    <!-- Note -->
-                                <div class="book-rating mt-2 mt-sm-0">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-half"></i>
-
-                                    <span class="ms-1">4.3</span>
-                                </div>
-
-							<!-- Button -->
-							<div class="mt-2 mt-sm-0">
-								<a href="tour-grid.html#" class="btn btn-sm btn-see mb-0">Voir plus</a>    
-							</div>
-						</div>
-					</div>
-
-				</div>
-			</div>
+                </div>
+            @endforeach
 			<!-- Card item END -->
-
-             <!-- Card item START -->
-			<div class="col-md-6 col-xl-4">
-				<div class="card card-hover-shadow pb-0 h-100">
-					<!-- Overlay item -->
-					<div class="position-relative">
-						<!-- Image -->
-						<img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" class="card-img-top featured-book-img" alt="Card image">
-						<!-- Overlay -->
-						<div class="card-img-overlay d-flex flex-column p-4 z-index-1">
-							<!-- Card overlay top -->
-							<div>
-								<span class="badge text-bg-danger">Etat d'esprit</span>
-							</div>
-							<!-- Card overlay bottom -->
-							<div class="w-100 mt-auto">
-								<span class="badge text-bg-white fs-6">250 pages</span>
-							</div>
-						</div>
-					</div>
-					<!-- Image -->
-
-					<!-- Card body START -->
-					<div class="card-body px-3">
-						<!-- Title -->
-						<h5 class="card-title mb-0"><a href="tour-detail.html" class="stretched-link">Think Again</a></h5>
-                        <span class="small author">Par Adam Grant</span>
-						
-					</div>
-					<!-- Card body END -->
-
-					<!-- Card footer START-->
-					<div class="card-footer pt-0">
-						<!-- Price and Button -->
-						<div class="d-sm-flex justify-content-sm-between align-items-center flex-wrap">
-							<!-- Price -->
-							<div class="hstack gap-2">
-								<h5 class="fw-normal price mb-0">22$</h5>
-								
-							</div>
-
-                                    <!-- Note -->
-                                <div class="book-rating mt-2 mt-sm-0">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-half"></i>
-
-                                    <span class="ms-1">4.8</span>
-                                </div>
-
-							<!-- Button -->
-							<div class="mt-2 mt-sm-0">
-								<a href="tour-grid.html#" class="btn btn-sm btn-see mb-0">Voir plus</a>    
-							</div>
-						</div>
-					</div>
-
-				</div>
-			</div>
-			<!-- Card item END -->
-
-			
 		</div> <!-- Row END -->
 
 	</div>
@@ -656,127 +404,31 @@ Top Categories START -->
 			<!-- Title -->
 			<div class="col-lg-4">
 				<h2 class="mb-4">Trouvez nos top catégories</h2>
-				<button class="btn btn-primary-soft mb-0">Explorez le catalogue</button>
+				<a href="{{ url('/catalogue') }}" class="btn btn-primary-soft mb-0">Explorez le catalogue</a>
 			</div>
 
 			<!-- Listing -->
-            <div class="col-lg-8">
+           <div class="col-lg-8">
                 <div class="row g-4">
+                    @foreach($categories as $category)
+                        <div class="col-md-6">
 
-                    <!-- Category Card -->
-                    <div class="col-md-6">
-                        <a href="#" class="text-decoration-none">
-                            <div class="category-card p-4 h-100">
-                                <div class="d-flex flex-column justify-content-center h-100">
-
-                                    <h5 class="mb-2 fw-semibold category-title">
-                                        Développement personnel
-                                    </h5>
-
-                                    <span class="numli small">
-                                        25 livres disponibles
-                                    </span>
-
+                            <a href="" 
+                            class="text-decoration-none">
+                                <div class="category-card p-4 h-100">
+                                    <div class="d-flex flex-column justify-content-center h-100">
+                                        <h5 class="mb-2 fw-semibold category-title">
+                                            {{ $category->name }}
+                                        </h5>
+                                        <span class="numli small">
+                                            {{ $category->books_count }} 
+                                            livres disponibles
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Category Card -->
-                    <div class="col-md-6">
-                        <a href="#" class="text-decoration-none">
-                            <div class="category-card p-4 h-100">
-                                <div class="d-flex flex-column justify-content-center h-100">
-
-                                    <h5 class="mb-2 fw-semibold category-title">
-                                        Finance
-                                    </h5>
-
-                                    <span class="numli small">
-                                        18 livres disponibles
-                                    </span>
-
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Category Card -->
-                    <div class="col-md-6">
-                        <a href="#" class="text-decoration-none">
-                            <div class="category-card p-4 h-100">
-                                <div class="d-flex flex-column justify-content-center h-100">
-
-                                    <h5 class="mb-2 fw-semibold category-title">
-                                        État d'esprit
-                                    </h5>
-
-                                    <span class="numli small">
-                                        15 livres disponibles
-                                    </span>
-
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Category Card -->
-                    <div class="col-md-6">
-                        <a href="#" class="text-decoration-none">
-                            <div class="category-card p-4 h-100">
-                                <div class="d-flex flex-column justify-content-center h-100">
-
-                                    <h5 class="mb-2 fw-semibold category-title">
-                                        Histoire ancienne
-                                    </h5>
-
-                                    <span class="numli small">
-                                        12 livres disponibles
-                                    </span>
-
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Category Card -->
-                    <div class="col-md-6">
-                        <a href="#" class="text-decoration-none">
-                            <div class="category-card p-4 h-100">
-                                <div class="d-flex flex-column justify-content-center h-100">
-
-                                    <h5 class="mb-2 fw-semibold category-title">
-                                        Poésie
-                                    </h5>
-
-                                    <span class="numli small">
-                                        16 livres disponibles
-                                    </span>
-
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Category Card -->
-                    <div class="col-md-6">
-                        <a href="#" class="text-decoration-none">
-                            <div class="category-card p-4 h-100">
-                                <div class="d-flex flex-column justify-content-center h-100">
-
-                                    <h5 class="mb-2 fw-semibold category-title">
-                                        Science-fiction
-                                    </h5>
-
-                                    <span class="numli small">
-                                        13 livres disponibles
-                                    </span>
-
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
+                            </a>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 		</div>
@@ -829,8 +481,13 @@ Meilleurs livres START-->
                 </p>
 
                 <div class="stars">
+
                     ★★★★★
-                    <span>4.9 (2 548 avis)</span>
+
+                    <span>
+                        5
+                    </span>
+
                 </div>
 
                 <div class="featured-actions">
@@ -1051,8 +708,96 @@ Meilleurs livres START-->
 
         </div>
 
-    </div>
 
+        {{-- Code donnees reelles --}}
+        {{-- @if($bestRatedBook)
+
+            <!-- Featured Book -->
+            <div class="featured-book position-relative">
+
+                <div class="best-badge">
+                    Le mieux noté
+                </div>
+                <img src="{{ asset('storage/'.$bestRatedBook->cover_image) }}" 
+                    alt="{{ $bestRatedBook->title }}">
+
+                <div class="featured-content">
+                    <span class="featured-category">
+                        {{ $bestRatedBook->category->name ?? 'Catégorie' }}
+                    </span>
+                    <h3>
+                        {{ $bestRatedBook->title }}
+                    </h3>
+                    <p class="featured-author">
+                        Par 
+                        {{ $bestRatedBook->author->firstname ?? '' }}
+                        {{ $bestRatedBook->author->lastname ?? '' }}
+                    </p>
+
+                    <p class="featured-description">
+                        {{ Str::limit($bestRatedBook->short_description, 250) }}
+                    </p>
+
+                    <div class="stars">
+                        ★★★★★
+                        <span>
+                            {{ number_format($bestRatedBook->reviews_avg_rating ?? 0,1) }}
+                            ({{ $bestRatedBook->reviews_count ?? 0 }} avis)
+                        </span>
+                    </div>
+
+                    <div class="featured-actions">
+                        <a href="#" class="cart-btn">
+                            <i class="bi bi-cart"></i>
+                            Ajouter au panier
+                        </a>
+
+
+                        <button class="read-btn">
+                            Lire un extrait
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif --}}
+
+        <!-- Side Books -->
+        {{-- <div class="side-books">
+            @foreach($topRatedBooks as $book)
+                <div class="mini-book">
+                    <span class="book-category business">
+                        {{ $book->category->name ?? 'Livre' }}
+                    </span>
+
+                    <div class="mini-cover">
+                        <img src="{{ asset('storage/'.$book->cover_image) }}" 
+                            alt="{{ $book->title }}">
+                    </div>
+
+                    <div class="mini-content">
+                        <h4>
+                            {{ $book->title }}
+                        </h4>
+                        <p>
+                            Par 
+                            {{ $book->author->firstname ?? '' }}
+                            {{ $book->author->lastname ?? '' }}
+                        </p>
+                        <div class="mini-meta">
+                            <span class="mini-rating">
+                                ⭐ 
+                                {{ number_format($book->reviews_avg_rating ?? 0,1) }}
+                            </span>
+                            <a href="{{ route('books.show', $book) }}" 
+                            class="mini-action">
+                                Voir →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div> --}}
+    </div>
 </section>
 <!-- =======================
 Meilleurs livres END -->
@@ -1062,7 +807,6 @@ Meilleurs livres END -->
 Top Rated Books START
 ======================= -->
 <section class="top-rated">
-
     <div class="top-rated-header">
         <span class="subtitle section-subtitle">Les livres mieux notés</span>
         <h2 class="section-title">Les livres les <span>mieux notés</span></h2>
@@ -1205,6 +949,71 @@ Top Rated Books START
 
     </div>
 
+    {{-- Code donnees reel --}}
+    {{-- <div class="top-rated-grid">
+        @foreach($topRatedBooks as $book)
+            <div class="rated-card">
+
+                <div class="rated-cover">
+                    <img src="{{ asset('storage/'.$book->cover_image) }}" 
+                        alt="{{ $book->title }}">
+
+                    <div class="rating-badge">
+                        ⭐ {{ number_format($book->reviews_avg_rating ?? 0,1) }}
+                    </div>
+                </div>
+
+                <div class="rated-content">
+                    <h3>
+                        {{ $book->title }}
+                    </h3>
+                    <p>
+                        {{ $book->author->firstname ?? '' }}
+                        {{ $book->author->lastname ?? '' }}
+                    </p>
+
+                    <div class="stars">
+
+
+                        @php
+                            $rating = round($book->reviews_avg_rating ?? 0);
+                        @endphp
+
+
+                        @for($i = 1; $i <= 5; $i++)
+
+                            @if($i <= $rating)
+
+                                <i class="bi bi-star-fill"></i>
+
+                            @else
+
+                                <i class="bi bi-star"></i>
+
+                            @endif
+
+                        @endfor
+
+
+                    </div>
+
+
+
+                    <button class="rated-btn">
+
+                        <i class="bi bi-cart3"></i>
+
+                        Ajouter au panier
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+        @endforeach
+    </div> --}}
 </section>
 <!-- =======================
 Top Rated Books END
@@ -1215,10 +1024,8 @@ Top Rated Books END
 Best Sellers START
 ======================= -->
 <section class="best-sellers">
-
     <!-- HEADER -->
     <div class="best-sellers-header">
-
         <div>
             <span class="subtitle">
                 <i class="bi bi-graph-up-arrow"></i>
@@ -1358,6 +1165,74 @@ Best Sellers START
 
     </div>
 
+    {{-- Code donnees reelles --}}
+
+    {{-- <div class="best-sellers-scroll">
+        @foreach($bestSellingBooks as $index => $book)
+            <div class="seller-card">
+
+
+                <div class="seller-image">
+
+
+                    <img src="{{ asset('storage/'.$book->cover_image) }}" 
+                        alt="{{ $book->title }}">
+
+
+
+                    <div class="sales-badge">
+
+                        {{ number_format($book->sales_count) }} ventes
+
+                    </div>
+
+
+
+                    <div class="rank">
+
+                        #{{ $index + 1 }}
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="seller-content">
+
+
+                    <h3>
+                        {{ $book->title }}
+                    </h3>
+
+
+
+                    <p>
+
+                        {{ $book->author->firstname ?? '' }}
+                        {{ $book->author->lastname ?? '' }}
+
+                    </p>
+
+
+
+                    <button class="seller-btn">
+
+                        <i class="bi bi-cart3"></i>
+
+                        Acheter
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+        @endforeach
+    </div> --}}
+
 </section>
 <!-- =======================
 Best Sellers END
@@ -1445,6 +1320,108 @@ Testimonials START -->
 				</div>
 			</div>
 
+            {{-- Code donnees reelles --}}
+            {{-- <div class="row">
+                <div class="col-md-9 col-xl-7 mx-auto">
+                    <!-- Slider START -->
+                    <div class="tiny-slider dots-primary">
+
+                        <div class="tiny-slider-inner"
+                            data-autoplay="true"
+                            data-arrow="false"
+                            data-dots="true"
+                            data-edge="2"
+                            data-items="1">
+
+
+                            @foreach($latestReviews as $review)
+
+                            <!-- Slider item -->
+                            <div>
+
+                                <!-- Avatar -->
+                                <div class="avatar avatar-xl mb-4">
+
+                                    @if($review->user && $review->user->avatar)
+
+                                        <img class="avatar-img rounded-circle"
+                                            src="{{ asset('storage/'.$review->user->avatar) }}"
+                                            alt="avatar">
+
+                                    @else
+
+                                        <img class="avatar-img rounded-circle"
+                                            src="{{ asset('assets/images/avatar/01.jpg') }}"
+                                            alt="avatar">
+
+                                    @endif
+
+                                </div>
+
+
+                                <!-- Content -->
+                                <p class="h5 fw-light mb-3">
+                                    "{{ $review->comment }}"
+                                </p>
+
+
+                                <!-- Rating -->
+                                <ul class="list-inline small mb-3">
+
+                                    @for($i = 1; $i <= 5; $i++)
+
+                                        @if($i <= $review->rating)
+
+                                            <li class="list-inline-item me-0">
+                                                <i class="fa-solid fa-star text-warning"></i>
+                                            </li>
+
+                                        @elseif($i - $review->rating < 1)
+
+                                            <li class="list-inline-item">
+                                                <i class="fa-solid fa-star-half-alt text-warning"></i>
+                                            </li>
+
+                                        @else
+
+                                            <li class="list-inline-item">
+                                                <i class="fa-regular fa-star text-warning"></i>
+                                            </li>
+
+                                        @endif
+
+                                    @endfor
+
+                                </ul>
+
+
+
+                                <!-- User -->
+                                <h5 class="mb-0">
+
+                                    {{ $review->user->firstname ?? 'Lecteur' }}
+                                    {{ $review->user->lastname ?? '' }}
+
+                                </h5>
+
+
+                                <!-- Book -->
+                                <span>
+                                    {{ $review->book->title }}
+                                </span>
+
+
+                            </div>
+
+                            @endforeach
+
+
+                        </div>
+
+                    </div>
+                    <!-- Slider END -->
+                </div>
+            </div> --}}
 		</div>
 	</div>
 </section>
@@ -1525,6 +1502,39 @@ Authors START
         </div>
 
     </div>
+
+    {{-- Code donnees reelles --}}
+    {{-- <div class="authors-grid">
+        @foreach($topAuthors as $author)
+            <div class="author-card">
+                <div class="author-flag">
+                    🌍
+                </div>
+                <div class="author-img">
+                    @if($author->avatar)
+                        <img src="{{ asset('storage/'.$author->avatar) }}"
+                            alt="{{ $author->firstname }}">
+                    @else
+
+                        <img src="{{ asset('assets/images/avatar/01.jpg') }}"
+                            alt="author">
+                    @endif
+                </div>
+
+                <div class="author-info">
+                    <h3>
+                        {{ $author->firstname }}
+                        {{ $author->lastname }}
+                    </h3>
+
+                    <p>
+                        {{ number_format($author->sales_count) }}
+                        ventes réalisées
+                    </p>
+                </div>
+            </div>
+        @endforeach
+    </div> --}}
 
 </section>
 <!-- =======================

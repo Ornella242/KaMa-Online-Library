@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-
+@php
+    $readOnlyReview = $book->status === 'under_review';
+@endphp
 <!-- =======================
 Page Banner START -->
 <section class="book-create-hero">
@@ -14,9 +16,9 @@ Page Banner START -->
                     <i class="bi bi-book me-2"></i>
                     Modification d'un livre existant
                 </span>
-                <h3 class="display-6 fw-bold mb-3">
+                <h5 class="display-6 fw-bold mb-3">
                     Modifier le livre  <span class="text-red"> {{ $book->title }} </span>
-                </h3>
+                </h5>
             </div>
         </div>
     </div>
@@ -90,6 +92,15 @@ Steps START -->
 					</div>
 			@endif
 
+			@if($readOnlyReview)
+				<div class="alert alert-warning">
+					<i class="bi bi-hourglass-split me-2"></i>
+					Ce livre est actuellement en cours de vérification.
+					Vous pouvez uniquement modifier la catégorie, la sous-catégorie, la langue,
+					l'année de publication, le prix et le résumé, et le type d'affichage (Extrait ou pages du livre).
+				</div>
+			@endif
+
 			<!-- Step content START -->
 			<div class="bs-stepper-content p-0 pt-4 pt-md-5">
 				<div class="row g-4">
@@ -156,7 +167,8 @@ Steps START -->
                                                                 id="coverImageInput"
                                                                 name="cover_image"
                                                                 hidden
-                                                                accept="image/png,image/jpeg">
+                                                                accept="image/png,image/jpeg"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
                                                         </label>
 
@@ -180,7 +192,8 @@ Steps START -->
 																type="text"
 																name="title"
 																class="form-control book-input"
-																value="{{ old('title',$book->title) }}">
+																value="{{ old('title',$book->title) }}"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														</div>
 
@@ -211,7 +224,8 @@ Steps START -->
 																		type="radio"
 																		name="type"
 																		value="ebook"
-																		{{ old('type',$book->type)=='ebook' ? 'checked' : '' }}>
+																		{{ old('type',$book->type)=='ebook' ? 'checked' : '' }}
+																		{{ $readOnlyReview ? 'disabled' : '' }}>
 																	<div>
 
 																		<i class="bi bi-file-earmark-text"></i>
@@ -234,7 +248,8 @@ Steps START -->
 																		type="radio"
 																		name="type"
 																		value="audio"
-                                                                        {{ old('type',$book->type)=='audio' ? 'checked' : '' }}>
+                                                                        {{ old('type',$book->type)=='audio' ? 'checked' : '' }}
+																		{{ $readOnlyReview ? 'disabled' : '' }}>
 																	<div>
 
 																		<i class="bi bi-headphones"></i>
@@ -323,7 +338,8 @@ Steps START -->
 																id="pagesInput"
                                                                 value="{{ old('pages', $book->pages) }}"
 																class="form-control book-input"
-																placeholder="Ex: 120">
+																placeholder="Ex: 120"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														</div>
 
@@ -340,7 +356,8 @@ Steps START -->
 																id="durationInput"
                                                                 value="{{ old('duration', $book->duration) }}"
 																class="form-control book-input"
-																placeholder="Ex: 02:35:00">
+																placeholder="Ex: 02:35:00"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 															<small class="text-muted">
 																Format recommandé : heures:minutes:secondes
@@ -469,18 +486,48 @@ Steps START -->
 												</div>
 
 												<!-- FULL DESCRIPTION -->
-												<div class="col-12">
+												@if($book->type == 'ebook')
+													<div class="col-12">
+
+														<label class="form-label">
+															Type d'aperçu
+														</label>
+
+														<select 
+															name="preview_type"
+															id="previewType"
+															class="form-select">
+
+															<option value="text"
+																{{ $book->preview_type == 'text' ? 'selected' : '' }}>
+																Extrait texte
+															</option>
+
+															<option value="pages"
+																{{ $book->preview_type == 'pages' ? 'selected' : '' }}>
+																Pages du livre
+															</option>
+
+														</select>
+
+													</div>
+												@endif
+												<div class="col-12 {{ $book->preview_type == 'pages' ? 'd-none' : '' }}"
+													id="textPreview">
+
 													<label class="form-label">
-														Description complète *
+														Extrait / Morceau *
 													</label>
 
-													<!-- Quill Toolbar -->
+
 													<div class="bg-light border border-bottom-0 rounded-top py-3 quilltoolbar">
+
 														<span class="ql-formats">
 															<button class="ql-bold"></button>
 															<button class="ql-italic"></button>
 															<button class="ql-underline"></button>
 														</span>
+
 														<span class="ql-formats">
 															<button class="ql-list" value="ordered"></button>
 															<button class="ql-list" value="bullet"></button>
@@ -489,17 +536,71 @@ Steps START -->
 														<span class="ql-formats">
 															<button class="ql-link"></button>
 														</span>
+
 													</div>
 
-													<!-- Quill Editor -->
+
 													<div class="bg-white border rounded-bottom h-300px quilleditor">
+														{!! $book->long_description !!}
 													</div>
-													<input 
+
+
+													<input
 														type="hidden"
 														name="long_description"
-                                                        value="{{ old('long_description', $book->long_description) }}"
-														id="long_description">
+														id="long_description"
+														value="{{ old('long_description', $book->long_description) }}">
+
 												</div>
+
+												<div class="col-12 {{ $book->preview_type == 'text' ? 'd-none' : '' }}"
+													id="pagesPreview">
+
+													<div class="row">
+
+														<div class="col-md-6">
+
+															<label class="form-label">
+																Première page
+															</label>
+
+															<input
+																type="number"
+																name="preview_start_page"
+																min="1"
+																class="form-control"
+																value="{{ old('preview_start_page', $book->preview_start_page) }}"
+																>
+
+														</div>
+
+
+														<div class="col-md-6">
+
+															<label class="form-label">
+																Dernière page
+															</label>
+
+															<input
+																type="number"
+																name="preview_end_page"
+																min="1"
+																class="form-control"
+																value="{{ old('preview_end_page', $book->preview_end_page) }}"
+																>
+
+														</div>
+
+													</div>
+
+
+													<small class="text-black">
+														Vous pouvez sélectionner au maximum 5 pages consécutives.
+													</small>
+
+												</div>
+
+
 											</div>
 										</div>
 									</div>
@@ -549,7 +650,8 @@ Steps START -->
 															id="bookFileInput"
 															name="ebook_file"
 															class="form-control mt-3"
-															accept=".pdf">
+															accept=".pdf"
+															{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														<div class="upload-info mt-3">
 
@@ -935,4 +1037,110 @@ Steps START -->
 	</div>
 <!-- =======================
 Steps END -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gestion preview type
+    |--------------------------------------------------------------------------
+    */
+
+    const previewType = document.getElementById('previewType');
+
+    const textPreview = document.getElementById('textPreview');
+
+    const pagesPreview = document.getElementById('pagesPreview');
+
+
+    function togglePreviewType() {
+
+
+        if (previewType.value === 'text') {
+
+
+            textPreview.classList.remove('d-none');
+
+            pagesPreview.classList.add('d-none');
+
+
+        } else {
+
+
+            textPreview.classList.add('d-none');
+
+            pagesPreview.classList.remove('d-none');
+
+
+        }
+
+    }
+
+
+    previewType.addEventListener(
+        'change',
+        togglePreviewType
+    );
+
+
+    // Initialisation selon la valeur existante
+    togglePreviewType();
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Initialisation Quill
+    |--------------------------------------------------------------------------
+    */
+
+
+    const editor = document.querySelector('.quilleditor');
+
+    const hiddenDescription = document.getElementById('long_description');
+
+
+    if(editor && hiddenDescription){
+
+
+        const quill = new Quill(editor, {
+
+            theme: 'snow',
+
+            modules: {
+
+                toolbar: '.quilltoolbar'
+
+            }
+
+        });
+
+
+
+        // Charger l'ancienne description
+        quill.root.innerHTML = `{!! addslashes($book->long_description ?? '') !!}`;
+
+
+
+        // Synchroniser Quill avec le formulaire
+
+        quill.on('text-change', function () {
+
+
+            hiddenDescription.value = quill.root.innerHTML;
+
+
+        });
+
+
+    }
+
+
+
+});
+
+</script>
 @endsection

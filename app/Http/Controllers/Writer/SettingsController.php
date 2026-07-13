@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NotificationSetting;
 use Illuminate\Http\Request;
 use App\Models\SocialProfile;
+use App\Models\Country;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -21,8 +22,10 @@ class SettingsController extends Controller
         'user_id' => Auth::id(),
         'role' => Auth::user()->role->name,
     ]);
+    $countries = Country::orderBy('name')->get();
 
-    return view('writer.settings', compact('social', 'settings'));
+
+    return view('writer.settings', compact('social', 'settings','countries'));
     }
 }
 

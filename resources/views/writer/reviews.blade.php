@@ -166,7 +166,7 @@
 
             <!-- BODY -->
             <div class="card-body p-4">
-                {{-- @php
+                @php
 
                     $reviews = collect([
 
@@ -231,7 +231,7 @@
 
                     ]);
 
-                @endphp --}}
+                @endphp
                 @forelse($reviews as $review)
                     <div class="review-box mb-4">
                         <!-- TOP -->
@@ -310,7 +310,7 @@
 
             <!-- FOOTER -->
             <div class="card-footer bg-white border-top p-4">
-                {{ $reviews->links() }}
+                {{-- {{ $reviews->links() }} --}}
             </div>
 
 
