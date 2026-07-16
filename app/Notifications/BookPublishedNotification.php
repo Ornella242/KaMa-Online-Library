@@ -11,12 +11,14 @@ class BookPublishedNotification extends Notification
 {
     use Queueable;
 
+    public $book;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($book)
     {
-        //
+        $this->book = $book;
     }
 
     /**
@@ -26,7 +28,10 @@ class BookPublishedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return [
+            'database',
+            'mail'
+        ];
     }
 
     /**
@@ -35,10 +40,39 @@ class BookPublishedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+
+            ->subject('Votre livre est publié sur KaMa')
+            ->greeting('Bonjour '.$notifiable->firstname)
+            ->line(
+                'Votre livre "'.$this->book->title.'" a été validé et publié sur KaMa.'
+            )
+            ->action(
+                'Voir mon livre',
+                route('books.show',$this->book)
+            )
+            ->line(
+                'Merci de contribuer à la bibliothèque KaMa.'
+            );
     }
+
+    public function toDatabase($notifiable)
+    {
+
+        return [
+
+            'title'=>'Livre publié',
+
+            'message'=>
+                'Votre livre "'.$this->book->title.'" est maintenant disponible sur KaMa.',
+
+            'book_id'=>$this->book->id,
+
+            'type'=>'book_published'
+
+        ];
+
+    }
+
 
     /**
      * Get the array representation of the notification.

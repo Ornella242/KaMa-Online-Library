@@ -14,6 +14,9 @@ use App\Models\Subcategory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use App\Notifications\BookUnderReviewNotification;
+use App\Notifications\BookPublishedNotification;
+use App\Notifications\BookRejectedNotification;
+use App\Notifications\BookRevisionRequiredNotification;
 use Imagick;
 
 class BooksController extends Controller
@@ -1098,8 +1101,6 @@ class BooksController extends Controller
         ->whereYear('updated_at', $year)
         ->count();
 
-
-
         return view(
             'admin.books.editorial-queue',
             compact(
@@ -1109,6 +1110,51 @@ class BooksController extends Controller
                 'publishedBooks',
                 'rejectedBooks'
             )
+        );
+    }
+
+    public function publish(Book $book)
+    {
+        if($book->status !== 'under_review'){
+            return back()->with(
+                'error',
+                'Ce livre ne peut pas être publié actuellement.'
+            );
+        }
+
+        $book->update([
+            'status'=>'published'
+        ]);
+
+        // Notification auteur
+        $book->author->notify(
+            new BookPublishedNotification($book)
+        );
+
+        return back()->with(
+            'success',
+            'Le livre a été publié avec succès et mail envoyé avec succès a l\'écrivain.'
+        );
+    }
+
+    public function reject(Request $request, Book $book)
+    {
+        $request->validate([
+            'reason'=>'required|string|max:1000'
+        ]);
+
+        $book->update([
+            'status'=>'revision_required',
+            'rejection_reason'=>$request->reason
+        ]);
+
+        $book->author->notify(
+            new BookRevisionRequiredNotification($book)
+        );
+
+        return back()->with(
+            'success',
+            'Le livre a été retourné à l’auteur pour correction.'
         );
     }
 }

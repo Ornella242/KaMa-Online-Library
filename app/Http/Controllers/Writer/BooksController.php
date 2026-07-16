@@ -13,6 +13,8 @@ use App\Models\Subcategory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Imagick;
+use App\Models\User;
+use App\Notifications\BookResubmittedNotification;
 
 
 
@@ -95,7 +97,7 @@ class BooksController extends Controller
 
 
         $books = $query
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return view(
@@ -320,7 +322,8 @@ class BooksController extends Controller
 
     public function update(Request $request, Book $book)
     {
-       if ($book->status === 'waiting_review' || $book->status === 'under_review') {
+        if ($book->status === 'waiting_review' || $book->status === 'under_review') 
+        {
 
             $request->validate([
 
@@ -499,7 +502,7 @@ class BooksController extends Controller
                 );
         }
 
-
+        
         // Code book status draft
         $request->validate([
 
@@ -738,6 +741,35 @@ class BooksController extends Controller
             ->with(
                 'success',
                 'Livre modifié avec succès.'
+            );
+    }
+
+    public function resubmit(Book $book)
+    {
+        if($book->status !== 'revision_required'){
+            abort(403);
+        }
+
+        $book->update([
+            'status' => 'waiting_review',
+            'rejection_reason' => null
+        ]);
+
+        $admins = User::whereHas('role', function($query){
+            $query->where('name','admin');
+        })->get();
+
+        foreach($admins as $admin){
+            $admin->notify(
+                new BookResubmittedNotification($book)
+            );
+        }
+
+        return redirect()
+            ->route('writer.books')
+            ->with(
+                'success',
+                'Votre livre a été renvoyé pour validation éditoriale.'
             );
     }
 

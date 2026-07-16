@@ -1,20 +1,15 @@
 @extends('layouts.writer')
 
 @section('writer-content')
-    <div class="container">
+    <div class="container-fluid">
         <!-- PAGE HEADER START -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
+            <div class="mt-4">
                  <div class="row">
                 <div class="col-12">
                     <h1 class="fs-4 mb-0"><i class="bi bi-wallet2 fa-fw me-1"></i>Revenus</h1>
                 </div>
             </div>	
-
-                <p class="text-black mb-0">
-                    Suivez les performances financières de vos ouvrages KaMa.
-                </p>
-
             </div>
         </div>
         <!-- PAGE HEADER END -->

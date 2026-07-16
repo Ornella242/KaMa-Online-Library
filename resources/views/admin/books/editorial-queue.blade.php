@@ -122,11 +122,8 @@
     <!-- Rejetes -->
     <div class="col-md-6 col-xl-4">
         <div class="card card-body shadow p-4">
-
             <div class="d-flex justify-content-between align-items-center">
-
                 <div>
-
                     <span class="fw-semibold text-white">
                         Rejetés ce mois
                     </span>
@@ -134,27 +131,22 @@
                     <h3 class="mb-0 mt-2">
                         {{ $rejectedBooks }}
                     </h3>
-
                 </div>
-
 
                 <div class="icon-lg rounded-circle flex-shrink-0 bg-danger bg-opacity-10 text-danger">
-
                     <i class="bi bi-x-circle"></i>
-
                 </div>
-
             </div>
-
         </div>
     </div>
-
 </div>
 
 
+   @if($books->count())
+
     <div class="editorial-grid">
 
-        @forelse($books as $book)
+        @foreach($books as $book)
 
         <div class="editorial-card">
 
@@ -177,11 +169,11 @@
                     {{ $book->title }}
                 </h4>
 
+
                 <p class="editorial-author">
                     <i class="bi bi-person"></i>
                     {{ $book->author->firstname }}
                     {{ $book->author->lastname }}
-
                 </p>
 
 
@@ -196,16 +188,16 @@
                     </a>
 
 
-                    <form
-                    action=""
-                    method="POST">
+                    <form 
+                    action="{{ route('admin.books.publish',$book) }}" 
+                    method="POST"
+                    onsubmit="return confirm('Publier ce livre sur KaMa ?')">
 
                         @csrf
 
                         <button class="btn-publish">
 
                             <i class="bi bi-check2-circle"></i>
-
                             Publier
 
                         </button>
@@ -219,7 +211,6 @@
                     data-bs-target="#rejectBook{{ $book->id }}">
 
                         <i class="bi bi-x-circle"></i>
-
                         Rejeter
 
                     </button>
@@ -236,6 +227,7 @@
         <div class="offcanvas offcanvas-end category-offcanvas"
         tabindex="-1"
         id="rejectBook{{ $book->id }}">
+
             <div class="offcanvas-header">
 
                 <h5>
@@ -255,7 +247,7 @@
 
                 <form
                 method="POST"
-                action="">
+                action="{{ route('admin.books.reject',$book) }}">
 
                     @csrf
 
@@ -264,6 +256,7 @@
                         <label class="form-label">
                             Motif du rejet
                         </label>
+
 
                         <textarea
                         class="form-control"
@@ -289,12 +282,19 @@
         </div>
 
 
-        @empty
+        @endforeach
+
+    </div>
 
 
+@else
+
+
+    <div class="editorial-empty-wrapper">
         <div class="editorial-empty">
-
-            <i class="bi bi-check-circle"></i>
+            <div class="empty-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
 
             <h4>
                 Aucun livre en attente
@@ -302,15 +302,11 @@
 
             <p>
                 Tous les livres soumis ont été traités.
+                La file éditoriale est à jour.
             </p>
-
         </div>
-
-
-        @endforelse
-
     </div>
-
+@endif
 
 </div>
 @endsection

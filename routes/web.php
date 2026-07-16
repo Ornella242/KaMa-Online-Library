@@ -20,6 +20,7 @@ use App\Http\Controllers\Writer\RevenueController as WriterRevenuesController;
 use App\Http\Controllers\Writer\ActivityController as WriterActivityController;
 use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\NotificationSettingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SocialProfileController;
@@ -207,6 +208,13 @@ Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function (
             [SponsorshipController::class, 'payment'])
         ->name('writer.sponsorship.payment');
 
+        Route::post(
+            '/books/{book}/resubmit',
+            [BooksController::class,'resubmit']
+        )
+        ->name('writer.books.resubmit');
+
+
 });
 
 Route::get('/writer/categories/{category}/subcategories',
@@ -303,8 +311,11 @@ Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->gr
         Route::post('/books/{book}/boost/share',[AdminBooksController::class,'shareBook'])
            ->name('books.boost.share');
 
-       
+        Route::post('/books/{book}/publish',[AdminBooksController::class,'publish'])
+            ->name('books.publish');
 
+        Route::post('/books/{book}/reject',[AdminBooksController::class,'reject'])
+           ->name('books.reject');
 
 });
 
@@ -326,3 +337,13 @@ Route::put('/admin/account', [UserController::class, 'updateProfile'])
 Route::get('/admin/users', [UserController::class, 'index'])
     ->middleware('auth')
     ->name('admin.users');
+
+
+    // routes communes
+    Route::middleware('auth')->group(function(){
+
+    Route::delete('/notifications/clear',
+        [NotificationController::class,'clear']
+    )->name('notifications.clear');
+
+});

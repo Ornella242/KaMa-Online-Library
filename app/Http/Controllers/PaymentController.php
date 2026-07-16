@@ -35,12 +35,9 @@ class PaymentController extends Controller
 
         // Notification
         $admins = User::whereHas('role', function($query){
-
             $query->where('name','Admin');
-
         })->get();
 
-        
         foreach($admins as $admin){
 
             $admin->notify(

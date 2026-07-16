@@ -12,14 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->enum('status', [
+             $table->enum('status', [
             'draft',
             'pending_payment',
             'under_review',
             'waiting_review',
             'published',
             'unpublished',
-        ])->default('draft')->change();
+            'rejected'
+           ])->default('draft')->change();
         });
     }
 

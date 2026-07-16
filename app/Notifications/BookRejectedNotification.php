@@ -10,13 +10,14 @@ use Illuminate\Notifications\Notification;
 class BookRejectedNotification extends Notification
 {
     use Queueable;
+    public $book;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($book)
     {
-        //
+        $this->book = $book;
     }
 
     /**
@@ -26,7 +27,10 @@ class BookRejectedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+         return [
+            'database',
+            'mail'
+        ];
     }
 
     /**
@@ -34,10 +38,43 @@ class BookRejectedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+         return (new MailMessage)
+            ->subject('Votre livre nécessite des modifications')
+            ->greeting('Bonjour '.$notifiable->firstname)
+            ->line(
+                'Votre livre "'.$this->book->title.'" n’a pas été accepté après vérification éditoriale.'
+            )
+            ->line(
+                'Motif du rejet :'
+            )
+            ->line(
+                $this->book->rejection_reason
+            )
+            ->action(
+                'Modifier mon livre',
+                route('writer.books.edit',$this->book)
+            );
+
+    }
+
+     public function toDatabase($notifiable)
+    {
+
+        return [
+
+            'title'=>'Livre rejeté',
+
+            'message'=>
+            'Votre livre "'.$this->book->title.'" a été rejeté.',
+
+            'reason'=>$this->book->rejection_reason,
+
+            'book_id'=>$this->book->id,
+
+            'type'=>'book_rejected'
+
+        ];
+
     }
 
     /**

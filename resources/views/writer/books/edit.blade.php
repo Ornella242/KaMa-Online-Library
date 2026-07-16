@@ -101,6 +101,23 @@ Steps START -->
 				</div>
 			@endif
 
+			@if($book->status == 'revision_required')
+
+				<div class="alert alert-warning">
+
+					<h6>
+						<i class="bi bi-exclamation-triangle"></i>
+						Corrections demandées par l'équipe éditoriale
+					</h6>
+
+					<p class="mb-0">
+						{{ $book->rejection_reason }}
+					</p>
+
+				</div>
+
+			@endif
+
 			<!-- Step content START -->
 			<div class="bs-stepper-content p-0 pt-4 pt-md-5">
 				<div class="row g-4">
@@ -895,111 +912,112 @@ Steps START -->
 
 									<!-- BOOK PREVIEW END -->
 
-									<!-- STATUS START -->
+									@if (!in_array($book->status, ['under_review', 'revision_required']))
+										<!-- STATUS START -->
 
-									<div class="status-card">
-										<div class="status-icon">
-											<i class="bi bi-hourglass-split"></i>
-										</div>
+										<div class="status-card">
+											<div class="status-icon">
+												<i class="bi bi-hourglass-split"></i>
+											</div>
 
-										<div>
-											<h5>
-												Statut : En attente de paiement
-											</h5>
+											<div>
+												<h5>
+													Statut : En attente de paiement
+												</h5>
 
-											<p>
+												<p>
 
-												Votre livre sera enregistré dans la base de données KaMa.
-												Il restera invisible au public jusqu'au paiement des frais
-												de dépôt et sera ensuite soumis au processus de publication.
+													Votre livre sera enregistré dans la base de données KaMa.
+													Il restera invisible au public jusqu'au paiement des frais
+													de dépôt et sera ensuite soumis au processus de publication.
 
-											</p>
-										</div>
-
-
-									</div>
-
-									<!-- STATUS END -->
-
-									<!-- DEPOSIT START -->
-
-									<div class="deposit-card">
-										<div class="deposit-left">
-
-
-											<h4>
-
-												Frais de dépôt KaMa
-
-											</h4>
-
-
-
-											<p>
-												Ces frais couvrent la préparation et la mise en ligne
-												de votre ouvrage sur la plateforme.
-
-											</p>
-
-
-
-											<ul>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Vérification éditoriale
-												</li>
-
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Contrôle qualité du fichier
-												</li>
-
-
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Référencement dans la bibliothèque KaMa
-												</li>
-
-
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Publication officielle après paiement
-												</li>
-
-
-											</ul>
+												</p>
+											</div>
 
 
 										</div>
 
-										<div class="deposit-right">
+										<!-- STATUS END -->
+
+										<!-- DEPOSIT START -->
+
+										<div class="deposit-card">
+											<div class="deposit-left">
 
 
-											<span>
-												Montant du dépôt
-											</span>
+												<h4>
 
+													Frais de dépôt KaMa
 
-											<h1>
-												25 $
-											</h1>
+												</h4>
 
 
 
-											<small>
-												Le paiement sera effectué après l'enregistrement.
-											</small>
+												<p>
+													Ces frais couvrent la préparation et la mise en ligne
+													de votre ouvrage sur la plateforme.
+
+												</p>
 
 
+
+												<ul>
+
+													<li>
+														<i class="bi bi-check-circle-fill"></i>
+														Vérification éditoriale
+													</li>
+
+
+													<li>
+														<i class="bi bi-check-circle-fill"></i>
+														Contrôle qualité du fichier
+													</li>
+
+
+
+													<li>
+														<i class="bi bi-check-circle-fill"></i>
+														Référencement dans la bibliothèque KaMa
+													</li>
+
+
+
+													<li>
+														<i class="bi bi-check-circle-fill"></i>
+														Publication officielle après paiement
+													</li>
+
+
+												</ul>
+
+
+											</div>
+
+											<div class="deposit-right">
+
+
+												<span>
+													Montant du dépôt
+												</span>
+
+
+												<h1>
+													25 $
+												</h1>
+
+
+
+												<small>
+													Le paiement sera effectué après l'enregistrement.
+												</small>
+
+
+											</div>
 										</div>
-									</div>
 
-									<!-- DEPOSIT END -->
-
+										<!-- DEPOSIT END -->
+									@endif
 
 									<!-- BUTTONS -->
 									<div class="d-flex justify-content-between">
@@ -1008,17 +1026,14 @@ Steps START -->
 										<button
 											type="button"
 											class="btn btn-light prev-btn">
-
 											<i class="bi bi-arrow-left me-2"></i>
-
-											Retour
 										</button>
 
 										<button
 											type="submit"
 											class="btn btn-danger btn-lg px-5">
 											<i class="bi bi-cloud-check me-2"></i>
-											Modifier mon livre
+												Modifier
 										</button>
 									</div>
 								</div>

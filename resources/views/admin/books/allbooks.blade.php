@@ -215,6 +215,8 @@
                     @elseif($book->status == 'draft')
                         Brouillon
 
+                    @elseif($book->status == 'revision_required')
+                        Modifications requises
                     @endif
 
                 </span>

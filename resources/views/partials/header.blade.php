@@ -68,13 +68,111 @@
 				<ul class="navbar-nav align-items-center ms-auto">
 					@auth
 					<!-- Notification -->
-					<li class="nav-item me-3">
-						<a href="#" class="kama-icon">
-							<i class="bi bi-bell"></i>
-						</a>
-					</li>
+						@php
+							$notifications = auth()->user()
+								->unreadNotifications()
+								->latest()
+								->take(5)
+								->get();
 
-					<!-- USER -->
+						@endphp
+						<ul class="navbar-nav flex-row align-items-center gap-3 navbar-user-actions">
+							<li class="nav-item dropdown ">
+							<!-- Notification button -->
+							<a class="nav-notification btn btn-light p-0 mb-0" href="admin-dashboard.html#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+								<i class="bi bi-bell fa-fw"></i>
+							</a>
+							<!-- Notification dote -->
+							@if($notifications->count() > 0)
+								<span class="notif-badge animation-blink"></span>
+							@endif
+		
+							<!-- Notification dropdown menu START -->
+							<div class="dropdown-menu dropdown-animation dropdown-menu-end dropdown-menu-size-md shadow-lg p-0">
+								<div class="card bg-transparent">
+									<!-- Card header -->
+									<div class="card-header bg-transparent d-flex justify-content-between align-items-center border-bottom">
+										<h6 class="m-0"> Notifications
+											@if($notifications->count())
+
+											<span class="badge bg-danger bg-opacity-10 text-danger ms-2">
+
+											{{ $notifications->count() }}
+
+											</span>
+
+											@endif
+										</h6>
+										<form action="{{ route('notifications.clear') }}"
+											method="POST">
+
+											@csrf
+											@method('DELETE')
+
+											<button type="submit"
+													class="btn text-red p-0 small">
+												Clear all
+											</button>
+
+										</form>
+									</div>
+		
+									<!-- Card body START -->
+									<div class="card-body p-0">
+										<ul class="list-group list-group-flush list-unstyled p-2">
+											@forelse($notifications as $notification)
+												<li>
+													<a href="{{ $notification->data['url'] ?? '#' }}"
+													class="list-group-item list-group-item-action rounded notif-unread border-0 mb-1 p-3">
+
+													<h6 class="mb-2">{{ $notification->data['title'] ?? 'Notification' }}</h6>
+
+														<p class="mb-0 small">
+
+														{{ $notification->data['message'] ?? 'Message' }}
+
+														</p>
+
+
+														<span>
+
+														{{ $notification->created_at->diffForHumans() }}
+
+														</span>
+
+
+													</a>
+
+												</li>
+											@empty
+
+											<li class="text-center p-4">
+
+												<i class="bi bi-bell-slash fs-4"></i>
+
+												<p class="mb-0 mt-2">
+
+												Aucune notification
+
+												</p>
+
+											</li>
+
+											@endforelse
+										</ul>
+									</div>
+									<!-- Card body END -->
+		
+									<!-- Card footer -->
+									<div class="card-footer bg-transparent text-center border-top">
+										<a href="admin-dashboard.html#" class="btn btn-sm text-red mb-0 p-0">Voir toutes les activités</a>
+									</div>
+								</div>
+							</div>
+							<!-- Notification dropdown menu END -->
+						</li>
+
+					    <!-- USER -->
 
 						@if (Auth::check())
 						<!-- Profile dropdown START -->
@@ -161,6 +259,8 @@
 								Inscription
 							</a>
 						</li>
+						</ul>
+					
 					@endauth
 				</ul>
 			</div>

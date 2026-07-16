@@ -1,7 +1,7 @@
 @extends('layouts.writer')
 
 @section('writer-content')
-    <div class="container">
+    <div class="container-fluid mt-4">
     <div class="row g-4 mb-4">
 
         <div class="col-md-3">

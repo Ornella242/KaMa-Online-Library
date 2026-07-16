@@ -325,27 +325,12 @@
 					<!-- Toggler for sidebar END -->
 					
 					<!-- Top bar left -->
-					<div class="navbar-expand-lg ms-auto ms-xl-0">
-						<!-- Toggler for menubar START -->
-						<button class="navbar-toggler ms-auto p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTopContent" aria-controls="navbarTopContent" aria-expanded="false" aria-label="Toggle navigation">
-							<i class="bi bi-search"></i>
-						</button>
-						<!-- Toggler for menubar END -->
-	
-						<!-- Topbar menu START -->
-						<div class="collapse navbar-collapse w-100 z-index-1" id="navbarTopContent">
-							<!-- Top search START -->
-							<div class="nav my-3 my-xl-0 flex-nowrap align-items-center">
-								<div class="nav-item w-100">
-									<form class="position-relative">
-										<input class="form-control bg-light pe-5" type="search" placeholder="Search" aria-label="Search">
-										<button class="bg-transparent px-2 py-0 border-0 position-absolute top-50 end-0 translate-middle-y" type="submit"><i class="fas fa-search fs-6 text-primary"></i></button>
-									</form>
-								</div>
-							</div>
-							<!-- Top search END -->
-						</div>
-						<!-- Topbar menu END -->
+					<div class="kama-navbar-welcome">
+
+						<h5 class="welcome-badge">
+							Centre d'administration KaMa
+						</h5>
+
 					</div>
 					<!-- Top bar left END -->
 					
@@ -394,7 +379,8 @@
 						</li>
 						<!-- Dark mode options END-->
 
-						<!-- Notification dropdown START -->
+						<ul class="navbar-nav flex-row align-items-center gap-3 navbar-user-actions">
+							<!-- Notification dropdown START -->
 						@php
 							$notifications = auth()->user()
 								->unreadNotifications()
@@ -429,7 +415,18 @@
 
 											@endif
 										</h6>
-										<a class="small" href="admin-dashboard.html#">Clear all</a>
+										<form action="{{ route('notifications.clear') }}"
+											method="POST">
+
+											@csrf
+											@method('DELETE')
+
+											<button type="submit"
+													class="btn text-red p-0 small">
+												Clear all
+											</button>
+
+										</form>
 									</div>
 		
 									<!-- Card body START -->
@@ -480,7 +477,7 @@
 		
 									<!-- Card footer -->
 									<div class="card-footer bg-transparent text-center border-top">
-										<a href="admin-dashboard.html#" class="btn btn-sm btn-link mb-0 p-0">See all incoming activity</a>
+										<a href="admin-dashboard.html#" class="btn btn-sm text-red mb-0 p-0">Voir toutes les activités</a>
 									</div>
 								</div>
 							</div>
@@ -520,6 +517,8 @@
 							</ul>
 						</li>
 						<!-- Profile dropdown END -->
+						</ul>
+						
 					</ul>
 					<!-- Top bar right END -->
 				</div>

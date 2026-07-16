@@ -2,8 +2,8 @@
 
 @section('writer-content')
 
-<section class="pt-0">
-	<div class="container vstack gap-4">
+<section class="pt-4">
+	<div class="container-fluid vstack gap-4">
 		<!-- Title START -->
 		<div class="row">
 			<div class="col-12">
