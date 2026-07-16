@@ -34,7 +34,7 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header border-bottom kama-card-header">
                     <h5 class="mb-0 d-flex align-items-center gap-2">
-                        <span class="section-icon profile">
+                        <span class="section-icon">
                             <i class="bi bi-person-vcard"></i>
                         </span>
                        Modification des coordonnées {{ $user->firstname }} {{ $user->lastname }}
@@ -81,7 +81,7 @@
                             </div>
 
                             <!-- Phone -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">
                                     <i class="bi bi-telephone-fill text-success me-1"></i>
                                     Téléphone
@@ -90,17 +90,46 @@
                             </div>
 
                             <!-- Country -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">
                                     <i class="bi bi-globe text-warning me-1"></i>
                                     Pays
                                 </label>
 
-                                <input type="text" class="form-control" name="country" value="{{ $user->country }}">
+                                <select 
+                                    name="country_id"
+                                    class="form-select rounded-3 shadow-sm"
+                                    required>
+
+                                    <option value="">
+                                        Sélectionnez votre pays
+                                    </option>
+
+                                    @foreach($countries as $country)
+
+                                        <option 
+                                            value="{{ $country->id }}"
+                                            {{ old('country_id', Auth::user()->country_id) == $country->id ? 'selected' : '' }}>
+
+                                            {{ $country->flag }} {{ $country->name }}
+
+                                        </option>
+
+                                    @endforeach
+
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="bi bi-globe text-success me-1"></i>
+                                    Ville
+                                </label>
+                                <input type="text" class="form-control" name="city" value="{{ $user->city }}">
                             </div>
 
                             <!-- Gender -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">
                                     <i class="bi bi-gender-ambiguous text-info me-1"></i>
                                     Genre

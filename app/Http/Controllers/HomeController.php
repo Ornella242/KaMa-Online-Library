@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Advertisement;
+use App\Models\BookSponsorship;
 use App\Models\User;
 use App\Models\Review;
 use App\Models\Category;
@@ -12,12 +13,11 @@ use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-     public function index()
+      public function index()
     {
-        $totalBooks = Book::query()
-                    ->count('*');
+        $totalBooks = Book::published()->count();
 
-        $books = Book::with(['author', 'category'])
+        $books = Book::published()->with(['author', 'category'])
             ->latest()
             ->take(6)
             ->get();
@@ -27,17 +27,16 @@ class HomeController extends Controller
         ->take(6)
         ->get();
 
-        $sponsoredBooks = Advertisement::with([
+
+        $sponsoredBooks = BookSponsorship::with([
             'book.author'
         ])
-        ->where('status','active')
-        ->whereDate('start_date','<=',now())
-        ->whereDate('end_date','>=',now())
-        ->take(10)
+        ->where('status','paid')
+        ->where('ends_at','>',now())
         ->get();
 
        // Livre le mieux noté (grand affichage)
-        $bestRatedBook = Book::with(['author', 'category'])
+        $bestRatedBook = Book::published()->with(['author', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->has('reviews', '>=', 3)
@@ -47,16 +46,17 @@ class HomeController extends Controller
         
 
         // Autres livres les mieux notés (mini cartes)
-        $topRatedBooks = Book::with(['author', 'category'])
+        $topRatedBooks = Book::published()->with(['author', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
-            ->has('reviews', '>=', 3)
+            // ->has('reviews', '>=', 3)
+            ->has('reviews', '>=', 1)
             ->orderByDesc('reviews_avg_rating')
             ->skip(1)
             ->take(6)
             ->get();
 
-        $highestRatedBooks = Book::with(['author', 'category'])
+        $highestRatedBooks = Book::published()->with(['author', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->has('reviews', '>=', 3)
@@ -64,7 +64,7 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-            $bestSellingBooks = Book::with(['author', 'category'])
+            $bestSellingBooks = Book::published()->with(['author', 'category'])
             ->withCount([
                 'payments as sales_count' => function ($query) {
                     $query->where('type', 'purchase')

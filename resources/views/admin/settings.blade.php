@@ -57,7 +57,7 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header border-bottom kama-card-header">
                     <h5 class="mb-0 d-flex align-items-center gap-2">
-                        <span class="section-icon profile">
+                        <span class="section-icon">
                             <i class="bi bi-person-vcard"></i>
                         </span>
                         Informations personnelles
@@ -159,7 +159,28 @@
                                     Pays
                                 </label>
 
-                                <input type="text" class="form-control" name="country" value="{{ Auth::user()->country }}">
+                            <select 
+                                name="country_id"
+                                class="form-select rounded-3 shadow-sm"
+                                required>
+
+                                <option value="">
+                                    Sélectionnez votre pays
+                                </option>
+
+                                @foreach($countries as $country)
+
+                                    <option 
+                                        value="{{ $country->id }}"
+                                        {{ old('country_id', optional(Auth::user()->country)->id) == $country->id ? 'selected' : '' }}>
+
+                                        {{ $country->flag }} {{ $country->name }}
+
+                                    </option>
+
+                                @endforeach
+
+                            </select>
                             </div>
 
                             <div class="col-md-4">

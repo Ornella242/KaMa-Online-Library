@@ -30,6 +30,8 @@ class Book extends Model
         'preview_type',
         'preview_start_page',
         'preview_end_page',
+        'status',
+        'rejection_reason',
         'copyright_accepted',
         'copyright_accepted_at'
     ];
@@ -54,6 +56,11 @@ class Book extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function scopePublished(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        return $query->where('status', 'published');
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -67,5 +74,12 @@ class Book extends Model
     public function sponsorships()
     {
         return $this->hasMany(BookSponsorship::class);
+    }
+
+    public function activeSponsorship()
+    {
+        return $this->hasOne(BookSponsorship::class)
+            ->where('status','paid')
+            ->where('ends_at','>',now());
     }
 }

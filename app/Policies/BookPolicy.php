@@ -11,7 +11,10 @@ class BookPolicy
 
     public function viewFile(User $user, Book $book)
     {
-        return $user->id === $book->user_id;
+        return 
+        $user->id === $book->user_id
+        ||
+        $user->role->name === 'admin';
     }
     /**
      * Determine whether the user can view any models.

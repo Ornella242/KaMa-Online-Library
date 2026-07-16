@@ -84,9 +84,7 @@
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/glightbox/css/glightbox.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/flatpickr/css/flatpickr.min.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/choices/css/choices.min.css')}}">
-	<link 
-rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/stepper/css/bs-stepper.min.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/quill/css/quill.snow.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/dropzone/css/dropzone.css')}}">
@@ -757,68 +755,6 @@ href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.m
 		});
 	</script>
 
-	{{-- <script>
-				const bookTypes = document.querySelectorAll('input[name="type"]');
-
-		const previewType = document.getElementById('preview_type');
-
-		const previewTypeContainer = document.getElementById('previewTypeContainer');
-
-		const textPreview = document.getElementById('textPreview');
-
-		const pagesPreview = document.getElementById('pagesPreview');
-
-		function updatePreviewFields() {
-
-			const selectedType = document.querySelector('input[name="type"]:checked').value;
-
-			// Si c'est un livre audio
-			if (selectedType === 'audio') {
-
-				previewTypeContainer.classList.add('d-none');
-
-				textPreview.classList.remove('d-none');
-
-				pagesPreview.classList.add('d-none');
-
-				previewType.value = 'text';
-
-			}
-
-			// Si c'est un ebook
-			else {
-
-				previewTypeContainer.classList.remove('d-none');
-
-				if (previewType.value === 'pages') {
-
-					textPreview.classList.add('d-none');
-
-					pagesPreview.classList.remove('d-none');
-
-				} else {
-
-					textPreview.classList.remove('d-none');
-
-					pagesPreview.classList.add('d-none');
-
-				}
-
-			}
-
-		}
-
-		// changement Ebook / Audio
-		bookTypes.forEach(type => {
-			type.addEventListener('change', updatePreviewFields);
-		});
-
-		// changement Extrait texte / Pages
-		previewType.addEventListener('change', updatePreviewFields);
-
-		// chargement de la page
-		updatePreviewFields();
-	</script> --}}
 
 	<script>
 
@@ -899,38 +835,6 @@ href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.m
 
 	</script>
     <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
-
-	{{-- <script>
-
-		function copyText(){
-
-			let text = `
-
-			📚 Découvrez mon nouveau livre :
-
-			{{ $book->title }}
-
-			{{ Str::limit(strip_tags($book->summary),200) }}
-
-			Disponible sur KaMa :
-
-		http://127.0.0.1:8000/detaillivre
-
-			#KaMa #Lecture
-
-			`;
-
-
-			navigator.clipboard.writeText(text);
-
-
-			alert("Texte copié, vous pouvez maintenant le partager !");
-
-
-		}
-
-
-    </script> --}}
 
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>

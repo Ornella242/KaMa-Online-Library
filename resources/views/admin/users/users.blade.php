@@ -33,30 +33,30 @@
 
 </div>
 <div class="card-body">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        {{ session('success') }}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ session('success') }}
 
-                                <button type="button"
-                                        class="btn-close"
-                                        data-bs-dismiss="alert"
-                                        aria-label="Close">
-                                </button>
-                            </div>
-                @endif
-                @if($errors->any())
-                    <div class="alert alert-danger mb-4">
-                        <strong>Veuillez corriger les erreurs suivantes :</strong>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close">
+                    </button>
+                </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger mb-4">
+            <strong>Veuillez corriger les erreurs suivantes :</strong>
 
-                        <ul class="mb-0 mt-2">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-    </div>
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+</div>
 
     <!-- Stats -->
 
@@ -121,65 +121,65 @@
 
     <!-- Table -->
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header kama-card-header kama-table-header">
+        <div class="card shadow-sm border-0">
+            <div class="card-header kama-card-header kama-table-header">
 
-    <div class="row g-3 align-items-center">
+            <div class="row g-3 align-items-center">
 
-        <div class="col-lg-4">
+                <div class="col-lg-4">
 
-            <h5 class="mb-0">
-                Liste des utilisateurs
-            </h5>
+                    <h5 class="mb-0">
+                        Liste des utilisateurs
+                    </h5>
 
-        </div>
+                </div>
 
 
-        <div class="col-lg-5">
+                <div class="col-lg-5">
 
-            <div class="input-group">
+                    <div class="input-group">
 
-                <span class="input-group-text bg-transparent">
-                    <i class="bi bi-search"></i>
-                </span>
+                        <span class="input-group-text bg-transparent">
+                            <i class="bi bi-search"></i>
+                        </span>
 
-                <input
-                    type="text"
-                    id="searchUsers"
-                    class="form-control"
-                    value="{{ request('search') }}"
-                    placeholder="Rechercher un nom ou un email...">
+                        <input
+                            type="text"
+                            id="searchUsers"
+                            class="form-control"
+                            value="{{ request('search') }}"
+                            placeholder="Rechercher un nom ou un email...">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3">
+
+                    <select
+                        id="userTypeFilter"
+                        class="form-select">
+
+                        <option value="">
+                            Tous les utilisateurs
+                        </option>
+
+                        <option value="reader">
+                            Lecteurs
+                        </option>
+
+                        <option value="writer">
+                            Écrivains
+                        </option>
+
+                    </select>
+
+                </div>
 
             </div>
 
         </div>
-
-
-        <div class="col-lg-3">
-
-            <select
-                id="userTypeFilter"
-                class="form-select">
-
-                <option value="">
-                    Tous les utilisateurs
-                </option>
-
-                <option value="reader">
-                    Lecteurs
-                </option>
-
-                <option value="writer">
-                    Écrivains
-                </option>
-
-            </select>
-
-        </div>
-
-    </div>
-
-</div>
 
         <div class="card-body">
             <div class="table-responsive">
@@ -316,7 +316,19 @@
                 </table>
             </div>
         </div>
+
+        <div class="card-footer bg-white border-0">
+
+            <div class="category-pagination">
+
+                {{ $users->onEachSide(1)->links() }}
+
+            </div>
+
+        </div>
     </div>
+
+    
     
  </div>
 

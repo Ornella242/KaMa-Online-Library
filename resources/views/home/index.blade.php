@@ -115,46 +115,10 @@ Main Banner START -->
 Main Banner END -->
 
 <!-- =======================
-Advertisement START -->
-@foreach($sponsoredBooks as $sponsored)
-    <section class="pb-2 pb-lg-5">
-        <div class="container">
-            <!-- Slider START -->
-            <div class="tiny-slider arrow-round arrow-blur arrow-hover">
-                <div class="tiny-slider-inner" data-autoplay="true" data-arrow="true" data-edge="2" data-dots="false" data-items-xl="3" data-items-lg="2" data-items-md="1">
-                    <!-- Slider item -->
-                    <div>
-                        <div class="card border rounded-3 overflow-hidden">
-                                <span class="ad-badge">Sponsorisé</span>
-                            <div class="row g-0 align-items-center">
-
-                                <!-- Image -->
-                                <div class="col-sm-6">
-                                    <img src="{{ asset('storage/'.$sponsored->book->cover_image) }}" class="card-img rounded-0" alt="{{ $sponsored->book->title }}">
-                                </div>
-
-                                <!-- Title and content -->
-                                <div class="col-sm-6">
-                                    <div class="card-body px-3">
-                                        <h6 class="card-title"><a href="{{ route('books.show', $book) }}" class="stretched-link">{{ $sponsored->book->title }}</a></h6>
-                                        <p class="mb-0 author">Par {{ $sponsored->book->author->firstname }}
-                                            {{ $sponsored->book->author->lastname }}
-                                         </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-    
-                </div>
-            </div>	
-            <!-- Slider END -->
-        </div>
-    </section>
-@endforeach
+Sponsoring START -->
+@include('partials.sponsored-books-banner')
 <!-- =======================
-Advertisement END -->
+Sponsoring END -->
 
 <!-- =======================
 About START -->
@@ -455,7 +419,7 @@ Meilleurs livres START-->
     <div class="best-layout">
 
         <!-- Featured Book -->
-        <div class="featured-book position-relative">
+        {{-- <div class="featured-book position-relative">
 
             <div class="best-badge">
                 BEST SELLER
@@ -505,10 +469,10 @@ Meilleurs livres START-->
 
             </div>
 
-        </div>
+        </div> --}}
 
         <!-- Side Books -->
-        <div class="side-books">
+        {{-- <div class="side-books">
 
                 <div class="mini-book">
                     <span class="book-category business">Business</span>
@@ -706,11 +670,11 @@ Meilleurs livres START-->
 
                 </div>
 
-        </div>
+        </div> --}}
 
 
         {{-- Code donnees reelles --}}
-        {{-- @if($bestRatedBook)
+        @if($bestRatedBook)
 
             <!-- Featured Book -->
             <div class="featured-book position-relative">
@@ -759,10 +723,10 @@ Meilleurs livres START-->
                     </div>
                 </div>
             </div>
-        @endif --}}
+        @endif
 
         <!-- Side Books -->
-        {{-- <div class="side-books">
+        <div class="side-books">
             @foreach($topRatedBooks as $book)
                 <div class="mini-book">
                     <span class="book-category business">
@@ -796,7 +760,7 @@ Meilleurs livres START-->
                     </div>
                 </div>
             @endforeach
-        </div> --}}
+        </div>
     </div>
 </section>
 <!-- =======================
@@ -813,7 +777,7 @@ Top Rated Books START
         <p>Découvrez les ouvrages les plus appréciés par notre communauté.</p>
     </div>
 
-    <div class="top-rated-grid">
+    {{-- <div class="top-rated-grid">
 
         <!-- Book 1 -->
         <div class="rated-card">
@@ -947,10 +911,10 @@ Top Rated Books START
 
         </div>
 
-    </div>
+    </div> --}}
 
     {{-- Code donnees reel --}}
-    {{-- <div class="top-rated-grid">
+    <div class="top-rated-grid">
         @foreach($topRatedBooks as $book)
             <div class="rated-card">
 
@@ -1013,7 +977,7 @@ Top Rated Books START
 
             </div>
         @endforeach
-    </div> --}}
+    </div>
 </section>
 <!-- =======================
 Top Rated Books END

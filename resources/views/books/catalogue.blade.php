@@ -110,103 +110,10 @@ CATALOG HERO END
 ======================= -->
 
 <!-- =======================
-Advertisement START -->
-<section class="pb-2 pb-lg-5">
-	<div class="container">
-		<!-- Slider START -->
-		<div class="tiny-slider arrow-round arrow-blur arrow-hover">
-			<div class="tiny-slider-inner" data-autoplay="true" data-arrow="true" data-edge="2" data-dots="false" data-items-xl="3" data-items-lg="2" data-items-md="1">
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                            <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/01.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">Atomic Habits</a></h6>
-									<p class="mb-0 author">Par James Clear</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                        <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/02.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">The 5 AM Club</a></h6>
-									<p class="mb-0 author">Par Cal Newport</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                        <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/03.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">Deep Work</a></h6>
-									<p class="mb-0 author">Par Morgan Housel</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Slider item -->
-				<div>
-					<div class="card border rounded-3 overflow-hidden">
-                        <span class="ad-badge">Sponsorisé</span>
-						<div class="row g-0 align-items-center">
-							<!-- Image -->
-							<div class="col-sm-6">
-								<img src="{{ asset('assets/images/sponsor/01.jpg') }}" class="card-img rounded-0" alt="">
-							</div>
-
-							<!-- Title and content -->
-							<div class="col-sm-6">
-								<div class="card-body px-3">
-									<h6 class="card-title"><a href="offer-detail.html" class="stretched-link">The Psychology of Money</a></h6>
-									<p class="mb-0 author"> Par Robin Sharma</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>	
-		<!-- Slider END -->
-	</div>
-</section>
+Sponsoring START -->
+@include('partials.sponsored-books-banner')
 <!-- =======================
-Advertisement END -->
+Sponsoring END -->
 
 <!-- =======================
 Title and Tabs START -->
@@ -394,7 +301,7 @@ Book list START -->
 					<div class="card shadow p-2 pb-0 h-100">
 
 						<img src="{{ asset('storage/'.$book->cover_image) }}"
-						class="rounded-2"
+						class="rounded-2 catalog-img"
 						alt="{{ $book->title }}">
 
 						<div class="card-body px-3 pb-0">

@@ -250,6 +250,10 @@
 												<span class="status draft">
 													Brouillon - Paiement de depot requis 
 												</span>
+											@elseif ($book->status == 'waiting_review')
+												<span class="status waiting_review">
+													En attente de vérification
+												</span>
 											@elseif ($book->status == 'under_review')
 												<span class="status under_review">
 													Sous vérification
@@ -293,38 +297,54 @@
 												Voir
 											</a>
 
-											@if($book->status != 'published')
-												<a href="{{ route('writer.books.edit',$book) }}"
-												class="btn-edit">
-													<i class="bi bi-pencil"></i>
-													Modifier
-												</a>
-											@endif
+											
+											<a href="{{ route('writer.books.edit',$book) }}"
+											class="btn-edit">
+												<i class="bi bi-pencil"></i>
+												Modifier
+											</a>
+											
 
 											@if(in_array($book->status,['draft','pending_payment']))
-												<a href="{{ route('writer.books.deposit',$book->id) }}"
+												{{-- <a href="{{ route('writer.books.deposit',$book->id) }}"
 												class="btn-pay">
 													<i class="bi bi-credit-card"></i>
 													Payer dépôt
+												</a> --}}
+												<form method="POST"
+													action="{{ route('books.payment.publication',$book) }}">
+
+													@csrf
+
+													<button class="btn btn-primary rounded-pill">
+
+														<i class="bi bi-credit-card me-2"></i>
+
+														Payer le dépôt de publication
+
+													</button>
+
+													</form>
+											@endif
+
+											@if($book->status =='published')
+											
+												<a href="{{ route('writer.books.boost',$book) }}"
+													class="btn-boost">
+													<i class="bi bi-share-fill"></i>
+													Booster
+												</a>
+
+												<a href="{{ route('writer.books.sponsor',$book) }}"
+													class="btn btn-warning">
+
+														<i class="bi bi-megaphone-fill"></i>
+														Sponsoriser sur KaMa
 												</a>
 											@endif
 
-											<a href="{{ route('writer.books.boost',$book) }}"
-												class="btn-boost">
-												<i class="bi bi-share-fill"></i>
-												Booster
-											</a>
-
-											<a href="{{ route('writer.books.sponsor',$book) }}"
-												class="btn btn-warning">
-
-													<i class="bi bi-megaphone-fill"></i>
-													Sponsoriser sur KaMa
-
-											</a>
-
-
-											<!-- DELETE -->
+											@if($book->status == 'draft')
+											    <!-- DELETE -->
 												<form 
 													action="{{ route('writer.books.destroy', $book->id) }}"
 													method="POST"
@@ -343,6 +363,7 @@
 													</button>
 
 												</form>
+											@endif
 										</div>
 									</div>
 								</div>

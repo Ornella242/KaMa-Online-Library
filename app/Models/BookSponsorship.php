@@ -16,6 +16,7 @@ class BookSponsorship extends Model
         'starts_at',
         'ends_at',
         'paid_at',
+        'source'
     ];
 
     protected $casts = [

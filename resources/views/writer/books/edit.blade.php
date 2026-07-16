@@ -2,7 +2,7 @@
 
 @section('content')
 @php
-    $readOnlyReview = $book->status === 'under_review';
+    $readOnlyReview = $book->status === 'under_review' || $book->status === 'waiting_review' ;
 @endphp
 <!-- =======================
 Page Banner START -->

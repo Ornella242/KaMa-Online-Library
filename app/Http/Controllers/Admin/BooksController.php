@@ -1,33 +1,28 @@
 <?php
 
-namespace App\Http\Controllers\Writer;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
+use App\Models\Category;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Spatie\PdfToImage\Pdf;
-use App\Models\Book;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Category;
 use Illuminate\Support\Str;
 use App\Models\Subcategory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use App\Notifications\BookUnderReviewNotification;
 use Imagick;
-
-
 
 class BooksController extends Controller
 {
 
-
-    /**
-     * Liste des livres de l'auteur connecté
-     */
     public function listBooks(Request $request)
     {
 
-         $userId = Auth::id();
-
+        $userId = Auth::id();
 
         $query = Book::query()->where('user_id', $userId)
             ->with([
@@ -40,18 +35,15 @@ class BooksController extends Controller
             $query->where('title','like',
                 '%'.$request->search.'%'
             );
-
         }
 
         if($request->filled('status')){
-
             $query->where(
                 'status',
                 $request->status
             );
 
         }
-
 
         if($request->filled('type')){
 
@@ -61,7 +53,6 @@ class BooksController extends Controller
             );
 
         }
-
 
         switch($request->sort){
             case 'oldest':
@@ -86,33 +77,39 @@ class BooksController extends Controller
             break;
 
             default:
-
                 $query->latest();
-
             break;
-
         }
 
-
         $books = $query
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
+        $totalBooks = Book::where('user_id', Auth::id())->count();
+
+        $publishedBooks = Book::where('user_id', Auth::id())
+            ->where('status', 'published')
+            ->count();
+
+        $soldBooks = Payment::where('type', 'purchase')
+            ->whereHas('book', function ($q) {
+                $q->where('user_id', Auth::id());
+            })
+            ->count();
+
+
         return view(
-            'writer.books.index',
-            compact('books')
+            'admin.books.index',
+            compact('books','totalBooks','publishedBooks','soldBooks')
         );
     }
 
 
-    /**
-     * Afficher le formulaire d'ajout
-     */
-    public function create()
+      public function create()
     {
         $categories = Category::with('subcategories')->get();
 
-        return view('writer.books.create', compact('categories'));
+        return view('admin.books.create', compact('categories'));
     }
 
     public function getSubcategories(int $category)
@@ -123,12 +120,7 @@ class BooksController extends Controller
         return response()->json($subcategories);
     }
 
-   
-
-    /**
-     * Enregistrer un nouveau livre
-     */
-    public function store(Request $request)
+      public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -195,6 +187,7 @@ class BooksController extends Controller
             ],
         ]);
 
+
         if ($request->preview_type === 'pages') {
             $totalPreviewPages = $request->preview_end_page - $request->preview_start_page + 1;
             if ($totalPreviewPages > 5) {
@@ -245,11 +238,9 @@ class BooksController extends Controller
         );
         }
      
-
        $fileSize = $file->getSize();
 
-       $book = Book::create([
-            // auteur connecté
+        $book = Book::create([
             'user_id' => Auth::id(),
             'category_id' => $request->category_id,
             'subcategory_id' => $request->subcategory_id,
@@ -277,7 +268,7 @@ class BooksController extends Controller
             'original_file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getClientOriginalExtension(),
             'file_size' => $file->getSize(),
-            'status' => 'draft',
+            'status' => 'published',
             'copyright_accepted' => true,
             'copyright_accepted_at' => now(),
         ]);
@@ -290,7 +281,7 @@ class BooksController extends Controller
         }
 
         return redirect()
-            ->route('writer.books')
+            ->route('admin.books.index')
             ->with(
                 'success',
                 'Votre livre a été ajouté avec succès.'
@@ -301,17 +292,15 @@ class BooksController extends Controller
     {
         $previewStart = $book->preview_start_page;
         $previewEnd = $book->preview_end_page;
-        return view('writer.books.show', compact('book','previewStart',
+        return view('admin.books.show', compact('book','previewStart',
         'previewEnd'));
     }
 
     public function edit(Book $book)
     {
         $categories = Category::all();
-
         $subcategories = $book->category->subcategories;
-
-        return view('writer.books.edit', compact(
+        return view('admin.books.edit', compact(
             'book',
             'categories',
             'subcategories'
@@ -320,7 +309,7 @@ class BooksController extends Controller
 
     public function update(Request $request, Book $book)
     {
-       if ($book->status === 'waiting_review' || $book->status === 'under_review') {
+        if ($book->status === 'published') {
 
             $request->validate([
 
@@ -492,7 +481,7 @@ class BooksController extends Controller
 
 
             return redirect()
-                ->route('writer.books')
+                ->route('admin.books.index')
                 ->with(
                     'success',
                     'Les informations du livre ont été mises à jour.'
@@ -698,25 +687,18 @@ class BooksController extends Controller
             // Stockage selon le type
 
             if($request->type === 'ebook'){
-
-
                 $filePath = $file->storeAs(
                     'books/files/ebooks',
                     $fileName,
                     'public'
                 );
 
-
             }else{
-
-
                 $filePath = $file->storeAs(
                     'books/files/audios',
                     $fileName,
                     'public'
                 );
-
-
             }
 
 
@@ -734,7 +716,7 @@ class BooksController extends Controller
         $book->update($data);
 
         return redirect()
-            ->route('writer.books')
+            ->route('admin.books.index')
             ->with(
                 'success',
                 'Livre modifié avec succès.'
@@ -772,7 +754,7 @@ class BooksController extends Controller
         // $book->delete();
         \App\Models\Book::destroy($book->id);
         return redirect()
-            ->route('writer.books')
+            ->route('admin.books.index')
             ->with(
                 'success',
                 'Livre supprimé avec succès.'
@@ -780,54 +762,7 @@ class BooksController extends Controller
 
     }
 
-    public function deposit(Book $book)
-    {
-        return view(
-            'writer.books.deposit',
-            compact('book')
-        );
-    }
-
-    public function boost(Book $book)
-    {
-        abort_if($book->user_id !== Auth::id(), 403);
-
-        $social = Auth::user()->socialProfile;
-
-        return view('writer.books.boost', compact('book', 'social'));
-    }
-
-    public function dashboard()
-    {
-        $books = Auth::user()
-            ->books()
-            ->latest()
-            ->take(5)
-            ->get();
-        return view('writer.dashboard', compact('books'));
-    }
-
-
-    /**
-     * Demande de publication après paiement
-     */
-    public function publish(Book $book)
-    {
-        if ($book->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        $book->update([
-            'status' => 'pending_payment'
-        ]);
-
-        return back()->with(
-            'success',
-            'Votre livre est en attente de paiement.'
-        );
-    }
-
-    public function generatePreviewPages(Book $book)
+     public function generatePreviewPages(Book $book)
     {
 
         $pdfPath = storage_path(
@@ -998,4 +933,182 @@ class BooksController extends Controller
         );
     }
 
+    public function boost(Book $book)
+    {
+        abort_if($book->user_id !== Auth::id(), 403);
+
+        $social = Auth::user()->socialProfile;
+
+        return view('admin.books.boost', compact('book', 'social'));
+    }
+
+    public function allBooks(Request $request)
+    {
+        // Tous les livres de la plateforme
+        $query = Book::with([
+            'author',
+            'category',
+            'subcategory'
+        ]);
+
+        // FILTRE PAR STATUT
+        if($request->filled('status')){
+
+            $query->where(
+                'status',
+                $request->status
+            );
+
+        }
+
+        // RECHERCHE
+        if($request->filled('search')){
+            $query->where(function($q) use ($request){
+                $q->where(
+                    'title',
+                    'like',
+                    '%'.$request->search.'%'
+                )
+
+                ->orWhereHas('author', function($author) use ($request){
+
+                    $author->where('firstname','like','%'.$request->search.'%')
+                        ->orWhere('lastname','like','%'.$request->search.'%');
+
+                });
+
+            });
+
+        }
+
+
+
+        $books = $query
+            ->latest()
+            ->paginate(4)
+            ->withQueryString();
+
+        // Statistiques
+
+        $totalBooks = Book::count();
+
+
+        $pendingBooks = Book::query()->where('status','waiting_review')
+            ->count();
+
+
+        $publishedBooks = Book::query()->where('status','published')
+            ->count();
+
+
+        $reviewBooks = Book::query()->where('status','under_review')
+            ->count();
+
+
+
+        return view('admin.books.allbooks', compact(
+            'books',
+            'totalBooks',
+            'pendingBooks',
+            'publishedBooks',
+            'reviewBooks'
+        ));
+    }
+
+    public function review(Book $book)
+    {
+
+        $payment = Payment::query()->where('book_id',$book->id)
+            ->where('type','publication')
+            ->where('status','success')
+            ->first();
+
+
+        if(!$payment){
+            return back()->with(
+                'error',
+                'Le paiement du dépôt est requis avant la vérification.'
+            );
+
+        }
+
+
+
+        $book->update([
+            'status'=>'under_review'
+        ]);
+
+
+        $book->author->notify(
+            new BookUnderReviewNotification($book)
+        );
+
+        return redirect()
+            ->route('admin.books.show',$book)
+            ->with(
+                'success',
+                'Le livre est maintenant en vérification éditoriale.'
+            );
+
+    }
+
+    public function editorialQueue()
+    {
+        $books = Book::with([
+            'author',
+            'category',
+            'subcategory'
+        ])
+        ->where('status','under_review')
+        ->latest()
+        ->paginate(4);
+
+
+     $month = now()->month;
+     $year = now()->year;
+
+
+    $waitingReviewBooks = Book::query()
+        ->where('status','waiting_review')
+        ->whereMonth('created_at', $month)
+        ->whereYear('created_at', $year)
+        ->count();
+
+
+
+    $reviewBooks = Book::query()
+        ->where('status','under_review')
+        ->whereMonth('updated_at', $month)
+        ->whereYear('updated_at', $year)
+        ->count();
+
+
+
+    $publishedBooks = Book::query()
+        ->where('status','published')
+        ->whereMonth('updated_at', $month)
+        ->whereYear('updated_at', $year)
+        ->count();
+
+
+
+    $rejectedBooks = Book::query()
+        ->where('status','rejected')
+        ->whereMonth('updated_at', $month)
+        ->whereYear('updated_at', $year)
+        ->count();
+
+
+
+        return view(
+            'admin.books.editorial-queue',
+            compact(
+                'books',
+                'waitingReviewBooks',
+                'reviewBooks',
+                'publishedBooks',
+                'rejectedBooks'
+            )
+        );
+    }
 }

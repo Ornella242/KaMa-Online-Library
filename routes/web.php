@@ -10,10 +10,12 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewsController;
 use App\Http\Controllers\Writer\DashboardController as WriterDashboardController;
 use App\Http\Controllers\Writer\SettingsController as WriterSettingsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\BookSponsorshipController as AdminBookSponsorshipController;
 use App\Http\Controllers\Writer\RevenueController as WriterRevenuesController;
 use App\Http\Controllers\Writer\ActivityController as WriterActivityController;
 use App\Http\Controllers\SponsorshipController;
@@ -21,9 +23,11 @@ use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SocialProfileController;
+use App\Http\Controllers\Admin\CategoryController;
 
 use App\Http\Controllers\Reader\SettingsController as ReaderSettingsController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\BooksController as AdminBooksController;
 use App\Http\Controllers\Writer\BooksController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -225,24 +229,91 @@ Route::post('/social-profile', [SocialProfileController::class, 'storeOrUpdate']
 
 // admin routes
 
-Route::prefix('admin') ->middleware(['auth', 'role:admin']) ->group(function () {
+Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::get('/settings', [AdminSettingsController::class, 'index']);
         Route::get('/users/show/{user}', [UserController::class, 'show'])
-        ->name('admin.show');
+        ->name('show');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-        ->name('admin.users.edit');
+        ->name('users.edit');
         Route::put('/users/{user}', [UserController::class, 'update'])
-        ->name('admin.users.update');
+        ->name('users.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])
-        ->name('admin.users.destroy');
+        ->name('users.destroy');
         Route::get('/users/create', [UserController::class, 'create'])
-            ->name('admin.users.create');
+            ->name('users.create');
 
         Route::post('/users', [UserController::class, 'store'])
-            ->name('admin.users.store');
+            ->name('users.store');
+
+        Route::resource(
+            'categories',
+            CategoryController::class
+        );
+        Route::get('/books', [BooksController::class, 'listBooks'])
+            ->name('/books');
+
+        Route::get('/books/create', [AdminBooksController::class, 'create'])
+            ->name('books.create');
+
+        Route::post('/books', [AdminBooksController::class, 'store'])
+            ->name('books.store');
+
+        Route::get('/books', [AdminBooksController::class, 'listBooks'])
+            ->name('books.index');
+
+        Route::get('/books/all', [AdminBooksController::class, 'allBooks'])
+            ->name('books.all');
+
+        Route::get(
+            '/books/{book}/review',
+            [AdminBooksController::class,'review']
+        )
+        ->name('books.review');
+
+        Route::post('/books', [AdminBooksController::class, 'store'])
+            ->name('books.store');
+
+         Route::get('/books/editorial-queue',[AdminBooksController::class,'editorialQueue']
+        )->name('books.editorial.queue');
+
+        Route::get('/books/{book}',[AdminBooksController::class, 'show']) 
+            ->name('books.show');
+
+        Route::get('/books/{book}/preview-file', 
+            [AdminBooksController::class, 'previewFile']
+        )->name('books.preview.file');
+
+        Route::get('/books/{book}/audio', 
+            [AdminBooksController::class, 'streamAudio']
+        )->name('books.audio');
+
+        Route::get('/books/{book}/edit', [AdminBooksController::class, 'edit'])
+            ->name('books.edit');
+
+        Route::put('/books/{book}', [AdminBooksController::class, 'update'])
+            ->name('books.update');
+        
+        Route::get('/books/{book}/boost',[AdminBooksController::class,'boost'])
+           ->name('books.boost');
+        
+        Route::post('/admin/books/{book}/sponsor',[AdminBookSponsorshipController::class,'sponsor'])
+          ->name('books.sponsor');
+
+        Route::post('/books/{book}/boost/share',[AdminBooksController::class,'shareBook'])
+           ->name('books.boost.share');
+
+       
+
 
 });
+
+
+Route::post('/books/{book}/publication-payment',
+            [PaymentController::class,'payPublication']
+        )
+        ->middleware('auth')
+        ->name('books.payment.publication');
 
 Route::put('/admin/change-password', [UserController::class, 'changePassword'])
     ->middleware('auth')

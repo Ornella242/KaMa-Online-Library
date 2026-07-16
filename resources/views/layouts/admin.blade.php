@@ -82,6 +82,15 @@
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/overlay-scrollbar/css/overlayscrollbars.min.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/apexcharts/css/apexcharts.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/tiny-slider/tiny-slider.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/glightbox/css/glightbox.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/flatpickr/css/flatpickr.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/choices/css/choices.min.css')}}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/stepper/css/bs-stepper.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/quill/css/quill.snow.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/dropzone/css/dropzone.css')}}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/page-flip/dist/css/page-flip.css">
 
 	<!-- Theme CSS -->
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css')}}">
@@ -181,26 +190,29 @@
                         <ul class="nav collapse flex-column"
                             id="collapseBooks"
                             data-bs-parent="#navbar-sidebar">
+
+							<li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.books.create') }}">
+                                    Ajouter un livre
+                                </a>
+                            </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">
+                                <a class="nav-link" href="{{ route('admin.books.index') }}">
+                                    Mes livres
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.books.all') }}">
                                     Tous les livres
                                 </a>
                             </li>
 
-
                             <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    Ajouter un livre
-                                </a>
-                            </li>
-
-
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
+                                <a class="nav-link" href="{{ route('admin.books.editorial.queue') }}">
                                     Validation des livres
                                 </a>
                             </li>
-
 
                         </ul>
                     </li>
@@ -215,11 +227,11 @@
 
                     <!-- Categories -->
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-tags-fill me-2"></i>
-                            Catégories
-                        </a>
-                    </li>
+						<a class="nav-link" href="{{ route('admin.categories.index') }}">
+							<i class="bi bi-tags-fill me-2"></i>
+							Catégories
+						</a>
+					</li>
 
                     <!-- Payments -->
                     <li class="nav-item">
@@ -299,7 +311,7 @@
 					<!-- Logo START -->
 					<div class="d-flex align-items-center d-xl-none">
 						<a class="navbar-brand" href="index.html">
-							<img class="navbar-brand-item h-40px" src="assets/images/logo-icon.svg" alt="">
+							<img class="navbar-brand-item h-40px" src="{{ asset('assets/images/logo.svg')}}" alt="">
 						</a>
 					</div>
 					<!-- Logo END -->
@@ -383,41 +395,85 @@
 						<!-- Dark mode options END-->
 
 						<!-- Notification dropdown START -->
+						@php
+							$notifications = auth()->user()
+								->unreadNotifications()
+								->latest()
+								->take(5)
+								->get();
+
+						@endphp
 						<li class="nav-item dropdown ms-3">
 							<!-- Notification button -->
 							<a class="nav-notification btn btn-light p-0 mb-0" href="admin-dashboard.html#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
 								<i class="bi bi-bell fa-fw"></i>
 							</a>
 							<!-- Notification dote -->
-							<span class="notif-badge animation-blink"></span>
+							@if($notifications->count() > 0)
+								<span class="notif-badge animation-blink"></span>
+							@endif
 		
 							<!-- Notification dropdown menu START -->
 							<div class="dropdown-menu dropdown-animation dropdown-menu-end dropdown-menu-size-md shadow-lg p-0">
 								<div class="card bg-transparent">
 									<!-- Card header -->
 									<div class="card-header bg-transparent d-flex justify-content-between align-items-center border-bottom">
-										<h6 class="m-0">Notifications <span class="badge bg-danger bg-opacity-10 text-danger ms-2">4 new</span></h6>
+										<h6 class="m-0"> Notifications
+											@if($notifications->count())
+
+											<span class="badge bg-danger bg-opacity-10 text-danger ms-2">
+
+											{{ $notifications->count() }}
+
+											</span>
+
+											@endif
+										</h6>
 										<a class="small" href="admin-dashboard.html#">Clear all</a>
 									</div>
 		
 									<!-- Card body START -->
 									<div class="card-body p-0">
 										<ul class="list-group list-group-flush list-unstyled p-2">
-											<!-- Notification item -->
-											<li>
-												<a href="admin-dashboard.html#" class="list-group-item list-group-item-action rounded notif-unread border-0 mb-1 p-3">
-													<h6 class="mb-2">New! Booking flights from New York ✈️</h6>
-													<p class="mb-0 small">Find the flexible ticket on flights around the world. Start searching today</p>
-													<span>Wednesday</span>
-												</a>
+											@forelse($notifications as $notification)
+												<li>
+													<a href="{{ $notification->data['url'] }}"
+													class="list-group-item list-group-item-action rounded notif-unread border-0 mb-1 p-3">
+
+													<h6 class="mb-2">{{ $notification->data['title'] }}</h6>
+
+														<p class="mb-0 small">
+
+														{{ $notification->data['message'] }}
+
+														</p>
+
+
+														<span>
+
+														{{ $notification->created_at->diffForHumans() }}
+
+														</span>
+
+
+													</a>
+
+												</li>
+											@empty
+
+											<li class="text-center p-4">
+
+												<i class="bi bi-bell-slash fs-4"></i>
+
+												<p class="mb-0 mt-2">
+
+												Aucune notification
+
+												</p>
+
 											</li>
-											<!-- Notification item -->
-											<li>
-												<a href="admin-dashboard.html#" class="list-group-item list-group-item-action rounded border-0 mb-1 p-3">
-													<h6 class="mb-2">Sunshine saving are here 🌞 save 30% or more on a stay</h6>
-													<span>15 Nov 2022</span>
-												</a>
-											</li>
+
+											@endforelse
 										</ul>
 									</div>
 									<!-- Card body END -->
@@ -491,6 +547,16 @@
 <script src="{{asset('assets/vendor/overlay-scrollbar/js/overlayscrollbars.min.js')}}"></script>
 <script src="{{asset('assets/vendor/apexcharts/js/apexcharts.min.js')}}"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="{{ asset('assets/vendor/tiny-slider/tiny-slider.js') }}"></script>
+<script src="{{ asset('assets/vendor/glightbox/js/glightbox.js') }}"></script>
+<script src="{{ asset('assets/vendor/flatpickr/js/flatpickr.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/choices/js/choices.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/apexcharts/js/apexcharts.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/stepper/js/bs-stepper.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/quill/js/quill.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/dropzone/js/dropzone.js') }}"></script>
+
+
 <script>
     document.querySelectorAll('.toggle-password').forEach(icon => {
 
@@ -571,22 +637,778 @@
 <script>
     const deleteModal = document.getElementById('deleteUserModal');
 
-    deleteModal.addEventListener('show.bs.modal', function (event) {
+	if(deleteModal){
+			deleteModal.addEventListener('show.bs.modal', function (event) {
 
-    const button = event.relatedTarget;
+			const button = event.relatedTarget;
 
-    const userId = button.dataset.userId;
-    const userName = button.dataset.userName;
+			const userId = button.dataset.userId;
+			const userName = button.dataset.userName;
 
-    document.getElementById('deleteUserName').textContent = userName;
+			document.getElementById('deleteUserName').textContent = userName;
 
-    document.getElementById('deleteUserForm').action =
-        `/admin/users/${userId}`;
+			document.getElementById('deleteUserForm').action =
+				`/admin/users/${userId}`;
 
-});
+		});
+	}
 </script>
+
+
 <!-- ThemeFunctions -->
 <script src="{{asset('assets/js/functions.js')}}"></script>
+
+	<script>
+
+		document.addEventListener('DOMContentLoaded', function () {
+
+			const category = document.getElementById('category_id');
+			const subcategory = document.getElementById('subcategory_id');
+
+			if(category && subcategory){
+				category.addEventListener('change', function () {
+					let categoryId = this.value;
+					subcategory.innerHTML = `
+						<option value="">
+							Choisir une sous-catégorie
+						</option>
+					`;
+
+
+					if(categoryId){
+
+						fetch(`/writer/categories/${categoryId}/subcategories`)
+
+						.then(response => response.json())
+
+						.then(data => {
+
+
+							data.forEach(item => {
+
+								subcategory.innerHTML += `
+									<option value="${item.id}">
+										${item.name}
+									</option>
+								`;
+
+							});
+
+
+						});
+
+					}
+
+
+				});
+			}
+
+		});
+    </script>
+
+	<script>
+
+		const coverInput = document.getElementById('coverImageInput');
+
+		const coverImage = document.getElementById('coverPreviewImage');
+
+		const placeholder = document.getElementById('coverPlaceholder');
+
+		if(coverInput){
+			coverInput.addEventListener('change', function(e){
+				const file = e.target.files[0];
+				if(file){
+					const reader = new FileReader();
+
+
+					reader.onload = function(event){
+
+
+						coverImage.src = event.target.result;
+
+
+						coverImage.style.display = "block";
+
+
+						placeholder.style.display = "none";
+					};
+					reader.readAsDataURL(file);
+				}
+			});
+		}
+
+				const typeInputs = document.querySelectorAll('input[name="type"]');
+				const uploadTitle = document.getElementById('uploadTitle');
+				const uploadDescription = document.getElementById('uploadDescription');
+				const uploadIcon = document.getElementById('uploadIcon');
+				const acceptedFormat = document.getElementById('acceptedFormat');
+				const bookInput = document.getElementById('bookFileInput');
+
+			if(typeInputs.length && uploadTitle && uploadDescription){
+				typeInputs.forEach(input => {
+
+					input.addEventListener('change', function () {
+
+						if (this.value === 'ebook') {
+
+							uploadTitle.innerText = 'Téléverser votre ebook';
+
+							uploadDescription.innerText =
+								'Sélectionnez le fichier PDF de votre ebook.';
+
+							uploadIcon.innerHTML =
+								'<i class="bi bi-file-earmark-pdf-fill"></i>';
+
+							acceptedFormat.innerText = 'PDF uniquement';
+
+							bookInput.accept = '.pdf';
+
+							bookInput.name = 'ebook_file';
+
+							bookInput.value = '';
+
+						} else {
+
+							uploadTitle.innerText = 'Téléverser votre livre audio';
+
+							uploadDescription.innerText =
+								'Sélectionnez le fichier MP3 de votre livre audio.';
+
+							uploadIcon.innerHTML =
+								'<i class="bi bi-headphones"></i>';
+
+							acceptedFormat.innerText = 'MP3 uniquement';
+
+							bookInput.accept = '.mp3,audio/mpeg';
+
+							bookInput.name = 'audio_file';
+
+							bookInput.value = '';
+
+						}
+
+					});
+
+				});
+			}
+
+
+			function updateFileSummary(file){
+
+					if(!file) return;
+
+
+					document.getElementById("summary_file_name").textContent = file.name;
+
+
+					let extension = file.name.split('.').pop().toUpperCase();
+
+
+					document.getElementById("summary_file_type").textContent = extension;
+
+
+					document.getElementById("summary_file_size").textContent =
+						(file.size / 1024 / 1024).toFixed(2) + " MB";
+
+
+					document.getElementById("summary_file_status").innerHTML =
+						'<i class="bi bi-check-circle-fill"></i> Prêt';
+
+			}
+
+			const bookFileInput = document.getElementById('bookFileInput');
+				if(bookFileInput){
+
+					bookFileInput.addEventListener('change', function(){
+
+						const file = this.files[0];
+
+						if(file){
+
+							updateFileSummary(file);
+
+						}
+
+					});
+
+				}
+				const publicationTypeInputs = document.querySelectorAll('input[name="type"]');
+
+				const pagesField = document.getElementById('pagesField');
+				const durationField = document.getElementById('durationField');
+
+				const pagesInput = document.getElementById('pagesInput');
+				const durationInput = document.getElementById('durationInput');
+
+
+				publicationTypeInputs.forEach(input => {
+
+					input.addEventListener('change', function(){
+
+
+						if(this.value === "ebook"){
+
+
+							pagesField.style.display = "block";
+
+							durationField.style.display = "none";
+
+
+							pagesInput.required = true;
+
+							durationInput.required = false;
+
+
+							durationInput.value = "";
+
+
+						}
+
+
+						else if(this.value === "audio"){
+
+
+							pagesField.style.display = "none";
+
+							durationField.style.display = "block";
+
+
+							pagesInput.required = false;
+
+							durationInput.required = true;
+
+
+							pagesInput.value = "";
+
+
+						}
+
+
+					});
+
+				});
+
+
+
+				// Affichage initial
+				const checkedType = document.querySelector('input[name="type"]:checked');
+
+
+				if(checkedType){
+
+					checkedType.dispatchEvent(new Event('change'));
+
+				}
+	</script>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+
+
+		function updateBookSummary(){
+			const summaryBox = document.querySelector("#summary_title");
+			if(!summaryBox){
+				return;
+			}
+
+			// =========================
+			// TITRE
+			// =========================
+
+			let title = document.querySelector('[name="title"]')?.value;
+			const summaryTitle = document.querySelector("#summary_title");
+
+				if(summaryTitle){
+
+					summaryTitle.innerText =
+						title || "Titre du livre";
+
+				}
+
+			// =========================
+			// CATEGORIE
+			// =========================
+
+			let category = document.querySelector('[name="category_id"]');
+			if(category){
+
+				document.querySelector("#summary_category").innerText =
+					category.options[category.selectedIndex]?.text || "Catégorie";
+
+			}
+			// =========================
+			// SOUS-CATEGORIE
+			// =========================
+
+			let subcategory = document.querySelector('[name="subcategory_id"]');
+
+			if(subcategory){
+
+				document.querySelector("#summary_subcategory").innerText =
+					subcategory.options[subcategory.selectedIndex]?.text || "Sous-catégorie";
+
+			}
+			// =========================
+			// LANGUE
+			// =========================
+
+			let language = document.querySelector('[name="language"]')?.value;
+			const summaryLanguage = document.querySelector("#summary_language");
+			if(summaryLanguage){
+
+				summaryLanguage.innerText =
+					language || "Langue";
+
+			}
+
+			// =========================
+			// TYPE
+			// =========================
+
+			let type = document.querySelector('[name="type"]:checked');
+			if(type){
+				document.querySelector("#summary_type").innerText =
+					type.value === "ebook"
+					? "Ebook"
+					: "Livre audio";
+
+			}
+
+			// =========================
+			// PRIX
+			// =========================
+
+			let price = document.querySelector('[name="price"]')?.value;
+			const summaryPrice = document.querySelector("#summary_price");
+			if(summaryPrice){
+
+				summaryPrice.innerText =
+					price ? price + " $" : "0 $";
+
+			}
+
+			// =========================
+			// PAGES / DUREE AUDIO
+			// =========================
+
+			const publicationTypeInputs = document.querySelectorAll('input[name="type"]');
+
+			const pagesField = document.getElementById('pagesField');
+			const durationField = document.getElementById('durationField');
+
+			const pagesInput = document.getElementById('pagesInput');
+			const durationInput = document.getElementById('durationInput');
+
+
+			// Summary
+
+			const summaryPagesBox = document.getElementById('summary_pages_box');
+			const summaryDurationBox = document.getElementById('summary_duration_box');
+
+			const summaryPages = document.getElementById('summary_pages');
+			const summaryDuration = document.getElementById('summary_duration');
+
+
+
+		function updateBookTypeDisplay(type){
+
+
+			if(type === "ebook"){
+
+
+				// Formulaire
+
+				if(pagesField){
+					pagesField.style.display = "block";
+				}
+
+				if(durationField){
+					durationField.style.display = "none";
+				}
+
+
+				if(pagesInput){
+
+					pagesInput.required = true;
+
+				}
+				if(durationInput){
+
+					durationInput.required = false;
+					durationInput.value = "";
+
+				}
+				// Résumé
+
+				if(summaryPagesBox){
+
+					summaryPagesBox.style.display = "block";
+
+				}
+				if(summaryDurationBox){
+					summaryDurationBox.style.display = "none";
+				}
+			}
+			else if(type === "audio"){
+				// Formulaire
+				if(pagesField){
+
+					pagesField.style.display = "none";
+
+				}
+				if(durationField){
+					durationField.style.display = "block";
+
+				}
+				if(pagesInput){
+
+					pagesInput.required = false;
+					pagesInput.value = "";
+
+				}
+
+				if(durationInput){
+
+					durationInput.required = true;
+
+				}
+
+				// Résumé
+
+				if(summaryPagesBox){
+
+					summaryPagesBox.style.display = "none";
+
+				}
+
+
+				if(summaryDurationBox){
+
+					summaryDurationBox.style.display = "block";
+
+				}
+
+
+			}
+
+
+		}
+
+
+
+		// Changement Ebook / Audio
+
+		publicationTypeInputs.forEach(input => {
+
+
+			input.addEventListener('change', function(){
+
+
+				updateBookTypeDisplay(this.value);
+
+
+			});
+
+
+		});
+
+
+
+		// Affichage initial
+
+		const checkedType = document.querySelector('input[name="type"]:checked');
+
+
+		if(checkedType){
+
+			updateBookTypeDisplay(checkedType.value);
+
+		}
+
+
+
+		// =========================
+		// UPDATE SUMMARY PAGES
+		// =========================
+
+		if(pagesInput){
+
+
+			pagesInput.addEventListener('input', function(){
+
+
+				if(summaryPages){
+
+					summaryPages.innerText = this.value || "0";
+
+				}
+
+
+			});
+
+
+		}
+
+
+
+					// =========================
+					// UPDATE SUMMARY DUREE
+					// =========================
+
+					if(durationInput){
+
+
+						durationInput.addEventListener('input', function(){
+
+
+							if(summaryDuration){
+
+								summaryDuration.innerText = this.value || "00:00:00";
+
+							}
+
+
+						});
+
+
+					}
+					
+					// =========================
+					// ANNEE
+					// =========================
+
+					let year = document.querySelector('[name="publication_year"]')?.value;
+					const summaryYear = document.querySelector("#summary_year");
+
+					if(summaryYear){
+
+						summaryYear.innerText =
+							year || "----";
+
+					}
+
+					// =========================
+					// DESCRIPTION
+					// =========================
+
+					let description =
+						document.querySelector('[name="short_description"]')?.value;
+						const summaryShortDescription = document.querySelector("#summary_short_description");
+
+						if(summaryShortDescription){
+
+							summaryShortDescription.innerText =
+								description || "Aucune description disponible.";
+
+						}
+
+					// =========================
+					// COUVERTURE
+					// =========================
+
+					let cover =
+						document.querySelector('[name="cover_image"]');
+					if(cover && cover.files.length > 0){
+						let reader = new FileReader();
+						reader.onload = function(e){
+							document.querySelector("#summary_cover").src =
+								e.target.result;
+
+						}
+						reader.readAsDataURL(cover.files[0]);
+					}
+				}
+					document.addEventListener("input", function(e){
+
+
+						if(
+							e.target.matches(
+								'[name="title"], [name="price"], [name="pages"], [name="publication_year"], [name="short_description"]'
+							)
+						){
+
+							updateBookSummary();
+
+						}
+					});
+
+					document.addEventListener("change", function(e){
+
+
+						if(
+							e.target.matches(
+								'[name="category_id"], [name="subcategory_id"], [name="language"], [name="type"], [name="cover_image"]'
+							)
+						){
+							updateBookSummary();
+						}
+					});
+
+					// Chargement initial
+
+					updateBookSummary();
+				});
+	</script>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+	    const editor = document.querySelector(".quilleditor");
+			if(editor){
+				const quill = new Quill(editor, {
+					modules: {
+						toolbar: '.quilltoolbar'
+					},
+
+					theme: 'snow'
+
+				});
+				const existingDescription = document.getElementById('long_description').value;
+
+					if (existingDescription) {
+						quill.root.innerHTML = existingDescription;
+					}
+
+				quill.on('text-change', function(){
+
+
+					document.querySelector("#long_description").value =
+						quill.root.innerHTML;
+
+
+				});
+
+			}
+
+		});
+	</script>
+
+	<script>
+
+		const bookTypes = document.querySelectorAll('input[name="type"]');
+
+		const previewType = document.getElementById('preview_type');
+
+		const previewTypeContainer = document.getElementById('previewTypeContainer');
+
+		const textPreview = document.getElementById('textPreview');
+
+		const pagesPreview = document.getElementById('pagesPreview');
+
+		function updatePreviewFields() {
+
+			const selectedType = document.querySelector('input[name="type"]:checked');
+
+			if (!selectedType) return;
+
+			// =============================
+			// LIVRE AUDIO
+			// =============================
+
+			if (selectedType.value === 'audio') {
+
+				previewTypeContainer.classList.add('d-none');
+
+				textPreview.classList.remove('d-none');
+
+				pagesPreview.classList.add('d-none');
+
+				// On force toujours le type texte
+				previewType.value = 'text';
+
+			}
+
+			// =============================
+			// EBOOK
+			// =============================
+
+			else {
+
+				previewTypeContainer.classList.remove('d-none');
+
+				if (previewType.value === 'pages') {
+
+					textPreview.classList.add('d-none');
+
+					pagesPreview.classList.remove('d-none');
+
+				} else {
+
+					textPreview.classList.remove('d-none');
+
+					pagesPreview.classList.add('d-none');
+
+				}
+
+			}
+
+		}
+
+
+		// Changement Ebook / Audio
+		bookTypes.forEach(type => {
+
+			type.addEventListener('change', updatePreviewFields);
+
+		});
+
+
+		// Changement du type d'aperçu
+			if(previewType){
+
+				previewType.addEventListener('change', updatePreviewFields);
+
+			}
+
+
+		// Initialisation
+		updatePreviewFields();
+
+	</script>
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script>
+
+			document.querySelectorAll('.delete-book-btn').forEach(button => {
+				button.addEventListener('click', function(){
+					const form = this.closest('.delete-book-form');
+					Swal.fire({
+
+						title: 'Supprimer ce livre ?',
+
+						text: "Cette action est définitive. Le fichier et la couverture seront supprimés.",
+
+						icon: 'warning',
+
+						showCancelButton: true,
+
+						confirmButtonText: 'Oui, supprimer',
+
+						cancelButtonText: 'Annuler',
+
+						reverseButtons: true,
+
+						customClass: {
+
+							popup: 'rounded-4',
+
+							confirmButton: 'btn btn-danger px-4',
+
+							cancelButton: 'btn btn-light px-4'
+
+						},
+						buttonsStyling: false
+					}).then((result)=>{
+
+						if(result.isConfirmed){
+
+							form.submit();
+
+						}
+					});
+				});
+			});
+
+	</script>
 
 </body>
 </html>

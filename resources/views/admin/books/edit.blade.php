@@ -1,87 +1,36 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
+@section('admin-content')
 
+@php
+    $readOnlyReview = in_array($book->status, [
+        'under_review',
+        'published'
+    ]);
+@endphp
 <!-- =======================
 Page Banner START -->
-<section class="book-create-hero">
     <div class="container">
         <div class="row align-items-center g-4">
             <!-- LEFT -->
-            <div class="col-lg-8">
+            <div class="col-lg-12">
 
                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
                     <i class="bi bi-book me-2"></i>
-                    Publication d'un nouveau livre
+                    Modification d'un livre existant
                 </span>
-
-                <h2 class="display-6 fw-bold mb-3">
-                    Ajoutez votre livre à 
-                    <span class="text-red">
-                        KaMa Afrika, Online Library
-                    </span>
-                </h2>
-
-                <p class="lead text-black fw-semibold mb-0">
-                    Complétez les informations de votre ouvrage afin de préparer
-                    son intégration dans notre bibliothèque numérique.
-                    Après validation du dépôt et paiement des frais de publication,
-                    votre livre sera verifie et officiellement disponible sur la plateforme KaMa.
-					Faites la promotion de votre livre sur les pages KaMa avec nos offres spéciales de sponsoring.
-					Vous toucherez 80 % de vos ventes
-                </p>
-
-            </div>
-
-            <!-- RIGHT INFO CARD -->
-            <div class="col-lg-4">
-
-                <div class="publication-info-card">
-
-                    <div class="info-icon">
-                        <i class="bi bi-cloud-upload"></i>
-                    </div>
-
-
-                    <h5 class="fw-bold mb-3 text-white">
-                        Processus de publication
-                    </h5>
-
-
-                    <div class="process-item">
-                        <span>1</span>
-                        <p>
-                            Déposez les informations et fichiers du livre
-                        </p>
-                    </div>
-
-
-                    <div class="process-item">
-                        <span>2</span>
-                        <p>
-                            Effectuez le paiement du dépôt
-                        </p>
-                    </div>
-
-                    <div class="process-item">
-                        <span>3</span>
-                        <p>
-                            Validation puis mise en ligne officielle
-                        </p>
-                    </div>
-
-                </div>
-
+                <h3 class="fw-bold mb-3">
+                    Modifier le livre <span class="text-red"> {{ $book->title }} </span>
+                </h3>
             </div>
         </div>
     </div>
-</section>
+
 <!-- =======================
 Page Banner END -->
 
 <!-- =======================
 Steps START -->
-<section>
 	<div class="container">
 		<div id="stepper" class="bs-stepper stepper-outline">
 			<!-- Step Buttons START -->
@@ -146,17 +95,45 @@ Steps START -->
 					</div>
 			@endif
 
+			@if(in_array($book->status, ['under_review','published']))
+
+                <div class="alert 
+                    {{ $book->status === 'published' ? 'alert-success' : 'alert-warning' }}">
+
+                    @if($book->status === 'under_review')
+
+                        <i class="bi bi-hourglass-split me-2"></i>
+                        Ce livre est actuellement en cours de vérification.
+
+                    @elseif($book->status === 'published')
+
+                        <i class="bi bi-check-circle me-2"></i>
+                        Ce livre est déjà publié.
+
+                    @endif
+
+
+                    Vous pouvez uniquement modifier la catégorie, la sous-catégorie,
+                    la langue, l'année de publication, le prix et le résumé,
+                    et le type d'affichage (Extrait ou pages du livre).
+
+                </div>
+
+            @endif
+
 			<!-- Step content START -->
 			<div class="bs-stepper-content p-0 pt-4 pt-md-5">
 				<div class="row g-4">
 
 					<!-- Main content START -->
 					<div class="col-12">
-						<form method="POST" 
-								action="{{ route('writer.books.store') }}"
-								enctype="multipart/form-data">
+						<form
+                            action="{{ route('admin.books.update',$book) }}"
+                            method="POST"
+                            enctype="multipart/form-data">
 
 							@csrf
+                            @method('PUT')
 							<!-- Step 1 content START -->
 							<div id="step-1" role="tabpanel" class="content fade" aria-labelledby="steppertrigger1">
 								<div class="vstack gap-4">
@@ -174,43 +151,54 @@ Steps START -->
 											<div class="row g-4">
 												<!-- Cover -->
 												<div class="col-lg-4">
-													<div class="cover-upload-box">
-														<div class="cover-preview">
+                                                    <div class="cover-upload-box">
 
-															<img 
-																id="coverPreviewImage"
-																src=""
-																alt="Aperçu couverture"
-																style="display:none;">
+                                                        <div class="cover-preview">
 
-															<div id="coverPlaceholder">
-																<i class="bi bi-image"></i>
-																<span>
-																	Aperçu couverture
-																</span>
-															</div>
+                                                            <img 
+                                                                id="coverPreviewImage"
+                                                                src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : '' }}"
+                                                                alt="Aperçu couverture"
+                                                                style="{{ $book->cover_image ? '' : 'display:none;' }}">
 
-														</div>
+                                                            <div 
+                                                                id="coverPlaceholder"
+                                                                style="{{ $book->cover_image ? 'display:none;' : '' }}">
 
-														<label class="btn btn-outline-danger w-100 mt-3">
+                                                                <i class="bi bi-image"></i>
 
-															<i class="bi bi-upload me-2"></i>
-															Ajouter la couverture
+                                                                <span>
+                                                                    Aperçu couverture
+                                                                </span>
 
-															<input 
-																type="file"
-																id="coverImageInput"
-																name="cover_image"
-																hidden
-																accept="image/png,image/jpeg">
+                                                            </div>
 
-														</label>
+                                                        </div>
 
-														<small class="text-muted d-block mt-2">
-															JPG ou PNG recommandé (600x900px) / 2MB
-														</small>
-													</div>
-												</div>
+
+                                                        <label class="btn btn-outline-primary w-100 mt-3">
+
+                                                            <i class="bi bi-upload me-2"></i>
+
+                                                            Modifier la couverture
+
+                                                            <input 
+                                                                type="file"
+                                                                id="coverImageInput"
+                                                                name="cover_image"
+                                                                hidden
+                                                                accept="image/png,image/jpeg"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
+
+                                                        </label>
+
+
+                                                        <small class="text-muted d-block mt-2">
+                                                            JPG ou PNG recommandé (600x900px) / 2MB
+                                                        </small>
+
+                                                    </div>
+                                                </div>
 
 												<!-- Informations -->
 												<div class="col-lg-8">
@@ -224,7 +212,8 @@ Steps START -->
 																type="text"
 																name="title"
 																class="form-control book-input"
-																placeholder="Ex: Les chemins de l'avenir">
+																value="{{ old('title',$book->title) }}"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														</div>
 
@@ -255,7 +244,8 @@ Steps START -->
 																		type="radio"
 																		name="type"
 																		value="ebook"
-																		checked>
+																		{{ old('type',$book->type)=='ebook' ? 'checked' : '' }}
+																		{{ $readOnlyReview ? 'disabled' : '' }}>
 																	<div>
 
 																		<i class="bi bi-file-earmark-text"></i>
@@ -277,7 +267,9 @@ Steps START -->
 																	<input 
 																		type="radio"
 																		name="type"
-																		value="audio">
+																		value="audio"
+                                                                        {{ old('type',$book->type)=='audio' ? 'checked' : '' }}
+																		{{ $readOnlyReview ? 'disabled' : '' }}>
 																	<div>
 
 																		<i class="bi bi-headphones"></i>
@@ -312,9 +304,13 @@ Steps START -->
 
 																@foreach($categories as $category)
 
-																	<option value="{{ $category->id }}">
-																		{{ $category->name }}
-																	</option>
+																	<option 
+                                                                        value="{{ $category->id }}"
+                                                                        {{ old('category_id', $book->category_id) == $category->id ? 'selected' : '' }}>
+                                                                        
+                                                                        {{ $category->name }}
+
+                                                                    </option>
 
 																@endforeach
 
@@ -335,6 +331,18 @@ Steps START -->
 																	Sous-catégorie
 																</option>
 
+                                                                @foreach($subcategories as $subcategory)
+
+                                                                    <option
+                                                                        value="{{ $subcategory->id }}"
+                                                                        {{ old('subcategory_id',$book->subcategory_id) == $subcategory->id ? 'selected' : '' }}>
+
+                                                                        {{ $subcategory->name }}
+
+                                                                    </option>
+
+                                                                @endforeach
+
 															</select>
 														</div>
 
@@ -348,8 +356,10 @@ Steps START -->
 																type="number"
 																name="pages"
 																id="pagesInput"
+                                                                value="{{ old('pages', $book->pages) }}"
 																class="form-control book-input"
-																placeholder="Ex: 120">
+																placeholder="Ex: 120"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														</div>
 
@@ -364,8 +374,10 @@ Steps START -->
 																type="text"
 																name="duration"
 																id="durationInput"
+                                                                value="{{ old('duration', $book->duration) }}"
 																class="form-control book-input"
-																placeholder="Ex: 02:35:00">
+																placeholder="Ex: 02:35:00"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 															<small class="text-muted">
 																Format recommandé : heures:minutes:secondes
@@ -385,10 +397,10 @@ Steps START -->
 																<option value="">
 																	Choisir une langue
 																</option>
-																<option>
+																<option value="Français" {{ old('language', $book->language) == 'Français' ? 'selected' : '' }}>
 																	Français
 																</option>
-																<option>
+																<option value="Anglais" {{ old('language', $book->language) == 'Anglais' ? 'selected' : '' }}>
 																	Anglais
 																</option>
 															</select>
@@ -400,14 +412,12 @@ Steps START -->
 																Année de publication *
 															</label>
 
-															<select
+															<input
+																type="number"
 																name="publication_year"
-																class="form-select book-input">
-																<option value="">Choisir une année</option>
-																@for($y = date('Y'); $y >= 1900; $y--)
-																	<option value="{{ $y }}">{{ $y }}</option>
-																@endfor
-															</select>
+                                                                value="{{ old('publication_year', $book->publication_year) }}"
+																class="form-control book-input"
+																placeholder="2026">
 														</div>
 
 														<div class="col-md-4">
@@ -418,6 +428,7 @@ Steps START -->
 															<input
 																type="number"
 																name="price"
+                                                                value="{{ old('price', $book->price) }}"
 																class="form-control book-input"
 																placeholder="25">
 														</div>
@@ -441,6 +452,8 @@ Steps START -->
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
 									</div>
+
+
 
 								</div>
 							</div>
@@ -481,47 +494,51 @@ Steps START -->
 												<!-- SHORT DESCRIPTION -->
 												<div class="col-12">
 													<label class="form-label">
-														Résumé *
+														Description courte *
 													</label>
 													<textarea
 														name="short_description"
 														rows="4"
 														class="form-control book-input"
 														placeholder="Une courte présentation qui apparaîtra sur la fiche du livre..."
-													></textarea>
-
-												</div>
-
-												{{-- Type d'apercu --}}
-												<div class="col-12" id="previewTypeContainer">
-
-													<label class="form-label">
-														Type d'aperçu
-													</label>
-
-													<select
-														name="preview_type"
-														id="preview_type"
-														class="form-select">
-
-														<option value="text">
-															Extrait texte du livre
-														</option>
-
-														<option value="pages">
-															Pages du livre (maximum 5 pages)
-														</option>
-
-													</select>
+													>{{ old('short_description',$book->short_description) }}</textarea>
 
 												</div>
 
 												<!-- FULL DESCRIPTION -->
-												<div class="col-12" id="textPreview">
+												@if($book->type == 'ebook')
+													<div class="col-12">
+
+														<label class="form-label">
+															Type d'aperçu
+														</label>
+
+														<select 
+															name="preview_type"
+															id="previewType"
+															class="form-select">
+
+															<option value="text"
+																{{ $book->preview_type == 'text' ? 'selected' : '' }}>
+																Extrait texte
+															</option>
+
+															<option value="pages"
+																{{ $book->preview_type == 'pages' ? 'selected' : '' }}>
+																Pages du livre
+															</option>
+
+														</select>
+
+													</div>
+												@endif
+												<div class="col-12 {{ $book->preview_type == 'pages' ? 'd-none' : '' }}"
+													id="textPreview">
 
 													<label class="form-label">
 														Extrait / Morceau *
 													</label>
+
 
 													<div class="bg-light border border-bottom-0 rounded-top py-3 quilltoolbar">
 
@@ -531,22 +548,38 @@ Steps START -->
 															<button class="ql-underline"></button>
 														</span>
 
+														<span class="ql-formats">
+															<button class="ql-list" value="ordered"></button>
+															<button class="ql-list" value="bullet"></button>
+														</span>
+
+														<span class="ql-formats">
+															<button class="ql-link"></button>
+														</span>
+
 													</div>
+
 
 													<div class="bg-white border rounded-bottom h-300px quilleditor">
+														{!! $book->long_description !!}
 													</div>
 
-													<input 
+
+													<input
 														type="hidden"
 														name="long_description"
-														id="long_description">
+														id="long_description"
+														value="{{ old('long_description', $book->long_description) }}">
 
 												</div>
 
-												
-												<div class="col-12 d-none" id="pagesPreview">
+												<div class="col-12 {{ $book->preview_type == 'text' ? 'd-none' : '' }}"
+													id="pagesPreview">
+
 													<div class="row">
+
 														<div class="col-md-6">
+
 															<label class="form-label">
 																Première page
 															</label>
@@ -555,10 +588,15 @@ Steps START -->
 																type="number"
 																name="preview_start_page"
 																min="1"
-																class="form-control">
+																class="form-control"
+																value="{{ old('preview_start_page', $book->preview_start_page) }}"
+																>
+
 														</div>
 
+
 														<div class="col-md-6">
+
 															<label class="form-label">
 																Dernière page
 															</label>
@@ -567,16 +605,22 @@ Steps START -->
 																type="number"
 																name="preview_end_page"
 																min="1"
-																class="form-control">
+																class="form-control"
+																value="{{ old('preview_end_page', $book->preview_end_page) }}"
+																>
+
 														</div>
+
 													</div>
+
 
 													<small class="text-black">
 														Vous pouvez sélectionner au maximum 5 pages consécutives.
 													</small>
 
 												</div>
-												
+
+
 											</div>
 										</div>
 									</div>
@@ -626,7 +670,8 @@ Steps START -->
 															id="bookFileInput"
 															name="ebook_file"
 															class="form-control mt-3"
-															accept=".pdf">
+															accept=".pdf"
+															{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														<div class="upload-info mt-3">
 
@@ -654,83 +699,6 @@ Steps START -->
 									</div>
 									<!-- FILE UPLOAD CARD END -->
 
-									<!-- COPYRIGHT DECLARATION START -->
-
-									<div class="card book-card border-danger">
-
-										<div class="card-header border-bottom">
-
-											<h4 class="mb-0 text-white">
-												<i class="bi bi-shield-check text-danger me-2"></i>
-												Déclaration de droits d'auteur
-											</h4>
-
-										</div>
-
-
-										<div class="card-body">
-
-
-											<div class="alert alert-warning mb-4">
-
-												<i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-												<strong>Important :</strong>
-												
-												En téléversant ce livre sur KaMa Online Library,
-												vous engagez votre responsabilité concernant les droits liés
-												à cette œuvre.
-
-											</div>
-
-
-											<p class="mb-3">
-
-												Je déclare être l'auteur ou le détenteur légal des droits
-												nécessaires pour publier ce livre sur KaMa Online Library.
-
-												Je confirme que le contenu ajouté ne porte pas atteinte aux
-												droits d'auteur, droits de propriété intellectuelle ou autres
-												droits de tiers.
-
-											</p>
-
-
-											<p class="mb-3">
-												Je comprends que toute déclaration frauduleuse, publication
-												non autorisée ou violation des droits d'un tiers peut entraîner
-												le retrait du contenu, la suspension de mon compte ainsi que
-												d'éventuelles poursuites conformément aux lois applicables.
-											</p>
-
-
-
-											<div class="form-check">
-												<input
-													class="form-check-input"
-													type="checkbox"
-													id="authorDeclaration"
-													name="copyright_accepted"
-   													value="1">
-
-												<label 
-													class="form-check-label"
-													for="authorDeclaration">
-
-													Je confirme avoir lu et accepté cette déclaration et
-													j'assume la responsabilité du contenu que je publie.
-
-												</label>
-
-											</div>
-
-
-										</div>
-
-									</div>
-
-									<!-- COPYRIGHT DECLARATION END -->
-
 									<!-- BUTTONS -->
 									<div class="hstack gap-2 justify-content-between">
 										<button
@@ -742,12 +710,10 @@ Steps START -->
 
 										<button
 											type="button"
-											id="continueUploadBtn"
-											class="btn btn-danger next-btn px-4" disabled>
+											class="btn btn-danger next-btn px-4">
 											Continuer
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
-
 									</div>
 								</div>
 							</div>
@@ -784,7 +750,7 @@ Steps START -->
 
 												<img 
 													id="summary_cover"
-													src=""
+													src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : asset('assets/images/default-book.png') }}"
 													alt="Couverture du livre">
 
 											</div>
@@ -792,9 +758,9 @@ Steps START -->
 											<!-- INFORMATION -->
 
 											<div class="preview-info">
-												<h2 id="summary_title">
+												<h4 id="summary_title">
 													Titre du livre
-												</h2>
+												</h4>
 												<div class="preview-author">
 													<i class="bi bi-person-fill"></i>
 													<span>
@@ -943,97 +909,11 @@ Steps START -->
 
 
 										</div>
-
-
 									</div>
 
 									<!-- BOOK PREVIEW END -->
 
-									<!-- STATUS START -->
-
-									<div class="status-card">
-										<div class="status-icon">
-											<i class="bi bi-hourglass-split"></i>
-										</div>
-
-										<div>
-											<h5>
-												Statut : En attente de paiement
-											</h5>
-
-											<p>
-
-												Votre livre sera enregistré dans la base de données KaMa.
-												Il restera invisible au public jusqu'au paiement des frais
-												de dépôt et sera ensuite soumis au processus de validation avant publication.
-											</p>
-										</div>
-
-
-									</div>
-
-									<!-- STATUS END -->
-
-									<!-- DEPOSIT START -->
-
-									<div class="deposit-card">
-										<div class="deposit-left">
-											<h4>
-												Frais de dépôt KaMa
-											</h4>
-
-											<p>
-												Ces frais couvrent la préparation et la mise en ligne
-												de votre ouvrage sur la plateforme.
-											</p>
-
-											<ul>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Vérification éditoriale
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Contrôle qualité du fichier
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Référencement dans la bibliothèque KaMa
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Publication officielle après paiement et vérification
-												</li>
-
-
-											</ul>
-
-											<p class="fw-semibold text-white">
-												Le délai de publication du livre est de 15 jours à compter du jour du paiement de dépôt.
-											</p>
-										</div>
-
-										<div class="deposit-right">
-											<span>
-												Montant du dépôt
-											</span>
-											<h1>
-												10 $
-											</h1>
-
-											<small>
-												Le paiement sera effectué après l'enregistrement.
-											</small>
-
-
-										</div>
-									</div>
-
-									<!-- DEPOSIT END -->
+									
 
 
 									<!-- BUTTONS -->
@@ -1043,17 +923,14 @@ Steps START -->
 										<button
 											type="button"
 											class="btn btn-light prev-btn">
-
-											<i class="bi bi-arrow-left me-2"></i>
-
-											Retour
+											<i class="bi bi-chevron-left me-2"></i>
 										</button>
 
 										<button
 											type="submit"
 											class="btn btn-danger btn-lg px-5">
 											<i class="bi bi-cloud-check me-2"></i>
-											Enregistrer mon livre
+											Modifier mon livre
 										</button>
 									</div>
 								</div>
@@ -1070,120 +947,112 @@ Steps START -->
 			<!-- Step content END -->
 		</div>
 	</div>
-</section>
 <!-- =======================
 Steps END -->
 
 <script>
-	document.getElementById('continueUploadBtn').addEventListener('click', function () {
 
-		const fileInput = document.getElementById('bookFileInput');
-
-		if (!fileInput.files.length) {
-
-			Swal.fire({
-				icon: 'warning',
-				title: 'Fichier manquant',
-				text: 'Veuillez sélectionner le fichier PDF de votre livre avant de continuer.',
-				confirmButtonColor: '#dc3545'
-			});
-
-			return;
-		}
+document.addEventListener("DOMContentLoaded", function () {
 
 
-		const fileName = fileInput.files[0].name;
+    /*
+    |--------------------------------------------------------------------------
+    | Gestion preview type
+    |--------------------------------------------------------------------------
+    */
+
+    const previewType = document.getElementById('previewType');
+
+    const textPreview = document.getElementById('textPreview');
+
+    const pagesPreview = document.getElementById('pagesPreview');
 
 
-		Swal.fire({
-
-			title: 'Êtes-vous sûr ?',
-
-			html: `
-				<div class="text-start">
-
-					<p>
-						Vous êtes sur le point de téléverser :
-					</p>
-
-					<div class="alert alert-light border">
-						<i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>
-						<strong>${fileName}</strong>
-					</div>
+    function togglePreviewType() {
 
 
-					<p class="text-danger mb-0">
-						<i class="bi bi-exclamation-triangle-fill me-1"></i>
-						Cette action est irréversible après paiement du dépôt de votre livre.
-					</p>
-
-				</div>
-			`,
-
-			icon: 'warning',
-
-			showCancelButton: true,
-
-			confirmButtonText: `
-				<i class="bi bi-cloud-arrow-up me-2"></i>
-				Oui, téléverser
-			`,
-
-			cancelButtonText: `
-				Annuler
-			`,
-
-			confirmButtonColor: '#dc3545',
-
-			cancelButtonColor: '#6c757d',
-
-			reverseButtons: true
-
-		}).then((result)=>{
+        if (previewType.value === 'text') {
 
 
-			if(result.isConfirmed){
+            textPreview.classList.remove('d-none');
 
-				// Passage à l'étape suivante de ton wizard
-				document.querySelector('.next-btn').click();
+            pagesPreview.classList.add('d-none');
 
-			}
-
-
-		});
-
-
-	});
-</script>
-
-<script>
-
-const authorDeclaration = document.getElementById(
-    'authorDeclaration'
-);
-
-const continueUploadBtn = document.getElementById(
-    'continueUploadBtn'
-);
-
-
-authorDeclaration.addEventListener(
-    'change',
-    function(){
-
-        if(this.checked){
-
-            continueUploadBtn.disabled = false;
 
         } else {
 
-            continueUploadBtn.disabled = true;
+
+            textPreview.classList.add('d-none');
+
+            pagesPreview.classList.remove('d-none');
+
 
         }
 
     }
-);
 
+
+    previewType.addEventListener(
+        'change',
+        togglePreviewType
+    );
+
+
+    // Initialisation selon la valeur existante
+    togglePreviewType();
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Initialisation Quill
+    |--------------------------------------------------------------------------
+    */
+
+
+    const editor = document.querySelector('.quilleditor');
+
+    const hiddenDescription = document.getElementById('long_description');
+
+
+    if(editor && hiddenDescription){
+
+
+        const quill = new Quill(editor, {
+
+            theme: 'snow',
+
+            modules: {
+
+                toolbar: '.quilltoolbar'
+
+            }
+
+        });
+
+
+
+        // Charger l'ancienne description
+        quill.root.innerHTML = `{!! addslashes($book->long_description ?? '') !!}`;
+
+
+
+        // Synchroniser Quill avec le formulaire
+
+        quill.on('text-change', function () {
+
+
+            hiddenDescription.value = quill.root.innerHTML;
+
+
+        });
+
+
+    }
+
+
+
+});
 
 </script>
 @endsection

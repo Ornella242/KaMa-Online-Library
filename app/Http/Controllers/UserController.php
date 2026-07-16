@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Mail\UserPasswordMail;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Country;
 use App\Models\Role;
 use App\Models\Payment;
 use Illuminate\Validation\Rule;
@@ -17,10 +18,6 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        // Tous les utilisateurs
-        $users = User::with('role')
-            ->latest()
-            ->get();
 
         // Nombre total utilisateurs
         $totalUsers = User::count();
@@ -78,7 +75,10 @@ class UserController extends Controller
 
         }
 
-       $users = $query->latest()->paginate(15);
+        $users = $query
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
 
         return view('admin.users.users', compact(
@@ -100,6 +100,7 @@ class UserController extends Controller
         $data = [];
         if($user->role->name === 'writer' || $user->role->name === 'admin'){
             $data['totalBooks'] = $user->books()->count();
+            $data['BooksUnderreview'] = $user->books()->where('status','under_review')->count();
             $data['totalSales'] = $user->payments()
                 ->where('type','purchase')
                 ->count();
@@ -121,7 +122,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $countries = Country::orderBy('name')->get();
+        return view('admin.users.edit', compact('user','countries'));
     }
 
     public function update(Request $request, User $user)
@@ -135,7 +137,15 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'phone' => 'nullable|string|max:30',
-            'country' => 'nullable|string|max:255',
+            'country_id' => [
+                'required',
+                'exists:countries,id'
+            ],
+            'city' => [
+                'required',
+                'string',
+                'max:100'
+            ],
             'gender' => 'nullable|in:male,female,other',
             'bio' => 'nullable|string',
         ]);
@@ -145,7 +155,8 @@ class UserController extends Controller
             'lastname'  => $request->lastname,
             'email'     => $request->email,
             'phone'     => $request->phone,
-            'country'   => $request->country,
+            'country_id' => $request->country_id,
+            'city' => $request->city,
             'gender'    => $request->gender,
             'bio'       => $request->bio,
         ]);
@@ -250,7 +261,6 @@ class UserController extends Controller
 {
     
     $user = Auth::user();
-
 
     $validated = $request->validate([
 

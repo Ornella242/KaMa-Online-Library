@@ -1,77 +1,23 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
-
+@section('admin-content')
 <!-- =======================
 Page Banner START -->
 <section class="book-create-hero">
     <div class="container">
         <div class="row align-items-center g-4">
             <!-- LEFT -->
-            <div class="col-lg-8">
-
+            <div class="col-lg-12">
                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
                     <i class="bi bi-book me-2"></i>
                     Publication d'un nouveau livre
                 </span>
-
-                <h2 class="display-6 fw-bold mb-3">
-                    Ajoutez votre livre à 
+                <h3 class="h3 fw-bold">
+                    Ajoutez votre  
                     <span class="text-red">
-                        KaMa Afrika, Online Library
+                        nouveau livre
                     </span>
-                </h2>
-
-                <p class="lead text-black fw-semibold mb-0">
-                    Complétez les informations de votre ouvrage afin de préparer
-                    son intégration dans notre bibliothèque numérique.
-                    Après validation du dépôt et paiement des frais de publication,
-                    votre livre sera verifie et officiellement disponible sur la plateforme KaMa.
-					Faites la promotion de votre livre sur les pages KaMa avec nos offres spéciales de sponsoring.
-					Vous toucherez 80 % de vos ventes
-                </p>
-
-            </div>
-
-            <!-- RIGHT INFO CARD -->
-            <div class="col-lg-4">
-
-                <div class="publication-info-card">
-
-                    <div class="info-icon">
-                        <i class="bi bi-cloud-upload"></i>
-                    </div>
-
-
-                    <h5 class="fw-bold mb-3 text-white">
-                        Processus de publication
-                    </h5>
-
-
-                    <div class="process-item">
-                        <span>1</span>
-                        <p>
-                            Déposez les informations et fichiers du livre
-                        </p>
-                    </div>
-
-
-                    <div class="process-item">
-                        <span>2</span>
-                        <p>
-                            Effectuez le paiement du dépôt
-                        </p>
-                    </div>
-
-                    <div class="process-item">
-                        <span>3</span>
-                        <p>
-                            Validation puis mise en ligne officielle
-                        </p>
-                    </div>
-
-                </div>
-
+                </h3>
             </div>
         </div>
     </div>
@@ -81,7 +27,6 @@ Page Banner END -->
 
 <!-- =======================
 Steps START -->
-<section>
 	<div class="container">
 		<div id="stepper" class="bs-stepper stepper-outline">
 			<!-- Step Buttons START -->
@@ -153,7 +98,7 @@ Steps START -->
 					<!-- Main content START -->
 					<div class="col-12">
 						<form method="POST" 
-								action="{{ route('writer.books.store') }}"
+								action="{{ route('admin.books.store') }}"
 								enctype="multipart/form-data">
 
 							@csrf
@@ -192,7 +137,7 @@ Steps START -->
 
 														</div>
 
-														<label class="btn btn-outline-danger w-100 mt-3">
+														<label class="btn btn-outline-primary w-100 mt-3">
 
 															<i class="bi bi-upload me-2"></i>
 															Ajouter la couverture
@@ -400,14 +345,11 @@ Steps START -->
 																Année de publication *
 															</label>
 
-															<select
+															<input
+																type="number"
 																name="publication_year"
-																class="form-select book-input">
-																<option value="">Choisir une année</option>
-																@for($y = date('Y'); $y >= 1900; $y--)
-																	<option value="{{ $y }}">{{ $y }}</option>
-																@endfor
-															</select>
+																class="form-control book-input"
+																placeholder="2026">
 														</div>
 
 														<div class="col-md-4">
@@ -441,6 +383,8 @@ Steps START -->
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
 									</div>
+
+
 
 								</div>
 							</div>
@@ -792,9 +736,9 @@ Steps START -->
 											<!-- INFORMATION -->
 
 											<div class="preview-info">
-												<h2 id="summary_title">
+												<h4 id="summary_title">
 													Titre du livre
-												</h2>
+												</h4>
 												<div class="preview-author">
 													<i class="bi bi-person-fill"></i>
 													<span>
@@ -953,19 +897,16 @@ Steps START -->
 
 									<div class="status-card">
 										<div class="status-icon">
-											<i class="bi bi-hourglass-split"></i>
+											<i class="bi bi-check-circle-fill"></i>
 										</div>
 
 										<div>
 											<h5>
-												Statut : En attente de paiement
+												Statut : Publié
 											</h5>
 
 											<p>
-
-												Votre livre sera enregistré dans la base de données KaMa.
-												Il restera invisible au public jusqu'au paiement des frais
-												de dépôt et sera ensuite soumis au processus de validation avant publication.
+												Votre livre sera enregistré et publié automatiquement sur KaMa.
 											</p>
 										</div>
 
@@ -973,67 +914,6 @@ Steps START -->
 									</div>
 
 									<!-- STATUS END -->
-
-									<!-- DEPOSIT START -->
-
-									<div class="deposit-card">
-										<div class="deposit-left">
-											<h4>
-												Frais de dépôt KaMa
-											</h4>
-
-											<p>
-												Ces frais couvrent la préparation et la mise en ligne
-												de votre ouvrage sur la plateforme.
-											</p>
-
-											<ul>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Vérification éditoriale
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Contrôle qualité du fichier
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Référencement dans la bibliothèque KaMa
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Publication officielle après paiement et vérification
-												</li>
-
-
-											</ul>
-
-											<p class="fw-semibold text-white">
-												Le délai de publication du livre est de 15 jours à compter du jour du paiement de dépôt.
-											</p>
-										</div>
-
-										<div class="deposit-right">
-											<span>
-												Montant du dépôt
-											</span>
-											<h1>
-												10 $
-											</h1>
-
-											<small>
-												Le paiement sera effectué après l'enregistrement.
-											</small>
-
-
-										</div>
-									</div>
-
-									<!-- DEPOSIT END -->
 
 
 									<!-- BUTTONS -->
@@ -1043,10 +923,7 @@ Steps START -->
 										<button
 											type="button"
 											class="btn btn-light prev-btn">
-
-											<i class="bi bi-arrow-left me-2"></i>
-
-											Retour
+											<i class="bi bi-chevron-left me-2"></i>
 										</button>
 
 										<button
@@ -1070,7 +947,7 @@ Steps START -->
 			<!-- Step content END -->
 		</div>
 	</div>
-</section>
+
 <!-- =======================
 Steps END -->
 
@@ -1186,4 +1063,6 @@ authorDeclaration.addEventListener(
 
 
 </script>
+
+
 @endsection

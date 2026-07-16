@@ -145,28 +145,28 @@
                                                     <div class="col-md-4 mb-3">
                                                         <label class="form-label fw-semibold text-black"><i class="bi bi-flag me-2 icon-red"></i>Pays<span class="text-danger">*</span></label>
                                                               
-                                                                <select 
-                                                                    name="country_id"
-                                                                    class="form-select rounded-3 shadow-sm"
-                                                                    required>
+                                                             <select 
+                                                            name="country_id"
+                                                            class="form-select rounded-3 shadow-sm"
+                                                            required>
 
-                                                                    <option value="">
-                                                                        Sélectionnez votre pays
-                                                                    </option>
+                                                            <option value="">
+                                                                Sélectionnez votre pays
+                                                            </option>
 
-                                                                    @foreach($countries as $country)
+                                                            @foreach($countries as $country)
 
-                                                                        <option 
-                                                                            value="{{ $country->id }}"
-                                                                            {{ old('country_id', Auth::user()->country_id) == $country->id ? 'selected' : '' }}>
+                                                                <option 
+                                                                    value="{{ $country->id }}"
+                                                                    {{ old('country_id', Auth::user()->country_id) == $country->id ? 'selected' : '' }}>
 
-                                                                            {{ $country->flag }} {{ $country->name }}
+                                                                    {{ $country->flag }} {{ $country->name }}
 
-                                                                        </option>
+                                                                </option>
 
-                                                                    @endforeach
+                                                            @endforeach
 
-                                                                </select>
+                                                        </select>
 
                                                     </div>                
                                                     
