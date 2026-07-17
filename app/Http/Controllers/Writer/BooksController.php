@@ -97,8 +97,10 @@ class BooksController extends Controller
 
 
         $books = $query
-            ->paginate(5)
+            ->paginate(4)
             ->withQueryString();
+
+            
 
         return view(
             'writer.books.index',

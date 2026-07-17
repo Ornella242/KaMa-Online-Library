@@ -147,37 +147,7 @@
                         Gestion KaMa
                     </li>
 
-                    <!-- Users -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/admin/users') }}">
-                            <i class="bi bi-people-fill me-2"></i>
-                            Utilisateurs
-                        </a>
-
-                        <ul class="nav collapse flex-column"
-                            id="collapseUsers"
-                            data-bs-parent="#navbar-sidebar">
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                href="#">
-                                    Lecteurs
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                href="#">
-                                    Écrivains
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                href="#">
-                                    Administrateurs
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
+                   
                     <!-- Books -->
                     <li class="nav-item">
                         <a class="nav-link"
@@ -217,6 +187,14 @@
                         </ul>
                     </li>
 
+					 <!-- Categories -->
+                    <li class="nav-item">
+						<a class="nav-link" href="{{ route('admin.categories.index') }}">
+							<i class="bi bi-tags-fill me-2"></i>
+							Catégories
+						</a>
+					</li>
+
                     <!-- Revues et commentaires -->
                     <li class="nav-item">
                         <a class="nav-link" href="#">
@@ -225,13 +203,7 @@
                         </a>
                     </li>
 
-                    <!-- Categories -->
-                    <li class="nav-item">
-						<a class="nav-link" href="{{ route('admin.categories.index') }}">
-							<i class="bi bi-tags-fill me-2"></i>
-							Catégories
-						</a>
-					</li>
+                   
 
                     <!-- Payments -->
                     <li class="nav-item">
@@ -273,6 +245,38 @@
                             Abonnements
                         </a>
                     </li>
+
+					 <!-- Users -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/admin/users') }}">
+                            <i class="bi bi-people-fill me-2"></i>
+                            Utilisateurs
+                        </a>
+
+                        <ul class="nav collapse flex-column"
+                            id="collapseUsers"
+                            data-bs-parent="#navbar-sidebar">
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                href="#">
+                                    Lecteurs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                href="#">
+                                    Écrivains
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                href="#">
+                                    Administrateurs
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
 
                     <!-- Settings -->
                     <li class="nav-item">

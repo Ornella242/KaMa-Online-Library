@@ -54,7 +54,7 @@
         @endif
     </div>
 
-<!-- Counter START -->
+    <!-- Counter START -->
     <div class="row g-4 mb-5 kama-allbooks-stats">
         <!-- Counter item -->
         <div class="col-md-6 col-xxl-3">
@@ -124,247 +124,252 @@
             </div>	
         </div>
     </div>
-<!-- Counter END -->
+    <!-- Counter END -->
 
-<div class="kama-toolbar mb-5">
+    <div class="kama-toolbar mb-5">
 
-    <div class="kama-filter-group">
+        <div class="kama-filter-group">
 
-        <a href="{{ route('admin.books.all') }}"
-        class="kama-filter {{ !request('status') ? 'active' : '' }}">
-            <i class="bi bi-grid-3x3-gap-fill"></i>
-            Tous
-        </a>
+            <a href="{{ route('admin.books.all') }}"
+            class="kama-filter {{ !request('status') ? 'active' : '' }}">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                Tous
+            </a>
 
-        <a href="{{ route('admin.books.all',['status'=>'waiting_review']) }}"
-        class="kama-filter {{ request('status')=='waiting_review' ? 'active' : '' }}">
-            <i class="bi bi-hourglass-split"></i>
-            En attente
-        </a>
+            <a href="{{ route('admin.books.all',['status'=>'waiting_review']) }}"
+            class="kama-filter {{ request('status')=='waiting_review' ? 'active' : '' }}">
+                <i class="bi bi-hourglass-split"></i>
+                En attente
+            </a>
 
-        <a href="{{ route('admin.books.all',['status'=>'under_review']) }}"
-        class="kama-filter {{ request('status')=='under_review' ? 'active' : '' }}">
-            <i class="bi bi-hourglass-split"></i>
-            En vérification
-        </a>
+            <a href="{{ route('admin.books.all',['status'=>'under_review']) }}"
+            class="kama-filter {{ request('status')=='under_review' ? 'active' : '' }}">
+                <i class="bi bi-hourglass-split"></i>
+                En vérification
+            </a>
 
-        <a href="{{ route('admin.books.all',['status'=>'published']) }}"
-        class="kama-filter {{ request('status')=='published' ? 'active' : '' }}">
-            <i class="bi bi-patch-check-fill"></i>
-            Publiés
-        </a>
+            <a href="{{ route('admin.books.all',['status'=>'published']) }}"
+            class="kama-filter {{ request('status')=='published' ? 'active' : '' }}">
+                <i class="bi bi-patch-check-fill"></i>
+                Publiés
+            </a>
 
-        <a href="{{ route('admin.books.all',['status'=>'draft']) }}"
-        class="kama-filter {{ request('status')=='draft' ? 'active' : '' }}">
-            <i class="bi bi-pencil-square"></i>
-            Brouillons
-        </a>
-
-    </div>
-
-
-    <form method="GET"
-          action="{{ route('admin.books.all') }}"
-          class="kama-search">
-
-        @if(request('status'))
-            <input type="hidden"
-                   name="status"
-                   value="{{ request('status') }}">
-        @endif
-
-        <i class="bi bi-search"></i>
-
-        <input
-            type="search"
-            name="search"
-            value="{{ request('search') }}"
-            placeholder="Rechercher un livre...">
-
-    </form>
-
-</div>
-
-@if($books->count())
-    <div class="kama-books-grid desktop-books">
-
-
-        @foreach($books as $book)
-
-        <div class="kama-library-card">
-
-
-            <div class="library-cover">
-
-                <img 
-                src="{{ asset('storage/'.$book->cover_image) }}"
-                alt="{{ $book->title }}">
-
-
-                <span class="library-status {{ $book->status }}">
-
-                    @if($book->status == 'under_review')
-                        Sous vérification
-
-                    @elseif($book->status == 'waiting_review')
-                        En attente de vérification
-
-                    @elseif($book->status == 'published')
-                        Publié
-
-                    @elseif($book->status == 'draft')
-                        Brouillon
-
-                    @elseif($book->status == 'revision_required')
-                        Modifications requises
-                    @endif
-
-                </span>
-
-            </div>
-
-
-
-            <div class="library-content">
-
-
-                <h5>
-                    {{ $book->title }}
-                </h5>
-
-
-                <p class="author">
-
-                    <i class="bi bi-person"></i>
-
-                    {{ $book->author->firstname }}
-                    {{ $book->author->lastname }}
-
-                </p>
-
-
-
-                <div class="library-tags">
-
-                    <span>
-                        {{ $book->category->name }}
-                    </span>
-
-
-                    <span>
-                        {{ ucfirst($book->type) }}
-                    </span>
-
-                </div>
-
-
-
-                <div class="library-footer">
-
-
-                    <strong>
-                        {{ $book->price }} $
-                    </strong>
-
-
-                    <a href="{{route('admin.books.show',$book)}}">
-
-                        Voir
-
-                    </a>
-
-
-                </div>
-
-
-            </div>
-
+            <a href="{{ route('admin.books.all',['status'=>'draft']) }}"
+            class="kama-filter {{ request('status')=='draft' ? 'active' : '' }}">
+                <i class="bi bi-pencil-square"></i>
+                Brouillons
+            </a>
 
         </div>
 
 
-        @endforeach
+        <form method="GET"
+            action="{{ route('admin.books.all') }}"
+            class="kama-search">
 
+            @if(request('status'))
+                <input type="hidden"
+                    name="status"
+                    value="{{ request('status') }}">
+            @endif
+
+            <i class="bi bi-search"></i>
+
+            <input
+                type="search"
+                name="search"
+                value="{{ request('search') }}"
+                placeholder="Rechercher un livre...">
+
+        </form>
 
     </div>
 
-
-
-    <div class="mobile-books-slider-wrapper">
-        <div class="tiny-slider arrow-round arrow-blur">
-            <div class="tiny-slider-inner admin-kama-mobile-slider"
-
-                data-autoplay="false"
-                data-arrow="true"
-                data-dots="true"
-                data-items="1">
+    @if($books->count())
+        <div class="kama-books-grid desktop-books">
 
 
             @foreach($books as $book)
-                <div>
-                    <div class="kama-library-card mobile-card">
 
-                        <div class="library-cover">
-                            <img 
-                            src="{{asset('storage/'.$book->cover_image)}}">
-
-                            <span class="library-status {{ $book->status }}">
-
-                                @if($book->status == 'under_review')
-                                    Sous vérification
-                                @elseif($book->status == 'waiting_review')
-                                   En attente de vérification
-
-                                @elseif($book->status == 'published')
-                                    Publié
-
-                                @elseif($book->status == 'draft')
-                                    Brouillon
-
-                                @endif
-
-                            </span>
-                        </div>
-
-                        <div class="library-content">
-                            <h5>
-                            {{$book->title}}
-                            </h5>
-
-                            <p>
-                            <i class="bi bi-person"></i>
-                            {{$book->author->firstname}}
-                            </p>
+            <div class="kama-library-card">
 
 
-                            <div class="library-tags">
-                                <span>
-                                {{$book->category->name}}
-                                </span>
-                            </div>
+                <div class="library-cover">
 
-                            <a class="library-view-btn"
-                            href="{{route('admin.books.show',$book)}}">
+                    <img 
+                    src="{{ asset('storage/'.$book->cover_image) }}"
+                    alt="{{ $book->title }}">
 
-                                Voir le livre
-                            </a>
-                        </div>
+
+                    <span class="library-status {{ $book->status }}">
+
+                        @if($book->status == 'under_review')
+                            Sous vérification
+
+                        @elseif($book->status == 'waiting_review')
+                            En attente de vérification
+
+                        @elseif($book->status == 'published')
+                            Publié
+
+                        @elseif($book->status == 'draft')
+                            Brouillon
+
+                        @elseif($book->status == 'revision_required')
+                            Modifications requises
+                        @endif
+
+                    </span>
+
+                </div>
+
+
+
+                <div class="library-content">
+
+
+                    <h5>
+                        {{ $book->title }}
+                    </h5>
+
+
+                    <p class="author">
+
+                        <i class="bi bi-person"></i>
+
+                        {{ $book->author->firstname }}
+                        {{ $book->author->lastname }}
+
+                    </p>
+
+
+
+                    <div class="library-tags">
+
+                        <span>
+                            {{ $book->category->name }}
+                        </span>
+
+
+                        <span>
+                            {{ ucfirst($book->type) }}
+                        </span>
 
                     </div>
 
+
+
+                    <div class="library-footer">
+
+
+                        <strong>
+                            {{ $book->price }} $
+                        </strong>
+
+
+                        <a href="{{route('admin.books.show',$book)}}">
+
+                            Voir
+
+                        </a>
+
+
+                    </div>
+
+
                 </div>
-            @endforeach
+
 
             </div>
+
+
+            @endforeach
+
+
         </div>
-    </div>
 
-@else
 
-    <!-- ===================== -->
-    <!-- ETAT VIDE -->
-    <!-- ===================== -->
 
+        <div class="mobile-books-slider-wrapper">
+            <div class="tiny-slider arrow-round arrow-blur">
+                <div class="tiny-slider-inner admin-kama-mobile-slider"
+
+                    data-autoplay="false"
+                    data-arrow="true"
+                    data-dots="true"
+                    data-items="1">
+
+                    @foreach($books as $book)
+                        <div>
+                            <div class="kama-library-card mobile-card">
+
+                                <div class="library-cover">
+                                    <img 
+                                    src="{{asset('storage/'.$book->cover_image)}}">
+
+                                    <span class="library-status {{ $book->status }}">
+
+                                        @if($book->status == 'under_review')
+                                            Sous vérification
+                                        @elseif($book->status == 'waiting_review')
+                                        En attente de vérification
+
+                                        @elseif($book->status == 'published')
+                                            Publié
+
+                                        @elseif($book->status == 'draft')
+                                            Brouillon
+
+                                        @endif
+
+                                    </span>
+                                </div>
+
+                                <div class="library-content">
+                                    <h5>
+                                    {{$book->title}}
+                                    </h5>
+
+                                    <p>
+                                    <i class="bi bi-person"></i>
+                                    {{$book->author->firstname}}
+                                    </p>
+
+
+                                    <div class="library-tags">
+                                        <span>
+                                        {{$book->category->name}}
+                                        </span>
+                                    </div>
+
+                                    <a class="library-view-btn"
+                                    href="{{route('admin.books.show',$book)}}">
+
+                                        Voir le livre
+                                    </a>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    @endforeach
+
+                </div>
+            </div>  
+        </div>
+        
+        <div class="card-footer bg-white border-0">
+
+            <div class="category-pagination">
+
+                {{ $books->onEachSide(1)->links() }}
+
+            </div>
+
+        </div>
+    @else
+
+    {{-- ETAT VIDE --}}
     <div class="kama-empty-books">
 
         <div class="empty-icon">
@@ -374,15 +379,11 @@
         </div>
 
         <h3>
-
             Aucun livre trouvé
-
         </h3>
 
         <p>
-
             Aucun livre ne correspond à votre recherche ou au filtre sélectionné.
-
         </p>
 
         @if(request()->filled('status') || request()->filled('search'))
@@ -399,6 +400,8 @@
         @endif
 
     </div>
+
+    
 
 @endif
 
