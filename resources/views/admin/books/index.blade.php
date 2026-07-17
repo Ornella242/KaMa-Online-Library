@@ -233,11 +233,6 @@
                                                 Publié
                                             </span>
 
-                                        @elseif($book->status == 'pending_payment')
-                                            <span class="status pending">
-                                                Paiement en attente
-                                            </span>
-
                                         @elseif($book->status == 'draft')
                                             <span class="status draft">
                                                 Brouillon - Paiement de depot requis 
@@ -245,6 +240,14 @@
                                         @elseif ($book->status == 'under_review')
                                             <span class="status under_review">
                                                 Sous vérification
+                                            </span>
+                                        @elseif ($book->status == 'waiting_review')
+                                            <span class="status pending">
+                                                En attente de vérification
+                                            </span>
+                                        @elseif ($book->status == 'revision_required')
+                                            <span class="status unpublished">
+                                                Corrections demandées
                                             </span>
                                         @else
                                             <span class="status unpublished">
@@ -395,16 +398,20 @@
                                                     Brouillon
                                                 </span>
 
-                                            @elseif($book->status == 'pending_payment')
-
-                                                <span class="mobile-status pending">
-                                                    Paiement
-                                                </span>
-
                                             @elseif($book->status == 'under_review')
 
                                                 <span class="mobile-status review">
                                                     Vérification
+                                                </span>
+                                            @elseif($book->status == 'waiting_review')
+
+                                                <span class="mobile-status pending">
+                                                    En attente
+                                                </span>
+                                            @elseif($book->status == 'revision_required')
+
+                                                <span class="mobile-status unpublished">
+                                                    À corriger
                                                 </span>
 
                                             @endif

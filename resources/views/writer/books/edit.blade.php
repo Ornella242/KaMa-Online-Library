@@ -374,10 +374,14 @@ Steps START -->
                                                                 value="{{ old('duration', $book->duration) }}"
 																class="form-control book-input"
 																placeholder="Ex: 02:35:00"
+																inputmode="numeric"
+																maxlength="9"
+																pattern="[0-9]{1,3}:[0-5][0-9]:[0-5][0-9]"
+																title="Utilisez le format heures:minutes:secondes, par exemple 02:35:00"
 																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 															<small class="text-muted">
-																Format recommandé : heures:minutes:secondes
+																Format obligatoire : heures:minutes:secondes (ex. 02:35:00)
 															</small>
 
 														</div>

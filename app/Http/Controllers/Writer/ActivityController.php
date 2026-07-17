@@ -24,7 +24,7 @@ class ActivityController extends Controller
         if($activity->user_id != Auth::id()){
             abort(403);
         }
-        $activity->forceDelete();
+        $activity->delete();
 
         return back()
             ->with('success','Activité supprimée avec succès.');

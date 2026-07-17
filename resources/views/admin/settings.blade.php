@@ -14,9 +14,9 @@
                 </div>
 
                 <div>
-                    <h3 class="h3 mb-1">Paramètres du compte</h3>
+                    <h3 class="h3 mb-1">Paramètres de la plateforme</h3>
                     <p class="text-black mb-0">
-                        Gérez vos informations personnelles et la sécurité de votre compte KaMa.
+                        Configurez les frais de publication, votre profil et la sécurité de KaMa.
                     </p>
                 </div>
                                        
@@ -48,6 +48,82 @@
             </div>
         </div>
     </div>
+
+    <section class="admin-publication-fees">
+        <div class="admin-publication-fees-header">
+            <div>
+                <span>Configuration commerciale</span>
+                <h4>Frais de publication des livres</h4>
+                <p>Ces montants sont appliqués automatiquement selon le format choisi par l’écrivain.</p>
+            </div>
+            <span class="admin-publication-fees-lock">
+                <i class="bi bi-shield-lock"></i> Montants contrôlés par l’administration
+            </span>
+        </div>
+
+        <form method="POST" action="{{ route('admin.settings.publication-fees.update') }}">
+            @csrf
+            @method('PUT')
+
+            <div class="admin-publication-fees-grid">
+                <label>
+                    <span class="admin-publication-fee-icon"><i class="bi bi-file-earmark-text"></i></span>
+                    <div>
+                        <strong>Livre écrit — Ebook</strong>
+                        <small>Frais demandés pour le dépôt d’un fichier PDF.</small>
+                        <div class="admin-publication-fee-input">
+                            <input type="number"
+                                   name="ebook_amount"
+                                   min="1"
+                                   max="999999"
+                                   step="1"
+                                   value="{{ old('ebook_amount', data_get($publicationFees, 'ebook.amount', 10)) }}"
+                                   required>
+                            <span class="fee-currency-preview">XOF</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label>
+                    <span class="admin-publication-fee-icon audio"><i class="bi bi-headphones"></i></span>
+                    <div>
+                        <strong>Livre audio</strong>
+                        <small>Frais demandés pour le dépôt d’un fichier audio.</small>
+                        <div class="admin-publication-fee-input">
+                            <input type="number"
+                                   name="audio_amount"
+                                   min="1"
+                                   max="999999"
+                                   step="1"
+                                   value="{{ old('audio_amount', data_get($publicationFees, 'audio.amount', 15)) }}"
+                                   required>
+                            <span class="fee-currency-preview">XOF</span>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="admin-publication-fees-footer">
+                <div>
+                    <label for="publication-fee-currency">Devise</label>
+                    <input id="publication-fee-currency"
+                           type="text"
+                           name="currency"
+                           maxlength="3"
+                           value="XOF"
+                           readonly
+                           required>
+                </div>
+                <p>
+                    <i class="bi bi-info-circle"></i>
+                    Les nouvelles valeurs s’appliquent aux prochaines demandes de paiement uniquement.
+                </p>
+                <button type="submit">
+                    <i class="bi bi-check2-circle"></i> Enregistrer les frais
+                </button>
+            </div>
+        </form>
+    </section>
 
 
 

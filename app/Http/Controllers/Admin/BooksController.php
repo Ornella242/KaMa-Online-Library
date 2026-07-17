@@ -790,32 +790,31 @@ class BooksController extends Controller
         for($pageNumber = $start; $pageNumber <= $end; $pageNumber++){
 
 
-            $imagick = new Imagick();
-
-
-            $imagick->setResolution(150,150);
-
-
-            // page PDF (index commence à 0)
-            $imagick->readImage(
-                $pdfPath.'['.($pageNumber-1).']'
+            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
+            $command = sprintf(
+                'pdftoppm -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
+                $pageNumber,
+                $pageNumber,
+                escapeshellarg($pdfPath),
+                escapeshellarg($tmpPrefix)
             );
 
+            exec($command, $output, $exitCode);
+            $source = $tmpPrefix.'.png';
 
-            $imagick->setImageFormat("webp");
+            if ($exitCode !== 0 || !file_exists($source)) {
+                throw new \RuntimeException('Impossible de générer l’extrait PDF.');
+            }
 
+            $image = imagecreatefrompng($source);
+            if ($image === false) {
+                @unlink($source);
+                throw new \RuntimeException('Impossible de lire la page générée.');
+            }
 
-            $imagick->setImageCompressionQuality(85);
-
-
-            $imagick->writeImage(
-                $folder.'/page-'.$pageNumber.'.webp'
-            );
-
-
-            $imagick->clear();
-
-            $imagick->destroy();
+            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
+            imagedestroy($image);
+            unlink($source);
 
         }
 
@@ -951,17 +950,16 @@ class BooksController extends Controller
         $query = Book::with([
             'author',
             'category',
-            'subcategory'
+            'subcategory',
+            'publicationPayment',
         ]);
 
         // FILTRE PAR STATUT
-        if($request->filled('status')){
-
-            $query->where(
-                'status',
-                $request->status
-            );
-
+        if (
+            $request->filled('status') &&
+            in_array($request->string('status')->toString(), Book::STATUSES, true)
+        ) {
+            $query->where('status', $request->string('status')->toString());
         }
 
         // RECHERCHE
@@ -988,7 +986,7 @@ class BooksController extends Controller
 
         $books = $query
             ->latest()
-            ->paginate(4)
+            ->paginate(15)
             ->withQueryString();
 
         // Statistiques
@@ -1007,6 +1005,9 @@ class BooksController extends Controller
         $reviewBooks = Book::query()->where('status','under_review')
             ->count();
 
+        $revisionBooks = Book::query()->where('status', 'revision_required')
+            ->count();
+
 
 
         return view('admin.books.allbooks', compact(
@@ -1014,12 +1015,16 @@ class BooksController extends Controller
             'totalBooks',
             'pendingBooks',
             'publishedBooks',
-            'reviewBooks'
+            'reviewBooks',
+            'revisionBooks'
         ));
     }
 
     public function review(Book $book)
     {
+        if ($book->status !== 'waiting_review') {
+            return back()->with('error', 'Seul un livre en attente peut passer en vérification.');
+        }
 
         $payment = Payment::query()->where('book_id',$book->id)
             ->where('type','publication')
@@ -1096,7 +1101,7 @@ class BooksController extends Controller
 
 
     $rejectedBooks = Book::query()
-        ->where('status','rejected')
+        ->where('status','revision_required')
         ->whereMonth('updated_at', $month)
         ->whereYear('updated_at', $year)
         ->count();
@@ -1139,6 +1144,10 @@ class BooksController extends Controller
 
     public function reject(Request $request, Book $book)
     {
+        if ($book->status !== 'under_review') {
+            return back()->with('error', 'Seul un livre en cours de vérification peut être retourné.');
+        }
+
         $request->validate([
             'reason'=>'required|string|max:1000'
         ]);

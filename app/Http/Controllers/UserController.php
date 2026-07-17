@@ -279,7 +279,8 @@ class UserController extends Controller
         'email' => [
             'required',
             'email',
-            'max:255'
+            'max:255',
+            Rule::unique('users', 'email')->ignore($user->id),
         ],
 
         'country_id' => [
@@ -308,6 +309,13 @@ class UserController extends Controller
         'gender' => [
             'nullable',
             'in:male,female,other'
+        ],
+
+        'avatar' => [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:2048',
         ],
 
     ]);

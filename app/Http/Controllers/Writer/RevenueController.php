@@ -39,8 +39,12 @@ class RevenueController extends Controller
             ->where('status','approved')
             ->sum('amount');
 
+        $pendingWithdrawals = Withdrawal::query()
+            ->where('user_id', $userId)
+            ->where('status', 'pending')
+            ->sum('amount');
 
-        $availableBalance = $totalRevenue - $totalWithdrawn;
+        $availableBalance = max(0, $totalRevenue - $totalWithdrawn - $pendingWithdrawals);
 
 
         $totalSales = Payment::whereHas('book', function($q) use($userId){
@@ -82,7 +86,7 @@ class RevenueController extends Controller
             ->where('type','purchase')
             ->where('status','success')
             ->latest()
-            ->paginate(10);
+            ->paginate(10, ['*'], 'sales_page');
 
             $publicationPayments = Payment::with('book')
                 ->whereHas('book', function($query) use ($userId){
@@ -92,7 +96,7 @@ class RevenueController extends Controller
                 })
                 ->where('type','publication')
                 ->latest()
-                ->paginate(10);
+                ->paginate(10, ['*'], 'publication_page');
 
         return view(
             'writer.revenues',
@@ -106,6 +110,7 @@ class RevenueController extends Controller
                 'publicationPayments',
                 'availableBalance',
                 'totalWithdrawn',
+                'pendingWithdrawals',
             )
         );
 

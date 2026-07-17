@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
 	<title>KaMa Online Library</title>
 	<!-- Meta Tags -->
@@ -9,7 +9,7 @@
 	<meta name="description" content="KaMa - KaMa Online Library est une librairie numérique dédiée à la valorisation de la littérature africaine. Elle propose un accès simple et rapide à une large sélection d’ouvrages d’auteurs africains, disponibles en formats ebook et audiolivre, permettant aux lecteurs de découvrir, lire et écouter des histoires authentiques issues du continent et de sa diaspora.">
 
 	@yield('meta')
-	<!-- Dark mode -->
+	{{-- Dark mode désactivé : la plateforme reste toujours en mode clair.
 	<script>
 		const storedTheme = localStorage.getItem('theme')
  
@@ -68,6 +68,7 @@
 		})
 		
 	</script>
+	--}}
 
 	<!-- Favicon -->
 	<link rel="shortcut icon" href="assets/images/favicon.ico">
@@ -93,6 +94,7 @@
 	<!-- Theme CSS -->
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
 
+	@stack('styles')
 </head>
 
 <body>
@@ -860,11 +862,17 @@
 
 						customClass: {
 
-							popup: 'rounded-4',
+							popup: 'kama-delete-popup',
 
-							confirmButton: 'btn btn-danger px-4',
+							title: 'kama-delete-title',
 
-							cancelButton: 'btn btn-light px-4'
+							htmlContainer: 'kama-delete-message',
+
+							actions: 'kama-delete-actions',
+
+							confirmButton: 'kama-delete-btn kama-delete-confirm',
+
+							cancelButton: 'kama-delete-btn kama-delete-cancel'
 
 						},
 						buttonsStyling: false
@@ -880,5 +888,6 @@
 			});
 
 	</script>
+	@stack('scripts')
 </body>
 </html>

@@ -1,266 +1,156 @@
-<!-- =======================
-Menu item START -->
-<div class="pt-4 writer-navbar">
+@php
+    $writer = auth()->user();
+    $writerName = trim($writer->firstname.' '.$writer->lastname) ?: $writer->email;
+    $writerAvatar = $writer->avatar
+        ? asset('storage/'.$writer->avatar)
+        : asset('assets/images/avatar/01.jpg');
+    $notifications = $writer->unreadNotifications()->latest()->take(5)->get();
+@endphp
 
-    <div class="container-fluid">
-
-        <div class="writer-header">
-
-            <!-- TOP PROFILE -->
-            <div class="writer-profile">
-
-                <div class="writer-user">
-
-                    <div class="writer-avatar">
-
-                        <img src="{{ Auth::user()->avatar 
-                            ? asset('storage/'.Auth::user()->avatar) 
-                            : asset('assets/images/avatar/01.jpg') }}">
-
+<section class="writer-workspace">
+    <div class="container">
+        <div class="writer-workspace-shell">
+            <header class="writer-workspace-topbar">
+                <div class="writer-workspace-identity">
+                    <img src="{{ $writerAvatar }}" alt="">
+                    <div>
+                        <span><i class="bi bi-pen-fill"></i> Espace auteur</span>
+                        <h2>{{ $writerName }}</h2>
+                        <p>Gérez vos œuvres et suivez leur performance.</p>
                     </div>
-
-
-                    <div class="writer-details">
-
-                        <span>
-                            ESPACE AUTEUR
-                        </span>
-
-                        <h4>
-                            {{ Auth::user()->firstname }} 
-                            {{ Auth::user()->lastname }}
-                        </h4>
-
-                        <p>
-                            Publiez vos œuvres et développez votre audience.
-                        </p>
-
-                    </div>
-
                 </div>
 
-				<div class="writer-actions">
-					<!-- Notification -->
-					@php
-						$notifications = auth()->user()
-							->unreadNotifications()
-							->latest()
-							->take(5)
-							->get();
-					@endphp
-
-					<div class="writer-notification dropdown">
-
-						<a href="#"
-						class="notification-btn"
-						data-bs-toggle="dropdown"
-						aria-expanded="false">
-
-							<i class="bi bi-bell"></i>
-
-
-							@if($notifications->count() > 0)
-
-								<span class="notification-dot"></span>
-
-							@endif
-
-
-						</a>
-
-
-
-						<div class="dropdown-menu dropdown-menu-end notification-menu">
-
-
-							<div class="notification-header">
-
-								<h6>
-									Notifications
-
-									@if($notifications->count())
-
-										<span>
-											{{ $notifications->count() }}
-										</span>
-
-									@endif
-
-								</h6>
-
-
-								<form action="{{ route('notifications.clear') }}"
-									method="POST">
-
-									@csrf
-									@method('DELETE')
-
-
-									<button>
-										Effacer
-									</button>
-
-
-								</form>
-
-
-							</div>
-
-
-
-
-							<div class="notification-body">
-
-
-								@forelse($notifications as $notification)
-
-
-									<a href="{{ $notification->data['url'] ?? '#' }}"
-									class="notification-item">
-
-
-										<strong>
-											{{ $notification->data['title'] ?? 'Notification' }}
-										</strong>
-
-
-										<p>
-											{{ $notification->data['message'] ?? '' }}
-										</p>
-
-
-										<small>
-											{{ $notification->created_at->diffForHumans() }}
-										</small>
-
-
-									</a>
-
-
-								@empty
-
-
-									<div class="empty-notification">
-
-										<i class="bi bi-bell-slash"></i>
-
-										<p>
-											Aucune notification
-										</p>
-
-									</div>
-
-
-								@endforelse
-
-
-							</div>
-
-
-						</div>
-
-
-					</div>
-
-
-
-					<!-- Add book button -->
-
-
-					<a href="{{ url('writer/books/create') }}"
-					class="writer-create">
-
-						<i class="bi bi-plus-circle"></i>
-
-						Ajouter un livre
-
-					</a>
-
-
-				</div>
-
-
-            </div>
-
-            <!-- MOBILE BUTTON -->
-
-            <button class="writer-mobile-toggle d-xl-none"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#dashboardMenu">
-
-                <i class="bi bi-list"></i>
-                Menu auteur
-
-            </button>
-
-
-            <!-- NAVIGATION -->
-
-            <div class="offcanvas-xl offcanvas-end"
-                 id="dashboardMenu">
-                <div class="offcanvas-header d-xl-none">
-                    <h5>
-                        Navigation
-                    </h5>
-
-                    <button class="btn-close"
-                            data-bs-dismiss="offcanvas">
+                <div class="writer-workspace-actions">
+                    <div class="dropdown">
+                        <button type="button"
+                                class="writer-workspace-notification"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="Notifications">
+                            <i class="bi bi-bell"></i>
+                            @if($notifications->isNotEmpty())
+                                <span>{{ $notifications->count() }}</span>
+                            @endif
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-end writer-workspace-notification-menu">
+                            <div class="writer-workspace-notification-header">
+                                <div>
+                                    <strong>Notifications</strong>
+                                    <small>{{ $notifications->count() }} non lue(s)</small>
+                                </div>
+                                @if($notifications->isNotEmpty())
+                                    <form action="{{ route('notifications.clear') }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit">Tout effacer</button>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <div class="writer-workspace-notification-list">
+                                @forelse($notifications as $notification)
+                                    <a href="{{ $notification->data['url'] ?? route('writer.activities') }}">
+                                        <span><i class="bi bi-info-circle"></i></span>
+                                        <div>
+                                            <strong>{{ $notification->data['title'] ?? 'Nouvelle activité' }}</strong>
+                                            <p>{{ $notification->data['message'] ?? '' }}</p>
+                                            <small>{{ $notification->created_at->diffForHumans() }}</small>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="writer-workspace-notification-empty">
+                                        <i class="bi bi-bell-slash"></i>
+                                        <p>Aucune nouvelle notification</p>
+                                    </div>
+                                @endforelse
+                            </div>
+
+                            <a href="{{ route('writer.activities') }}" class="writer-workspace-notification-footer">
+                                Voir toutes les activités
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('writer.books.create') }}" class="writer-workspace-create">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Ajouter un livre</span>
+                    </a>
+
+                    <button type="button"
+                            class="writer-workspace-toggle d-xl-none"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#writerWorkspaceMenu"
+                            aria-controls="writerWorkspaceMenu"
+                            aria-label="Ouvrir la navigation">
+                        <i class="bi bi-list"></i>
                     </button>
                 </div>
+            </header>
 
-                <div class="offcanvas-body p-0">
-                    <nav class="writer-navigation">
-                        <a href="{{ url('/writer/dashboard') }}"
-                           class="{{ request()->is('writer/dashboard') ? 'active' : '' }}">
-                            <i class="bi bi-house"></i>
-                            Tableau de bord
+            <div class="offcanvas-xl offcanvas-end writer-workspace-offcanvas"
+                 tabindex="-1"
+                 id="writerWorkspaceMenu"
+                 aria-labelledby="writerWorkspaceMenuLabel">
+                <div class="offcanvas-header">
+                    <div>
+                        <span class="writer-workspace-mobile-label">Espace auteur</span>
+                        <h5 id="writerWorkspaceMenuLabel">Navigation</h5>
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="offcanvas"
+                            data-bs-target="#writerWorkspaceMenu"
+                            aria-label="Fermer"></button>
+                </div>
+
+                <div class="offcanvas-body">
+                    <nav class="writer-workspace-nav" aria-label="Navigation de l’espace auteur">
+                        <a href="{{ route('writer.dashboard') }}"
+                           class="{{ request()->routeIs('writer.dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-grid-1x2-fill"></i>
+                            <span>Vue d’ensemble</span>
                         </a>
 
-                        <a href="{{ url('/writer/books') }}"
-                           class="{{ request()->is('writer/books') ? 'active' : '' }}">
-                            <i class="bi bi-book"></i>
-                            Mes livres
+                        <a href="{{ route('writer.books') }}"
+                           class="{{ request()->routeIs('writer.books', 'writer.books.*') ? 'active' : '' }}">
+                            <i class="bi bi-book-half"></i>
+                            <span>Mes livres</span>
                         </a>
 
-                        <a href="{{ url('/writer/revenues') }}"
-                           class="{{ request()->is('writer/revenues') ? 'active' : '' }}">
-                            <i class="bi bi-currency-dollar"></i>
-                            Revenus
+                        <a href="{{ route('writer.revenues') }}"
+                           class="{{ request()->routeIs('writer.revenues') ? 'active' : '' }}">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <span>Revenus</span>
                         </a>
 
-                        <a href="{{ url('/writer/reviews') }}"
-                           class="{{ request()->is('writer/reviews') ? 'active' : '' }}">
-                            <i class="bi bi-chat-left-text"></i>
-                            Avis
+                        <a href="{{ route('writer.reviews') }}"
+                           class="{{ request()->routeIs('writer.reviews') ? 'active' : '' }}">
+                            <i class="bi bi-chat-square-quote-fill"></i>
+                            <span>Avis lecteurs</span>
                         </a>
 
-                        <a href="{{ url('/writer/activities') }}"
-                           class="{{ request()->is('writer/activities') ? 'active' : '' }}">
-                            <i class="bi bi-bell"></i>
-                            Notifications
+                        <a href="{{ route('writer.activities') }}"
+                           class="{{ request()->routeIs('writer.activities*') ? 'active' : '' }}">
+                            <i class="bi bi-activity"></i>
+                            <span>Activités</span>
+                            @if($notifications->isNotEmpty())
+                                <small>{{ $notifications->count() }}</small>
+                            @endif
                         </a>
 
-                        <a href="{{ url('/writer/settings') }}"
-                           class="{{ request()->is('writer/settings') ? 'active' : '' }}">
-                            <i class="bi bi-gear"></i>
-                            Paramètres
+                        <a href="{{ route('writer.settings') }}"
+                           class="{{ request()->routeIs('writer.settings') ? 'active' : '' }}">
+                            <i class="bi bi-sliders"></i>
+                            <span>Paramètres</span>
                         </a>
                     </nav>
 
+                    <a href="{{ route('writer.books.create') }}" class="writer-workspace-mobile-create d-xl-none">
+                        <i class="bi bi-plus-circle"></i> Ajouter un nouveau livre
+                    </a>
                 </div>
-
             </div>
-
-
         </div>
-
     </div>
-
-</div>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/tiny-slider.css">
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/min/tiny-slider.js"></script>
-<!-- =======================
-Menu item END -->
+</section>

@@ -15,7 +15,7 @@ class DashboardController extends Controller
     private function calculateGrowth($current, $previous)
     {
         if($previous == 0){
-            return 0;
+            return $current > 0 ? 100 : 0;
         }
         return round((($current - $previous) / $previous) * 100);
     }
@@ -32,18 +32,15 @@ class DashboardController extends Controller
 
         $currentPublishedBooks = Book::query() -> where('user_id',$userId)
             ->where('status','published')
-            ->whereMonth(
-                'created_at',
-                now()->month
-            )
+            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
             ->count();
 
         $previousPublishedBooks = Book::query()->where('user_id',$userId)
             ->where('status','published')
-            ->whereMonth(
-                'created_at',
-                now()->subMonth()->month
-            )
+            ->whereBetween('created_at', [
+                now()->subMonth()->startOfMonth(),
+                now()->subMonth()->endOfMonth(),
+            ])
             ->count();
 
         $booksGrowth = $this->calculateGrowth(
@@ -67,6 +64,7 @@ class DashboardController extends Controller
                 }
             ])
             ->withAvg('reviews','rating')
+            ->having('sales_count', '>', 0)
             ->orderByDesc('sales_count')
             ->take(5)
             ->get();
@@ -87,7 +85,7 @@ class DashboardController extends Controller
         })
         ->where('status','success')
         ->where('type','purchase')
-        ->whereMonth('created_at',now()->month)
+        ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
         ->sum('amount');
 
         $previousRevenue = Payment::whereHas('book',function($q) use($userId){
@@ -95,10 +93,10 @@ class DashboardController extends Controller
         })
         ->where('status','success')
         ->where('type','purchase')
-        ->whereMonth(
-            'created_at',
-            now()->subMonth()->month
-        )
+        ->whereBetween('created_at', [
+            now()->subMonth()->startOfMonth(),
+            now()->subMonth()->endOfMonth(),
+        ])
         ->sum('amount');
 
         $revenueGrowth = $this->calculateGrowth(
@@ -121,7 +119,7 @@ class DashboardController extends Controller
         })
         ->where('status','success')
         ->where('type','purchase')
-        ->whereMonth('created_at',now()->month)
+        ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
         ->distinct('user_id')
         ->count('user_id');
 
@@ -132,10 +130,10 @@ class DashboardController extends Controller
         })
         ->where('status','success')
         ->where('type','purchase')
-        ->whereMonth(
-            'created_at',
-            now()->subMonth()->month
-        )
+        ->whereBetween('created_at', [
+            now()->subMonth()->startOfMonth(),
+            now()->subMonth()->endOfMonth(),
+        ])
         ->distinct('user_id')
         ->count('user_id');
 

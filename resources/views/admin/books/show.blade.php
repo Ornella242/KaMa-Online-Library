@@ -198,6 +198,39 @@
 
                     <div class="editorial-actions mt-4">
 
+                        @if($book->status === 'draft')
+                            @php
+                                $pendingPublicationPayment = $book->payments()
+                                    ->where('type', 'publication')
+                                    ->where('status', 'pending')
+                                    ->latest()
+                                    ->first();
+                            @endphp
+
+                            @if($pendingPublicationPayment)
+                                <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                                    <div>
+                                        <strong>Confirmation de paiement requise</strong>
+                                        <div class="small mt-1">
+                                            Référence {{ $pendingPublicationPayment->reference }} —
+                                            {{ number_format($pendingPublicationPayment->amount, 2, ',', ' ') }}
+                                            {{ $pendingPublicationPayment->currency }}
+                                        </div>
+                                    </div>
+                                    @if($pendingPublicationPayment->payment_method === 'manual')
+                                        <form method="POST" action="{{ route('admin.payments.publication.confirm', $pendingPublicationPayment) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-check2-circle me-2"></i>Confirmer le paiement
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="small">La confirmation sera effectuée automatiquement par KKiaPay.</span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endif
+
                         @if($book->status == 'waiting_review')
 
                             @php
@@ -210,11 +243,13 @@
 
                             @if($depositPaid)
 
-                                <a href="{{ route('admin.books.review',$book) }}"
-                                class="btn btn-warning rounded-pill px-4">
-                                    <i class="bi bi-shield-check me-2"></i>
-                                    Procéder à la vérification éditoriale
-                                </a>
+                                <form method="POST" action="{{ route('admin.books.review', $book) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-warning rounded-pill px-4">
+                                        <i class="bi bi-shield-check me-2"></i>
+                                        Procéder à la vérification éditoriale
+                                    </button>
+                                </form>
 
                             @else
 

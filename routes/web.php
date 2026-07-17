@@ -49,16 +49,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 })->middleware('auth')->name('verification.notice');
 
 Route::get(
-    '/book-preview/{book}',
-    [BooksController::class, 'previewPdf']
-)->name('book.preview');
-
-Route::get(
-    '/generate-preview/{book}',
-    [BooksController::class,'generatePreviewPages']
-);
-
-Route::get(
     '/book-preview-page/{book}/{page}',
     [BooksController::class,'previewPage']
 )->name('book.preview.page');
@@ -126,7 +116,8 @@ Route::put('/reader/change-password', [UserController::class, 'changePassword'])
 // writer routes
 
 Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function () {
-        Route::get('/settings', [WriterSettingsController::class, 'index']);
+        Route::get('/settings', [WriterSettingsController::class, 'index'])
+            ->name('writer.settings');
         Route::post('/notifications/update', [NotificationSettingController::class, 'update'])
             ->name('writer.notifications.update');
 
@@ -219,27 +210,37 @@ Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function (
 
 Route::get('/writer/categories/{category}/subcategories',
     [BooksController::class, 'getSubcategories']
-)->name('writer.categories.subcategories');
+)->middleware('auth')->name('writer.categories.subcategories');
 
 Route::put('/writer/account', [UserController::class, 'updateProfile'])
-    ->middleware('auth')
+    ->middleware(['auth', 'role:writer'])
     ->name('writer.account.update');
 
 Route::put('/writer/change-password', [UserController::class, 'changePassword'])
-    ->middleware('auth')
+    ->middleware(['auth', 'role:writer'])
     ->name('writer.password.update');
 
 
 Route::post('/social-profile', [SocialProfileController::class, 'storeOrUpdate'])
     ->name('social.profile.save')
-    ->middleware('auth');
+    ->middleware(['auth', 'role:writer']);
 
 
 // admin routes
 
-Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
-        Route::get('/settings', [AdminSettingsController::class, 'index']);
+Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->name('dashboard');
+        Route::get('/settings', [AdminSettingsController::class, 'index'])
+            ->name('settings');
+        Route::put('/settings/publication-fees', [AdminSettingsController::class, 'updatePublicationFees'])
+            ->name('settings.publication-fees.update');
+        Route::put('/change-password', [UserController::class, 'changePassword'])
+            ->name('password.update');
+        Route::put('/account', [UserController::class, 'updateProfile'])
+            ->name('account.update');
+        Route::get('/users', [UserController::class, 'index'])
+            ->name('users');
         Route::get('/users/show/{user}', [UserController::class, 'show'])
         ->name('show');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])
@@ -258,9 +259,6 @@ Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->gr
             'categories',
             CategoryController::class
         );
-        Route::get('/books', [BooksController::class, 'listBooks'])
-            ->name('/books');
-
         Route::get('/books/create', [AdminBooksController::class, 'create'])
             ->name('books.create');
 
@@ -273,14 +271,11 @@ Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->gr
         Route::get('/books/all', [AdminBooksController::class, 'allBooks'])
             ->name('books.all');
 
-        Route::get(
+        Route::post(
             '/books/{book}/review',
             [AdminBooksController::class,'review']
         )
         ->name('books.review');
-
-        Route::post('/books', [AdminBooksController::class, 'store'])
-            ->name('books.store');
 
          Route::get('/books/editorial-queue',[AdminBooksController::class,'editorialQueue']
         )->name('books.editorial.queue');
@@ -305,7 +300,7 @@ Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->gr
         Route::get('/books/{book}/boost',[AdminBooksController::class,'boost'])
            ->name('books.boost');
         
-        Route::post('/admin/books/{book}/sponsor',[AdminBookSponsorshipController::class,'sponsor'])
+        Route::post('/books/{book}/sponsor',[AdminBookSponsorshipController::class,'sponsor'])
           ->name('books.sponsor');
 
         Route::post('/books/{book}/boost/share',[AdminBooksController::class,'shareBook'])
@@ -317,26 +312,22 @@ Route::prefix('admin') ->middleware(['auth', 'role:admin'])->name('admin.') ->gr
         Route::post('/books/{book}/reject',[AdminBooksController::class,'reject'])
            ->name('books.reject');
 
+        Route::post('/payments/{payment}/confirm-publication', [PaymentController::class, 'confirmPublication'])
+            ->name('payments.publication.confirm');
+
 });
 
 
 Route::post('/books/{book}/publication-payment',
             [PaymentController::class,'payPublication']
         )
-        ->middleware('auth')
+        ->middleware(['auth', 'role:writer'])
         ->name('books.payment.publication');
-
-Route::put('/admin/change-password', [UserController::class, 'changePassword'])
-    ->middleware('auth')
-    ->name('admin.password.update');
-
-Route::put('/admin/account', [UserController::class, 'updateProfile'])
-    ->middleware('auth')
-    ->name('admin.account.update');
-
-Route::get('/admin/users', [UserController::class, 'index'])
-    ->middleware('auth')
-    ->name('admin.users');
+Route::post('/books/{book}/publication-payment/verify',
+            [PaymentController::class, 'verifyKkiapayPublication']
+        )
+        ->middleware(['auth', 'role:writer'])
+        ->name('books.payment.publication.verify');
 
 
     // routes communes

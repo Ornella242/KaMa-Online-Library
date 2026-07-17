@@ -4,7 +4,7 @@
 
 <div class="kama-writer-library">
 
-    <div class="container-fluid">
+    <div class="container">
         {{-- MAIN WRAPPER --}}
         <div class="library-wrapper">
 
@@ -46,7 +46,7 @@
                     <i class="bi bi-book"></i>
                     <div>
                         <strong>
-                            {{ $books->total() }}
+                            {{ $stats['total'] }}
                         </strong>
 
                         <span>
@@ -59,7 +59,7 @@
                     <i class="bi bi-check-circle"></i>
                     <div>
                         <strong>
-                            {{ $books->where('status','published')->count() }}
+                            {{ $stats['published'] }}
                         </strong>
 
                         <span>
@@ -73,7 +73,7 @@
                     <i class="bi bi-hourglass-split"></i>
                     <div>
                         <strong>
-                            {{ $books->whereIn('status',['waiting_review','under_review'])->count() }}
+                            {{ $stats['validation'] }}
                         </strong>
 
                         <span>
@@ -86,17 +86,40 @@
                     <i class="bi bi-pencil-square"></i>
                     <div>
                         <strong>
-                            {{ $books->where('status','draft')->count() }}
+                            {{ $stats['drafts'] + $stats['revisions'] }}
                         </strong>
 
                         <span>
-                            Brouillons
+                            À finaliser
                         </span>
                     </div>
                 </div>
             </div>
 
-			<div class="card-body">
+            <div class="library-publication-flow">
+                <div>
+                    <span><i class="bi bi-pencil-square"></i></span>
+                    <div><strong>1. Brouillon</strong><small>Votre livre reste modifiable.</small></div>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+                <div>
+                    <span><i class="bi bi-credit-card"></i></span>
+                    <div><strong>2. Paiement</strong><small>Le tarif dépend du format.</small></div>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+                <div>
+                    <span><i class="bi bi-hourglass-split"></i></span>
+                    <div><strong>3. En attente</strong><small>L’équipe éditoriale vérifie le livre.</small></div>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+                <div>
+                    <span><i class="bi bi-check-circle"></i></span>
+                    <div><strong>4. Publié</strong><small>Le livre devient disponible.</small></div>
+                </div>
+            </div>
+
+			@if(session('success') || $errors->any() || session('error'))
+			<div class="library-feedback">
 				@if(session('success'))
 					<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
 						<i class="bi bi-check-circle-fill me-2"></i>
@@ -135,6 +158,7 @@
 					</div>
 				@endif
 			</div>
+			@endif
 
 
             {{-- FILTERS --}}
@@ -145,7 +169,7 @@
                 <div class="search-input">
                     <i class="bi bi-search"></i>
                     <input
-                        type="text"
+                        type="search"
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="Rechercher un ouvrage..."
@@ -162,23 +186,23 @@
                         Tous les statuts
                     </option>
 
-                    <option value="published">
+                    <option value="published" @selected(request('status') === 'published')>
                         Publié
                     </option>
 
-                    <option value="draft">
+                    <option value="draft" @selected(request('status') === 'draft')>
                         Brouillon
                     </option>
 
-                    <option value="waiting_review">
+                    <option value="waiting_review" @selected(request('status') === 'waiting_review')>
                         En attente
                     </option>
 
-                    <option value="under_review">
+                    <option value="under_review" @selected(request('status') === 'under_review')>
                         Vérification
                     </option>
 
-                    <option value="revision_required">
+                    <option value="revision_required" @selected(request('status') === 'revision_required')>
                         Correction demandée
                     </option>
 
@@ -193,20 +217,36 @@
                         Tous les formats
                     </option>
 
-                    <option value="ebook">
+                    <option value="ebook" @selected(request('type') === 'ebook')>
                         Ebook
                     </option>
 
-                    <option value="audio">
+                    <option value="audio" @selected(request('type') === 'audio')>
                         Audio
                     </option>
 
+                </select>
+
+                <select name="sort" aria-label="Trier les livres">
+                    <option value="">Plus récents</option>
+                    <option value="oldest" @selected(request('sort') === 'oldest')>Plus anciens</option>
+                    <option value="price_high" @selected(request('sort') === 'price_high')>Prix décroissant</option>
+                    <option value="price_low" @selected(request('sort') === 'price_low')>Prix croissant</option>
                 </select>
 
                 <button type="submit">
                     <i class="bi bi-funnel"></i>
                     Filtrer
                 </button>
+
+                @if(request()->filled('search') || request()->filled('status') || request()->filled('type') || request()->filled('sort'))
+                    <a href="{{ route('writer.books') }}"
+                       class="library-filter-reset"
+                       title="Réinitialiser les filtres"
+                       aria-label="Réinitialiser les filtres">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                @endif
             </form>
 
             {{-- BOOKS --}}
@@ -311,101 +351,75 @@
 
                                 @endif
 
-                                <div class="card-actions">
-									{{-- VOIR --}}
-									<a href="{{ route('writer.books.show',$book) }}"
-									class="action-view">
+                                <div class="book-card-actions">
+                                    @if($book->status === 'draft')
+                                        @php($publicationFee = $publicationFees->get($book->type))
+                                        @if(optional($book->publicationPayment)->status === 'pending')
+                                            <a href="{{ route('writer.books.deposit', $book) }}"
+                                               class="book-payment-state pending">
+                                                <span><i class="bi bi-clock-history"></i></span>
+                                                <div><strong>Paiement non finalisé</strong><small>Reprendre le paiement</small></div>
+                                                <i class="bi bi-chevron-right ms-auto"></i>
+                                            </a>
+                                        @elseif($publicationFee)
+                                            <a href="{{ route('writer.books.deposit', $book) }}"
+                                               class="book-payment-action">
+                                                <span><i class="bi bi-shield-lock"></i> Régler les frais</span>
+                                                <strong>{{ number_format($publicationFee->amount, 0, ',', ' ') }} {{ $publicationFee->currency }}</strong>
+                                            </a>
+                                        @else
+                                            <div class="book-payment-state unavailable">
+                                                <span><i class="bi bi-exclamation-circle"></i></span>
+                                                <div><strong>Paiement indisponible</strong><small>Tarif non configuré</small></div>
+                                            </div>
+                                        @endif
+                                    @elseif($book->status === 'revision_required')
+                                        <form method="POST"
+                                              action="{{ route('writer.books.resubmit', $book) }}">
+                                            @csrf
+                                            <button type="submit" class="book-resubmit-action">
+                                                <i class="bi bi-send-check"></i> Envoyer les corrections
+                                            </button>
+                                        </form>
+                                    @endif
 
-										<i class="bi bi-eye"></i>
+                                    <div class="book-card-utility-actions">
+                                        <a href="{{ route('writer.books.show', $book) }}">
+                                            <i class="bi bi-eye"></i><span>Détails</span>
+                                        </a>
 
-									</a>
+                                        @if(in_array($book->status, ['draft', 'revision_required'], true))
+                                            <a href="{{ route('writer.books.edit', $book) }}">
+                                                <i class="bi bi-pencil"></i>
+                                                <span>{{ $book->status === 'revision_required' ? 'Corriger' : 'Modifier' }}</span>
+                                            </a>
+                                        @endif
 
+                                        @if($book->status === 'published')
+                                            <a href="{{ route('writer.books.boost', $book) }}">
+                                                <i class="bi bi-share"></i><span>Booster</span>
+                                            </a>
+                                            <a href="{{ route('writer.books.sponsor', $book) }}">
+                                                <i class="bi bi-megaphone"></i><span>Sponsoriser</span>
+                                            </a>
+                                        @endif
 
-
-									{{-- MODIFIER --}}
-									@if($book->status != 'published')
-
-										<a href="{{ route('writer.books.edit',$book) }}"
-										class="action-edit">
-
-											<i class="bi bi-pencil"></i>
-
-											@if($book->status == 'revision_required')
-												Corriger
-											@else
-												Modifier
-											@endif
-
-										</a>
-
-
-										@if($book->status == 'revision_required')
-
-											<form method="POST"
-												action="{{ route('writer.books.resubmit',$book) }}"
-												class="d-inline">
-
-												@csrf
-
-												<button type="submit"
-														class="action-resubmit">
-													<i class="bi bi-send-check"></i>
-													Ressoumettre
-												</button>
-											</form>
-
-										@endif
-
-
-									@endif
-
-
-									{{-- PAIEMENT DEPOT --}}
-									@if(in_array($book->status,['draft','pending_payment']))
-										<form method="POST"
-											action="{{ route('books.payment.publication',$book) }}">
-											@csrf
-											<button class="action-pay">
-												<i class="bi bi-credit-card"></i>
-												Dépôt
-											</button>
-										</form>
-
-									@endif
-
-									{{-- ACTIONS APRES PUBLICATION --}}
-									@if($book->status == 'published')
-
-										<a href="{{ route('writer.books.boost',$book) }}"
-										class="action-boost">
-											<i class="bi bi-share-fill"></i>
-											Booster
-										</a>
-
-										<a href="{{ route('writer.books.sponsor',$book) }}"
-										class="action-sponsor">
-											<i class="bi bi-megaphone-fill"></i>
-											Sponsoriser
-										</a>
-									@endif
-
-
-									{{-- SUPPRESSION BROUILLON --}}
-									@if($book->status == 'draft')
-										<form
-											action="{{ route('writer.books.destroy',$book->id) }}"
-											method="POST">
-											@csrf
-											@method('DELETE')
-
-											<button type="button"
-													class="action-delete delete-book-btn">
-												<i class="bi bi-trash3"></i>
-											</button>
-										</form>
-									@endif
-
-								</div>
+                                        @if($book->status === 'draft')
+                                            <form action="{{ route('writer.books.destroy', $book) }}"
+                                                  method="POST"
+                                                  class="delete-book-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                        class="delete-book-btn danger"
+                                                        title="Supprimer le brouillon"
+                                                        aria-label="Supprimer le brouillon">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
 
                             </div>
 
@@ -436,10 +450,35 @@
         </div>
     </div>
 
-
 </div>
 
-
-
+@if(session('book_created'))
+	@php($bookCreated = session('book_created'))
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'success',
+				title: 'Livre ajouté avec succès',
+				html: `
+					<p class="kama-book-toast-message">${@json($bookCreated['message'])}</p>
+					<a class="kama-book-toast-action"
+					   href="${@json(route('writer.books.deposit', $bookCreated['book_id']))}">
+						<i class="bi bi-credit-card me-2"></i>
+						Payer les frais
+					</a>
+				`,
+				showConfirmButton: false,
+				showCloseButton: true,
+				timer: 10000,
+				timerProgressBar: true,
+				customClass: {
+					popup: 'kama-book-toast'
+				}
+			});
+		});
+	</script>
+@endif
 
 @endsection

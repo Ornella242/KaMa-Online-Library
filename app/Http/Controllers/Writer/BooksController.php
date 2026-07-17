@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use App\Models\Subcategory;
+use App\Models\PublicationFee;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Imagick;
@@ -34,7 +35,8 @@ class BooksController extends Controller
         $query = Book::query()->where('user_id', $userId)
             ->with([
                 'category',
-                'subcategory'
+                'subcategory',
+                'publicationPayment',
             ]);
 
         if($request->filled('search')){
@@ -45,23 +47,19 @@ class BooksController extends Controller
 
         }
 
-        if($request->filled('status')){
-
-            $query->where(
-                'status',
-                $request->status
-            );
-
+        if (
+            $request->filled('status') &&
+            in_array($request->string('status')->toString(), Book::STATUSES, true)
+        ) {
+            $query->where('status', $request->string('status')->toString());
         }
 
 
-        if($request->filled('type')){
-
-            $query->where(
-                'type',
-                $request->type
-            );
-
+        if (
+            $request->filled('type') &&
+            in_array($request->string('type')->toString(), ['ebook', 'audio'], true)
+        ) {
+            $query->where('type', $request->string('type')->toString());
         }
 
 
@@ -97,12 +95,28 @@ class BooksController extends Controller
 
 
         $books = $query
-            ->paginate(5)
+            ->paginate(9)
             ->withQueryString();
+
+        $authorBooks = Book::query()->where('user_id', $userId);
+        $stats = [
+            'total' => (clone $authorBooks)->count(),
+            'published' => (clone $authorBooks)->where('status', Book::STATUS_PUBLISHED)->count(),
+            'validation' => (clone $authorBooks)->whereIn('status', [
+                Book::STATUS_WAITING_REVIEW,
+                Book::STATUS_UNDER_REVIEW,
+            ])->count(),
+            'drafts' => (clone $authorBooks)->where('status', Book::STATUS_DRAFT)->count(),
+            'revisions' => (clone $authorBooks)->where('status', Book::STATUS_REVISION_REQUIRED)->count(),
+        ];
+
+        $publicationFees = PublicationFee::query()
+            ->get()
+            ->keyBy('book_type');
 
         return view(
             'writer.books.index',
-            compact('books')
+            compact('books', 'stats', 'publicationFees')
         );
     }
 
@@ -160,7 +174,8 @@ class BooksController extends Controller
             'duration' => [
                 'required_if:type,audio',
                 'nullable',
-                'string'
+                'string',
+                'regex:/^\d{1,3}:[0-5]\d:[0-5]\d$/'
             ],
 
             'language' => 'required|string|max:50',
@@ -228,7 +243,7 @@ class BooksController extends Controller
 
         }
 
-        $fileName = Str::slug(
+        $fileName = Str::uuid().'-'.Str::slug(
             pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)
         )
         .'.'.$file->getClientOriginalExtension();
@@ -294,13 +309,18 @@ class BooksController extends Controller
         return redirect()
             ->route('writer.books')
             ->with(
-                'success',
-                'Votre livre a été ajouté avec succès.'
+                'book_created',
+                [
+                    'book_id' => $book->id,
+                    'message' => 'Votre livre a été ajouté avec succès. Veuillez régler les frais de publication afin de poursuivre sa mise en ligne.'
+                ]
             );
     }
 
     public function show(Book $book)
     {
+        $this->authorize('view', $book);
+
         $previewStart = $book->preview_start_page;
         $previewEnd = $book->preview_end_page;
         return view('writer.books.show', compact('book','previewStart',
@@ -309,6 +329,13 @@ class BooksController extends Controller
 
     public function edit(Book $book)
     {
+        $this->authorize('update', $book);
+        abort_unless(
+            in_array($book->status, ['draft', 'revision_required'], true),
+            409,
+            'Ce livre ne peut plus être modifié dans son état actuel.'
+        );
+
         $categories = Category::all();
 
         $subcategories = $book->category->subcategories;
@@ -322,6 +349,13 @@ class BooksController extends Controller
 
     public function update(Request $request, Book $book)
     {
+        $this->authorize('update', $book);
+        abort_unless(
+            in_array($book->status, ['draft', 'revision_required'], true),
+            409,
+            'Ce livre ne peut plus être modifié dans son état actuel.'
+        );
+
         if ($book->status === 'waiting_review' || $book->status === 'under_review') 
         {
 
@@ -548,7 +582,8 @@ class BooksController extends Controller
             'duration' => [
                 'required_if:type,audio',
                 'nullable',
-                'string'
+                'string',
+                'regex:/^\d{1,3}:[0-5]\d:[0-5]\d$/'
             ],
 
             'short_description' => [
@@ -746,6 +781,8 @@ class BooksController extends Controller
 
     public function resubmit(Book $book)
     {
+        $this->authorize('update', $book);
+
         if($book->status !== 'revision_required'){
             abort(403);
         }
@@ -775,6 +812,12 @@ class BooksController extends Controller
 
     public function destroy(Book $book)
     {
+        $this->authorize('delete', $book);
+        abort_unless(
+            in_array($book->status, ['draft', 'revision_required'], true),
+            409,
+            'Seul un brouillon ou un livre à corriger peut être supprimé.'
+        );
 
         /* Supprimer la couverture */
 
@@ -792,10 +835,10 @@ class BooksController extends Controller
 
         if(
             $book->file_path &&
-            Storage::disk('public')->exists($book->file_path)
+            Storage::disk('local')->exists($book->file_path)
         ){
 
-            Storage::disk('public')
+            Storage::disk('local')
                 ->delete($book->file_path);
 
         }
@@ -814,15 +857,44 @@ class BooksController extends Controller
 
     public function deposit(Book $book)
     {
+        $this->authorize('view', $book);
+
+        abort_unless($book->status === 'draft', 409, 'Ce livre ne peut pas être payé dans son état actuel.');
+
+        $fee = PublicationFee::forType($book->type);
+        abort_unless(
+            $fee && (float) $fee->amount > 0,
+            503,
+            'Les frais de publication ne sont pas encore configurés pour ce format.'
+        );
+        abort_unless(
+            strtoupper($fee->currency) === 'XOF',
+            503,
+            'Le tarif doit être enregistré en XOF pour être utilisé avec KKiaPay.'
+        );
+
+        $kkiapayPublicKey = config('services.kkiapay.public_key');
+        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
+        $kkiapayConfigured = filled($kkiapayPublicKey)
+            && filled(config('services.kkiapay.private_key'))
+            && filled(config('services.kkiapay.secret'));
+
         return view(
             'writer.books.deposit',
-            compact('book')
+            compact(
+                'book',
+                'fee',
+                'kkiapayPublicKey',
+                'kkiapaySandbox',
+                'kkiapayConfigured'
+            )
         );
     }
 
     public function boost(Book $book)
     {
-        abort_if($book->user_id !== Auth::id(), 403);
+        $this->authorize('update', $book);
+        abort_unless($book->status === 'published', 409, 'Seul un livre publié peut être sponsorisé.');
 
         $social = Auth::user()->socialProfile;
 
@@ -845,18 +917,12 @@ class BooksController extends Controller
      */
     public function publish(Book $book)
     {
-        if ($book->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('update', $book);
 
-        $book->update([
-            'status' => 'pending_payment'
-        ]);
+        abort_unless($book->status === 'draft', 409, 'Ce livre ne peut pas être soumis dans son état actuel.');
 
-        return back()->with(
-            'success',
-            'Votre livre est en attente de paiement.'
-        );
+        return redirect()
+            ->route('writer.books.deposit', $book);
     }
 
     public function generatePreviewPages(Book $book)
@@ -884,32 +950,31 @@ class BooksController extends Controller
         for($pageNumber = $start; $pageNumber <= $end; $pageNumber++){
 
 
-            $imagick = new Imagick();
-
-
-            $imagick->setResolution(150,150);
-
-
-            // page PDF (index commence à 0)
-            $imagick->readImage(
-                $pdfPath.'['.($pageNumber-1).']'
+            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
+            $command = sprintf(
+                'pdftoppm -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
+                $pageNumber,
+                $pageNumber,
+                escapeshellarg($pdfPath),
+                escapeshellarg($tmpPrefix)
             );
 
+            exec($command, $output, $exitCode);
+            $source = $tmpPrefix.'.png';
 
-            $imagick->setImageFormat("webp");
+            if ($exitCode !== 0 || !file_exists($source)) {
+                throw new \RuntimeException('Impossible de générer l’extrait PDF.');
+            }
 
+            $image = imagecreatefrompng($source);
+            if ($image === false) {
+                @unlink($source);
+                throw new \RuntimeException('Impossible de lire la page générée.');
+            }
 
-            $imagick->setImageCompressionQuality(85);
-
-
-            $imagick->writeImage(
-                $folder.'/page-'.$pageNumber.'.webp'
-            );
-
-
-            $imagick->clear();
-
-            $imagick->destroy();
+            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
+            imagedestroy($image);
+            unlink($source);
 
         }
 
