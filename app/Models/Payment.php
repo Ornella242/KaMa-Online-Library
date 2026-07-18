@@ -28,4 +28,22 @@ class Payment extends Model
     {
         return $this->belongsTo(Book::class);
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Payment $payment): void {
+            if ($payment->type !== 'purchase' || $payment->status !== 'success') {
+                return;
+            }
+
+            SiteVisit::query()
+                ->where('user_id', $payment->user_id)
+                ->whereNull('converted_at')
+                ->where('created_at', '<=', $payment->created_at ?? now())
+                ->where('created_at', '>=', ($payment->created_at ?? now())->copy()->subDays(30))
+                ->latest()
+                ->first()
+                ?->update(['converted_at' => $payment->created_at ?? now()]);
+        });
+    }
 }

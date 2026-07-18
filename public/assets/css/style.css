@@ -40677,6 +40677,13 @@ font-size:13px;
     padding-top: 24px;
 }
 
+/* Wider layout for the whole writer area while keeping side margins */
+.writer-workspace .container,
+.writer-page > .container,
+.kama-writer-library .container {
+    max-width: min(1520px, 95vw);
+}
+
 .writer-workspace-shell {
     position: relative;
     border: 1px solid #e7e8eb;
@@ -40686,6 +40693,10 @@ font-size:13px;
 }
 
 .writer-workspace-topbar {
+    position: relative;
+    /* Above the generic `header { z-index: 1020 }` used by page headers,
+       below the site header (1030) and its sticky state (1040). */
+    z-index: 1021;
     display: flex;
     min-height: 112px;
     align-items: center;
@@ -40809,6 +40820,7 @@ font-size:13px;
 }
 
 .writer-workspace-notification-menu {
+    z-index: 1050;
     width: min(390px, calc(100vw - 24px));
     padding: 0;
     overflow: hidden;

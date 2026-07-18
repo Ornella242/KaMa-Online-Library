@@ -301,6 +301,8 @@ class BooksController extends Controller
 
     public function edit(Book $book)
     {
+        abort(403, 'L’administrateur peut consulter et valider un livre, mais ne peut pas modifier son contenu.');
+
         $categories = Category::all();
         $subcategories = $book->category->subcategories;
         return view('admin.books.edit', compact(
@@ -312,6 +314,8 @@ class BooksController extends Controller
 
     public function update(Request $request, Book $book)
     {
+        abort(403, 'L’administrateur peut consulter et valider un livre, mais ne peut pas modifier son contenu.');
+
         if ($book->status === 'published') {
 
             $request->validate([
@@ -1052,7 +1056,7 @@ class BooksController extends Controller
         );
 
         return redirect()
-            ->route('admin.books.show',$book)
+            ->route('admin.books.all', ['status' => Book::STATUS_UNDER_REVIEW])
             ->with(
                 'success',
                 'Le livre est maintenant en vérification éditoriale.'
