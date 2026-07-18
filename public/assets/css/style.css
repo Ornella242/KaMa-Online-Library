@@ -40237,8 +40237,10 @@ font-size:13px;
 
 .kama-admin-brand img {
     display: block;
-    width: 126px;
-    max-height: 42px;
+    width: auto;
+    height: 44px;
+    max-width: 160px;
+    object-fit: contain;
 }
 
 .kama-admin-sidebar-close {
