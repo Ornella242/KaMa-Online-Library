@@ -200,7 +200,7 @@ Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function (
             ->middleware('auth')
             ->name('writer.activities');
 
-        Route::delete('/activities/{activity}',[WriterActivityController::class,'destroy'])
+        Route::delete('/activities/{notification}',[WriterActivityController::class,'destroy'])
             ->middleware('auth')
             ->name('writer.activities.destroy');
 

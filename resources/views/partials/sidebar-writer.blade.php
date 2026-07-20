@@ -67,7 +67,7 @@
                             </div>
 
                             <a href="{{ route('writer.activities') }}" class="writer-workspace-notification-footer">
-                                Voir toutes les activités
+                                Voir toutes les notifications
                             </a>
                         </div>
                     </div>
@@ -132,8 +132,8 @@
 
                         <a href="{{ route('writer.activities') }}"
                            class="{{ request()->routeIs('writer.activities*') ? 'active' : '' }}">
-                            <i class="bi bi-activity"></i>
-                            <span>Activités</span>
+                            <i class="bi bi-bell"></i>
+                            <span>Notifications</span>
                             @if($notifications->isNotEmpty())
                                 <small>{{ $notifications->count() }}</small>
                             @endif
