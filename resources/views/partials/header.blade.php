@@ -23,7 +23,7 @@
 					Catalogue
 				</a>
 
-				<a href="#">
+				<a href="{{ route('about') }}">
 					A propos
 				</a>
 

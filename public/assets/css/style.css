@@ -45201,8 +45201,425 @@ font-size:13px;
 
 
 
+/*  ABOUT PAGE */
+
+.about-page{
+
+    background:#fff;
+
+}
 
 
+
+/* CONTAINER*/
+
+.about-page .about-container{
+
+    max-width:1320px;
+
+}
+
+
+
+/* HERO */
+
+.about-page .about-hero{
+
+    padding:50px 0 120px;
+
+}
+
+
+
+.about-page .about-hero-content{
+
+    display:grid;
+
+    grid-template-columns:1.05fr .95fr;
+
+    gap:80px;
+
+    align-items:center;
+
+}
+
+
+
+/* LEFT */
+
+.about-page .about-label{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:8px 18px;
+
+    border-radius:50px;
+
+    background:#fff1f1;
+
+    color:#b30000;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.about-page .about-hero-text h1{
+
+    font-size:56px;
+
+    font-weight:800;
+
+    line-height:1.12;
+
+    color:#222;
+
+    margin-bottom:25px;
+
+}
+
+
+
+.about-page .about-hero-text h1 span{
+
+    color:#b30000;
+
+}
+
+
+
+.about-page .about-hero-text p{
+
+    font-size:18px;
+
+    line-height:1.9;
+
+    color:#666;
+
+    max-width:620px;
+
+}
+
+
+
+/* BUTTONS*/
+
+.about-page .about-actions{
+
+    display:flex;
+
+    gap:18px;
+
+    margin-top:40px;
+
+}
+
+
+
+.about-page .about-btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+    padding:15px 30px;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.35s;
+
+}
+
+
+
+.about-page .about-btn.primary{
+
+    background:#b30000;
+
+    color:#fff;
+
+}
+
+
+
+.about-page .about-btn.primary:hover{
+
+    background:#910000;
+
+    transform:translateY(-4px);
+
+}
+
+
+
+.about-page .about-btn.secondary{
+
+    border:1px solid #ddd;
+
+    color:#333;
+
+    background:#fff;
+
+}
+
+
+
+.about-page .about-btn.secondary:hover{
+
+    border-color:#b30000;
+
+    color:#b30000;
+
+}
+
+
+
+/* ===========================================
+                IMAGE
+=========================================== */
+
+.about-page .about-hero-image{
+
+    position:relative;
+
+}
+
+
+
+.about-page .image-card-main{
+
+    border-radius:28px;
+
+    overflow:hidden;
+
+    box-shadow:
+
+    0 35px 80px rgba(0,0,0,.15);
+
+}
+
+
+
+.about-page .image-card-main img{
+
+    width:100%;
+
+    height:620px;
+
+    object-fit:cover;
+
+    display:block;
+
+}
+
+
+
+/* ===========================================
+            FLOAT CARD
+=========================================== */
+
+.about-page .floating-card{
+
+    width:85%;
+
+    margin:-45px auto 0;
+
+    background:#fff;
+
+    border-radius:20px;
+
+    padding:22px 25px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    box-shadow:
+
+    0 20px 50px rgba(0,0,0,.12);
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+
+
+.about-page .floating-icon{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:50%;
+
+    background:#fff1f1;
+
+    color:#b30000;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:26px;
+
+    flex-shrink:0;
+
+}
+
+
+
+.about-page .floating-card strong{
+
+    display:block;
+
+    font-size:18px;
+
+    color:#222;
+
+    margin-bottom:6px;
+
+}
+
+
+
+.about-page .floating-card span{
+
+    color:#666;
+
+    line-height:1.6;
+
+}
+
+
+
+/* ===========================================
+                TABLET
+=========================================== */
+
+@media(max-width:991px){
+
+    .about-page .about-hero{
+
+        padding:70px 0;
+
+    }
+
+    .about-page .about-hero-content{
+
+        grid-template-columns:1fr;
+
+        gap:55px;
+
+    }
+
+    .about-page .about-hero-text{
+
+        text-align:center;
+
+    }
+
+    .about-page .about-hero-text p{
+
+        margin:auto;
+
+    }
+
+    .about-page .about-actions{
+
+        justify-content:center;
+
+    }
+
+    .about-page .about-hero-text h1{
+
+        font-size:42px;
+
+    }
+
+    .about-page .image-card-main img{
+
+        height:500px;
+
+    }
+
+}
+
+
+
+/* ===========================================
+                MOBILE
+=========================================== */
+
+@media(max-width:576px){
+
+    .about-page .about-hero{
+
+        padding:50px 0;
+
+    }
+
+    .about-page .about-hero-text h1{
+
+        font-size:31px;
+
+    }
+
+    .about-page .about-hero-text p{
+
+        font-size:16px;
+
+    }
+
+    .about-page .about-actions{
+
+        flex-direction:column;
+
+    }
+
+    .about-page .about-btn{
+
+        width:100%;
+
+    }
+
+    .about-page .image-card-main img{
+
+        height:340px;
+
+    }
+
+    .about-page .floating-card{
+
+        width:92%;
+
+        margin-top:-30px;
+
+        padding:18px;
+
+    }
+
+}
 
 
 

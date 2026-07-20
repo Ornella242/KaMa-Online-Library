@@ -34,6 +34,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/catalogue', [CatalogueController::class, 'index'])->name('catalogue');
 Route::get('/books/{book}', [DetailsLivreController::class, 'index'])
     ->name('books.show');
