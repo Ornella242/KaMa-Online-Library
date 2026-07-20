@@ -24,22 +24,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
        view()->composer('partials.header', function ($view) {
- 
-        //  Affiche les categories qui ont au moins un livre publie
-            // $categories = Category::whereHas('books', function ($query) {
-            //     $query->where('status', 'published');
-            // })
-            // ->get();
-            
         // Affiche les categories qui ont au moins un livre
-            $categories = Category::whereHas('books')
-                ->get();
-
+            // $categories = Category::whereHas('books')
+            //     ->get();
+            $categories = Category::all();
             $view->with('categories', $categories);
-
         });
-            Paginator::useBootstrapFive();
-          
-
+            Paginator::useBootstrapFive();   
     }
 }

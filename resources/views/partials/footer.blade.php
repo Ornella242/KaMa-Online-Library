@@ -1,101 +1,302 @@
 <!-- =======================
 Footer START -->
-<footer class="bg-dark pt-5">
-	<div class="container">
-		<!-- Row START -->
-		<div class="row g-4">
+<footer class="kama-footer">
 
-			<!-- Widget 1 START -->
-			<div class="col-lg-6 col-md-6">
-				<!-- logo -->
-				<a href="index.html">
-					<img class="h-60px" src="{{ asset('assets/images/logo-light.svg')}}" alt="logo">
-				</a>
-				<p class="my-3 text-body-secondary">
-                    KaMa Online Library est une librairie numérique dédiée à la valorisation de la littérature africaine.
-                    Elle propose un accès simple et rapide à une large sélection d’ouvrages d’auteurs africains, disponibles en formats ebook et audiolivre,
-                    permettant aux lecteurs de découvrir, lire et écouter des histoires authentiques issues du continent et de sa diaspora.  
-                </p>
-			</div>
-			<!-- Widget 1 END -->
 
-			<!-- Widget 2 START -->
-            <div class="col-lg-6 col-md-6 ms-auto">
-                <div class="row g-4">
-                    <!-- Colonne 1 -->
-                    <div class="col-6">
-                        <h5 class="text-white mb-2 mb-md-4">Liens rapides</h5>
-                        <ul class="nav flex-column text-primary-hover">
-                            <li class="nav-item">
-                                <a class="nav-link text-body-secondary" href="#">Accueil</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-body-secondary" href="#">Catalogue</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-body-secondary" href="#">Wishlist</a>
-                            </li>
-                        </ul>
-                    </div>
+    <div class="container">
 
-                    <!-- Colonne 2 -->
-                    <div class="col-6">
-                        <h5 class="text-white mb-2 mb-md-4">&nbsp;</h5>
-                        <ul class="nav flex-column text-primary-hover">
-                            <li class="nav-item">
-                                <a class="nav-link text-body-secondary" href="#">Panier</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-body-secondary" href="#">Inscription</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-body-secondary" href="#">Connexion</a>
-                            </li>
-                        </ul>
-                    </div>
+
+        <div class="row g-5">
+
+
+            <!-- BRAND -->
+            <div class="col-lg-5">
+
+
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('assets/images/KaMa2.png') }}"
+                         class="footer-logo"
+                         alt="KaMa">
+                </a>
+
+
+                <!-- SOCIAL -->
+                <div class="footer-social">
+
+
+                    <a href="#">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+
+
+                    <a href="#">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+
+
+                    <a href="#">
+                        <i class="bi bi-twitter-x"></i>
+                    </a>
+
+
+                    <a href="#">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+
+
+                    <a href="#">
+                        <i class="bi bi-youtube"></i>
+                    </a>
+
 
                 </div>
+
+
             </div>
-			<!-- Widget 2 END -->
-		</div><!-- Row END -->
 
-		
-		<!-- Payment and card -->
-		<div class="row g-4 justify-content-between mt-0 mt-md-2">
 
-			<!-- Payment card -->
-			<div class="col-sm-7 col-md-6 col-lg-4">
-				<h5 class="text-white mb-2">Payment & Security</h5>
-				<ul class="list-inline mb-0 mt-3">
-					<li class="list-inline-item"> <a href="index.html#"><img src="{{ asset('assets/images/element/visa.svg')}}" class="h-30px" alt=""></a></li>
-					<li class="list-inline-item"> <a href="index.html#"><img src="{{ asset('assets/images/element/mastercard.svg')}}" class="h-30px" alt=""></a></li>
-				</ul>
-			</div>
 
-			
-		</div>
 
-		<!-- Divider -->
-		<hr class="mt-4 mb-0">
+            <!-- LINKS -->
+            <div class="col-lg-7">
 
-		<!-- Bottom footer -->
-		<div class="row">
-			<div class="container">
-				<div class="d-lg-flex justify-content-between align-items-center py-3 text-center text-lg-start">
-					<!-- copyright text -->
-					<div class="text-body-secondary text-primary-hover"> Copyrights ©2026 KaMa. Réalisé par <a href="https://mirlande.netlify.app/" class="text-body-secondary">O'Digital</a>. </div>
-					<!-- copyright links-->
-					{{-- <div class="nav mt-2 mt-lg-0">
-						<ul class="list-inline text-primary-hover mx-auto mb-0">
-							<li class="list-inline-item me-0"><a class="nav-link text-body-secondary py-1" href="index.html#">Privacy policy</a></li>
-							<li class="list-inline-item me-0"><a class="nav-link text-body-secondary py-1" href="index.html#">Terms and conditions</a></li>
-							<li class="list-inline-item me-0"><a class="nav-link text-body-secondary py-1 pe-0" href="index.html#">Refund policy</a></li>
-						</ul>
-					</div> --}}
-				</div>
-			</div>
-		</div>
-	</div>
+
+                <div class="row g-4">
+
+
+                    <!-- EXPLORE -->
+                    <div class="col-6 col-md-3">
+
+                        <h5>
+                            Explorer
+                        </h5>
+
+                        <ul>
+
+                            <li>
+                                <a href="{{ route('home') }}">
+                                    Accueil
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('catalogue') }}">
+                                    Catalogue
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Nouveautés
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Livres populaires
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+
+
+
+                    <!-- AUTHORS -->
+                    <div class="col-6 col-md-3">
+
+                        <h5>
+                            Auteurs
+                        </h5>
+
+
+                        <ul>
+
+                            <li>
+                                <a href="#">
+                                    Devenir auteur
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Publier un livre
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Espace écrivain
+                                </a>
+                            </li>
+
+
+                        </ul>
+
+
+                    </div>
+
+
+
+
+
+                    <!-- ABOUT -->
+                    <div class="col-6 col-md-3">
+
+                        <h5>
+                            KaMa
+                        </h5>
+
+
+                        <ul>
+
+                            <li>
+                                <a href="#">
+                                    À propos
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Contact
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    FAQ
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Blog
+                                </a>
+                            </li>
+
+
+                        </ul>
+
+                    </div>
+
+
+
+
+
+                    <!-- HELP -->
+                    <div class="col-6 col-md-3">
+
+                        <h5>
+                            Aide
+                        </h5>
+
+
+                        <ul>
+
+                            <li>
+                                <a href="#">
+                                    Conditions
+                                </a>
+                            </li>
+
+
+                            <li>
+                                <a href="#">
+                                    Confidentialité
+                                </a>
+                            </li>
+
+
+                            <li>
+                                <a href="#">
+                                    Paiement
+                                </a>
+                            </li>
+
+
+                        </ul>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+
+        <!-- NEWSLETTER -->
+
+        <div class="footer-newsletter">
+
+
+            <div>
+
+                <h4>
+                    Restez connecté à la littérature africaine
+                </h4>
+
+
+                <p>
+                    Recevez les nouveautés, les auteurs à découvrir et les actualités KaMa.
+                </p>
+
+            </div>
+
+
+
+            <form>
+
+                <input type="email" placeholder="Votre adresse email">
+
+
+                <button>
+                    S'inscrire
+                </button>
+
+            </form>
+
+
+        </div>
+
+
+
+
+
+        <!-- BOTTOM -->
+
+        <div class="footer-bottom">
+
+
+            <span>
+                © 2026 KaMa. Tous droits réservés.
+            </span>
+
+
+            <div class="payment-icons">
+
+                <img src="{{ asset('assets/images/element/visa.svg') }}">
+
+                <img src="{{ asset('assets/images/element/mastercard.svg') }}">
+
+            </div>
+
+
+        </div>
+
+
+
+    </div>
+
+
 </footer>
 <!-- =======================
 Footer END -->

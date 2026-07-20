@@ -4,112 +4,163 @@
 
 <!-- =======================
 Main Banner START -->
-<section class="pt-3 pt-lg-5 main-background">
-    <div class="particles"></div>
-	<div class="container">
-			<!-- Content and Image START -->
-			<div class="row g-4 g-lg-5">
-				<!-- Content -->
-				<div class="col-lg-6 position-relative mb-4 mb-md-0">
-					<!-- Title -->
-					<h1 class="mb-4 mt-md-5 display-5">Trouvrez vos 
-						<span class="position-relative z-index-9">Livres préférés.
-							<!-- SVG START -->
-							<span class="position-absolute top-50 start-50 translate-middle z-index-n1 d-none d-md-block mt-4">
-								<svg width="390.5px" height="21.5px" viewBox="0 0 445.5 21.5">
-									<path class="fill-primary opacity-7" d="M409.9,2.6c-9.7-0.6-19.5-1-29.2-1.5c-3.2-0.2-6.4-0.2-9.7-0.3c-7-0.2-14-0.4-20.9-0.5 c-3.9-0.1-7.8-0.2-11.7-0.3c-1.1,0-2.3,0-3.4,0c-2.5,0-5.1,0-7.6,0c-11.5,0-23,0-34.5,0c-2.7,0-5.5,0.1-8.2,0.1 c-6.8,0.1-13.6,0.2-20.3,0.3c-7.7,0.1-15.3,0.1-23,0.3c-12.4,0.3-24.8,0.6-37.1,0.9c-7.2,0.2-14.3,0.3-21.5,0.6 c-12.3,0.5-24.7,1-37,1.5c-6.7,0.3-13.5,0.5-20.2,0.9C112.7,5.3,99.9,6,87.1,6.7C80.3,7.1,73.5,7.4,66.7,8 C54,9.1,41.3,10.1,28.5,11.2c-2.7,0.2-5.5,0.5-8.2,0.7c-5.5,0.5-11,1.2-16.4,1.8c-0.3,0-0.7,0.1-1,0.1c-0.7,0.2-1.2,0.5-1.7,1 C0.4,15.6,0,16.6,0,17.6c0,1,0.4,2,1.1,2.7c0.7,0.7,1.8,1.2,2.7,1.1c6.6-0.7,13.2-1.5,19.8-2.1c6.1-0.5,12.3-1,18.4-1.6 c6.7-0.6,13.4-1.1,20.1-1.7c2.7-0.2,5.4-0.5,8.1-0.7c10.4-0.6,20.9-1.1,31.3-1.7c6.5-0.4,13-0.7,19.5-1.1c2.7-0.1,5.4-0.3,8.1-0.4 c10.3-0.4,20.7-0.8,31-1.2c6.3-0.2,12.5-0.5,18.8-0.7c2.1-0.1,4.2-0.2,6.3-0.2c11.2-0.3,22.3-0.5,33.5-0.8 c6.2-0.1,12.5-0.3,18.7-0.4c2.2-0.1,4.4-0.1,6.7-0.1c11.5-0.1,23-0.2,34.6-0.4c7.2-0.1,14.4-0.1,21.6-0.1c12.2,0,24.5,0.1,36.7,0.1 c2.4,0,4.8,0.1,7.2,0.2c6.8,0.2,13.5,0.4,20.3,0.6c5.1,0.2,10.1,0.3,15.2,0.4c3.6,0.1,7.2,0.4,10.8,0.6c10.6,0.6,21.1,1.2,31.7,1.8 c2.7,0.2,5.4,0.4,8,0.6c2.9,0.2,5.8,0.4,8.6,0.7c0.4,0.1,0.9,0.2,1.3,0.3c1.1,0.2,2.2,0.2,3.2-0.4c0.9-0.5,1.6-1.5,1.9-2.5 c0.6-2.2-0.7-4.5-2.9-5.2c-1.9-0.5-3.9-0.7-5.9-0.9c-1.4-0.1-2.7-0.3-4.1-0.4c-2.6-0.3-5.2-0.4-7.9-0.6 C419.7,3.1,414.8,2.9,409.9,2.6z"/>
-								</svg>
-							</span>
-							<!-- SVG END -->
-						</span>
-					</h1>
-					<!-- Info -->
-					<p class="mb-4">Nous vous offrons bien plus qu’une simple bibliothèque en ligne, mais une immersion dans les récits africains à travers des ebooks et des audiolivres, accessibles à tous les budgets.</p>
+<section class="kama-hero">
+    <div class="kama-hero-container">
+        <div class="row align-items-center g-5">
 
-					<!-- Buttons -->
-					<div class="hstack gap-4 flex-wrap align-items-center">
-						<!-- Button -->
-						<a href="{{ url('/catalogue') }}" class="btn btn-primary-soft mb-0">Explorez le catalogue maintenant </a>
-						
-					</div>
-				</div>
-				
-				<!-- Image -->
-				<div class="col-lg-6 position-relative">
+            <!-- CONTENT -->
+            <div class="col-lg-6">
 
-					<img src="{{ asset('assets/images/KaMa.png') }}" class="rounded" alt="">
+                <div class="kama-hero-content">
 
-					<!-- Svg decoration -->
-					<figure class="position-absolute end-0 bottom-0">
-						<svg width="163px" height="163px" viewBox="0 0 163 163">
-							<path class="fill-warning" d="M145.6,66.2c-0.9-0.3-1.6,0.2-2.1-0.4c-0.5-0.7-1-1.5-1-2.4c0-3.1,0.1-6.2,0-9.3c0-0.7,0.3-1.3,0.5-1.9 c0.8-1.6,1.6-3.2,2.7-4.5c0.5-0.6,1.2-1.2,2-1.5c0.4-0.2,0.8,0.4,1.3-0.1c0.4-0.4,1,0.7,1.6,0.7c0.4,1-0.4,1.5-1,2.1 c0.7,0.3,1.4,0.3,2.1,0.7c0.6,0.4,1.2,0.7,1,1.5c-0.2,1,0.6,1.3,1,1.9c-0.2,0.3-0.6,0.4-0.5,0.8c1.2,3.2,0.3,5.4-0.7,8.1 c-0.3,0.7-0.7,1.6-0.7,2.2c-0.1,1.5-1.2,2.7-1.4,4.1c-0.2,1.1-0.9,1.7-2.1,1.6c-0.2,0-0.4,0.5-1,0.4c-0.2-0.2-0.7-0.5-0.7-0.8 c0-1-0.1-1.7-1.1-2.1C145.5,67.2,145.6,66.6,145.6,66.2"/>
-							<path class="fill-warning" d="M94.3,143.5c1.1,0.3,2.4-0.5,3.2,0.7c-0.4,0.7-0.7,1.4-1,2.1c0.5,0.5,0.7,0.2,1.2,0.1c1.6-0.6,2-0.4,2.5,1.2 c0.1,0.2,0,0.6,0.3,0.6c1.8,0.4,1.4,2.2,2.1,3.2c-0.8,0.9,0.5,1.8,0.1,2.6c-0.5,0.8-0.3,2-1.3,2.6c-0.3,0.2-0.1,0.5-0.2,0.7 c-0.3,2.1-1.2,3.7-3.4,4.4c-0.3,0.1-0.4,0.6-1,0.4c-0.3-0.6-0.6-1.3-1-1.9c-0.5-0.2-1.5,0.3-1.4-1h-3c-0.2-1.4,0-2.9-1.1-3.9 c-0.1-0.1-0.1-0.4,0-0.5c0.7-1.2,0.2-2.6,0.7-3.8c0.3-0.6,0.4-1,0.1-1.6c-0.9-1.3,0-2.4,0.7-3.3C92.5,145,93.4,144.3,94.3,143.5"/>
-							<path class="fill-warning" d="M119.6,77.3c-0.4,0.8-1.1,0.6-2,0.8c0.2,1.1-0.4,2.2,0.5,3.3c-0.8,0-0.8,0-1.2-0.3c-0.6,0.3-0.8,1-1.2,1.6 c0.1-1.9-0.6-3.2-2-4.1c-0.6-0.1-0.7,0.3-1,0.5c-1-1.9-1-2.8-0.2-7.7c0.4-2.5,1.7-4.6,3.6-6.8c0.6-0.1,1.5,1.5,2.3,0 c0.8,1.5-0.7,2.3-0.8,3.7c0.8-0.4,1.6-0.7,2.4-0.4c0.4,0.4-0.1,1,0.3,1.4c0.8,0.6,1.4,1.3,0.4,2.3c1.1,0.8-0.3,1.5-0.1,2.4 c0.2,0.8,0,1.7,0,2.5c-0.8-0.2-1-1.1-1.8-1C118.2,76.4,119.5,76.5,119.6,77.3"/>
-							<path class="fill-warning" d="M25,131c-0.3-0.6-1.2-0.3-1.7-0.5v-1.2c-0.1-0.1-0.1-0.2-0.2-0.2c-1.4,0.5-2.2-1-3.4-1.2 c-1.2-0.1-1.9-1-2.1-2.2c-0.1-0.5,0.1-0.8,0.5-1.1c-2-1.7-0.8-3.4-0.1-5.1c0.8-2.2,2.6-2.5,4.6-2.4c0.4,1.1,0.2,2-0.6,2.7 c1.5,1,2-0.5,3-0.8c0.3,0.6,0.6,1.2,0.9,1.6c0,0.6-0.8,0.8-0.4,1.4c0.7,0.8,0.9-0.5,1.7-0.3c1,0.9,0.9,2.2,0.8,3.4 c0.4,0.1,0.6,0.2,1,0.3c-0.1,0.6-1,0.8-1,1.5c0,0.8,0.8,0.2,1,0.7C27.7,128.8,26.9,130.3,25,131"/>
-							<path class="fill-warning" d="M84.9,95H87c0.4,0.4,0.3,1.6-0.3,2.8c1.2,1,1.7-0.5,2.4-0.8c0.8,0,0.8,0.6,1.2,0.7c0.2,0.8-0.7,0.9-0.4,1.7 c0.5,0.3,1.7,0,1.9,0.9c0.2,0.7,0.3,1.5-0.5,2.1c0.3,0.1,0.6,0.2,0.9,0.3c-0.1,0.7-1.1,1.3-0.5,2.2c-1.1,1.5-3,2.1-4.4,3.3 c-0.3,0.2-0.8,1-1.5,0.5c-0.3-0.4,0.4-0.4,0.3-0.8c-0.7-0.5-1.6,0.1-2.4-0.3c-0.2-0.6,0.1-1.4-0.8-1.8c-1.1,0.5-2.2,0.7-3.2-0.8 c1.3-0.8,3-1.1,3.2-3c-1,0-1.7,0.9-2.7,1c-0.2-0.2-0.5-0.4-0.8-0.7c-0.1-0.1,0.1-0.1,0.2-0.3c0.6-1.1,2.4-1,2.5-2.5 c1.2-0.5,1.1-1.7,1.3-2.5C83.8,96.3,84.3,95.7,84.9,95"/>
-							<path class="fill-warning" d="M41.2,153.9c0.3-0.7,0.9-0.8,0.4-1.6c-0.3-0.3-1.1,0.2-1.8-0.2c0-0.2-0.1-0.4-0.1-0.7c-0.1-0.1-0.2-0.2-0.3,0 c-0.3,0.4-0.7,0.4-1.1,0.4c-1.3,0-1.5-0.4-1.6-1.7c0-0.6,0.4-0.8,0.5-1.4c-0.4,0-0.8-0.1-1.4-0.1c-0.4-1.9,0.7-3.6,1.1-5.4 c0.2-0.9,1.6-1.3,2.7-1.3c0.4,0.2,0.3,0.6,0.3,0.7c0.2,0.4,0.3,0.3,0.4,0.1c0.6-0.5,1.3-0.6,1.7,0.1c0.5,0.7,1.1,0.6,1.8,0.7 c0.4,0.4,0.1,0.8,0.2,1.2c0.3,0.4,0.8,0.2,1.3,0.3c1,0.7,0.5,2.1,1.3,2.9C43.8,152.3,43.1,153.1,41.2,153.9"/>
-							<path class="fill-warning" d="M70.9,43.4c-0.3-1.4-1.2-1.8-2.6-1.5c-1.2-2.3-0.8-4.8-0.5-7.2c0.1-0.5,0.4-1.1,0.3-1.7 c-0.2-1.1,0.5-1.9,0.6-2.9c0.1-0.7,1.3-0.9,2-1.3c0.9,0.8,0.9,0.8,1.2,2c0.3,0,0.6,0,0.4,0c1.3,0,0.8,0.9,1.3,1.2 c0.3,0.1,0.8,0.5,0.7,1c-0.2,0.8,1,1.4,0.5,2.1c-0.5,0.7-0.2,1.5-0.5,2.1c-0.8,1.5-1,3.2-1.5,4.8C72.6,43.1,72,43.4,70.9,43.4"/>
-							<path class="fill-warning" d="M125.4,118.4c-0.4-0.3-0.6-0.7-1.3-0.8c-1.6-0.1-1.6-0.2-1.9-1.9c-1.1-0.4-2.2,0-3.2,0.4 c-0.5-0.5-0.2-0.9-0.4-1.4c0.4-0.1,0.7-0.2,1-0.4v-3c-0.5,0.2-1,0.3-1.7,0.5c-0.3,0-0.4-0.6-0.8-0.7c0.6-1.5,1.8-2.4,2.8-3.5 c1.3,0.3,2.6-1.1,3.8,0.4c0,0.1-0.1,1.8,0,2.1c-0.2,0-0.5,0.1-0.7,0.1c-0.2,0-0.3,0-0.5,0c-0.4,0.4-0.1,1.1-0.7,1.5 c1.3-0.5,2.4-1,3.3-2c0.4,0.4,0.7,0.8,1.4,0.6c-1.1,0.9,0.4,2.1-1,2.9c1,0,1.1-0.6,1.5-0.8c0.4-0.1,0.8-0.1,1.2-0.2 c0.5,1,1.1,1.8,0.6,3c-0.7,0.6-2.2,0.4-2.5,2.1c1.2-0.2,1.9-0.9,2.5-1.5c0.7,0.1,0.7,0.5,0.6,0.8c-1.3-0.1-1.2,1.5-2.3,1.9 c-0.9,0.3-1.6,1-2.7,1.8C124.7,119.5,125.1,119,125.4,118.4"/>
-							<path class="fill-warning" d="M101.7,41c-0.3,0.3-0.6,0.6-0.9,0.9c0.9,0.6-0.9,1.6,0.4,2.1c-2,2.3-2,2.4-2.1,4.8h-2.4c-0.2-0.1,0-0.5-0.2-0.8 c-2.4-0.3-2.9-0.8-3-3.3c0-0.6,0.2-1.4-0.5-1.8c0.5-0.7,0.2-1.6,0.7-2.4c1-1.5,2.3-2.7,3.5-3.9c0.5-0.2,1-0.1,1.4,0 c0.2,1-1.1,1.6-0.2,2.6c0.3-0.4,0.6-0.8,0.9-1.3C100.2,39.2,101.7,39.5,101.7,41"/>
-							<path class="fill-warning" d="M140.4,5.4c-0.4,0.6-1.2-0.1-1.5,0.6c0.7,0.4,1.5,0.1,2.3,0.2c0.3,1.1,0.9,2.1,1.3,3.2c0.9,2.4,0.3,4.4-0.6,6.6 c-0.4,0.9-0.9,1.2-1.9,1c-0.2-0.5-0.5-1.2-0.9-1.9c-0.6-0.2-1.5,0-1.9-1c0.1-1.7,0.1-3.6-1.1-5.2c0.4-0.7,0.7-1.3,1.1-1.9 c-0.3-0.1-0.6-0.2-1-0.4c0.2-0.8,0.5-1.6,1.3-2.3h2.2C140,4.6,140.5,4.8,140.4,5.4"/>
-							<path class="fill-warning" d="M65.7,68.8c-0.4,0.6-0.9,0.4-1.4,0.4c-1.2-1.1-0.4-2.9-1.4-4.1c1.5-3,1.5-3,4.1-4.2c0.5,0.1,0.8,0.5,1,1 c0.1,0.6-0.8,0.7-0.5,1.3c0.5,0.6,0.9,0.2,1.2-0.2c1.5,0.6,1.1,2.5,2.4,3.3c-0.1,1.1,0.2,2.2-0.2,3.2L69,72.2c-0.3,0-0.7,0-1,0 c-0.3-0.5-0.9-2.2-0.8-2.4C66.7,69.6,66.2,69.2,65.7,68.8"/>
-							<path class="fill-warning" d="M37.5,69.7c-0.5,0.2,0,0.9-0.4,1c-0.7,0.2-1-0.2-1.2-0.6c-0.4-0.7,0.1-1.6-0.2-2.2c-0.5-0.7-0.6-1.2-0.1-2 c0.5-0.6,0.2-1.5,0.6-2.3c0.9-2,0.9-2.1,3-2.1c0.1,0.1,0.2,0.1,0.2,0.2c0,0.3,0,0.7,0,1.1c0.7,0.4,1.7,0.1,2.1,1.3 c0.3,0.9,1.2,1.5,1,2.7c-0.2,0.9,0.1,1.8-0.8,2.5c-0.4,0.4-0.8,1.1-0.8,2c0,0.6-0.5,1-1.2,1.1c-0.6,0.1-1-0.3-1.2-0.7 C38,71,37.8,70.3,37.5,69.7"/>
-							<path class="fill-warning" d="M53.9,87.8c0.7,0,1.4,0,2.1,0c0.5,0.3,0.1,1,0.4,1.4c0.4,0.3,0.8,0.1,1.2,0.2c0.6,1.2,1.4,2.4,1.7,3.6 c0.4,1.4-0.2,2.7-0.7,4c-1,0.4-1.5-0.4-2.1-0.9c-0.7,0-1.4,0-2.1,0c-0.4-1-0.8-1.8-2.1-1.5c-0.6-0.7,0.2-1.8-0.7-2.3 c0.5-0.6,0.9-1.3,1-2.1C52.8,89.2,53.2,88.5,53.9,87.8"/>
-							<path class="fill-warning" d="M0.1,95.7c0.9-1.3,2.3-1.7,3.8-1.8c1,1.2-0.7,1.5-0.8,2.3c1.1,1,2-0.7,3.1,0c0.6,0.6-0.2,0.8-0.3,1.2 c0.4,0.5,1,0,1.4,0.3c0.4,1.1-0.3,2.3,0.6,3.3c-0.8,0.8-0.7,2.2-1.9,2.8c-1.1-0.2-1.8-1-2.6-1.7c-0.7-0.6-1.9-0.5-2.6-1.9 C1,98.9-0.4,97.4,0.1,95.7"/>
-							<path class="fill-warning" d="M155.5,91.5c-0.9-0.5-1.7-0.7-2.3-1.6c0.4-0.2,0.8-0.5,1.2-0.7c-1.2-0.4-2.1,0.7-3.1,0c0.6-1,1.8-1,2.5-1.7 c0.1-0.6-0.3-0.6-0.7-0.7c-0.7-0.2-0.9,0.9-1.6,0.5c-0.3-0.3-0.4-0.7-0.1-0.9c1.7-1,3-2.3,4.5-3.5c0.9-0.7,1.1-0.9,2.5-1.2 c-0.1,0.5-0.6,0.7-0.9,1.1c0.7,0.7,1.3,0.1,1.9-0.2c0.1,1.1,0.9,1.9,0.5,3.4C158.3,87.4,157.4,89.8,155.5,91.5"/>
-						</svg>
-					</figure>
+                    <span class="kama-badge">
+                        <i class="bi bi-stars"></i>
+                        La bibliothèque africaine numérique
+                    </span>
 
-					<!-- Support guid -->
-					<div class="position-absolute top-0 end-0 z-index-1 mt-n4">
-						<div class="bg-blur border border-light rounded-3 text-center shadow-lg p-3">
-							<!-- Title -->
-							<i class="bi bi-book text-danger fs-3"></i>
-							<h5 class="text-dark mb-1">24 / 7</h5>
-							<h6 class="text-dark fw-light small mb-0">Accessible</h6>
-						</div>
-					</div>
 
-					<!-- Round image group -->
-					<div class="vstack gap-5 align-items-center position-absolute top-0 start-0 d-none d-md-flex mt-4 ms-n3">
-						<img class="icon-lg shadow-lg border border-3 border-white rounded-circle" src="{{ asset('assets/images/category/hotel/4by3/11.jpg') }}" alt="avatar">
-						<img class="icon-xl shadow-lg border border-3 border-white rounded-circle" src="{{ asset('assets/images/category/hotel/4by3/12.jpg') }}" alt="avatar">
-					</div>
-				</div>
-			</div>
-			<!-- Content and Image END -->
-			
-		<!-- Search START -->
-		<div class="row">
-			<div class="col-xl-10 position-relative mt-n3 mt-xl-n9">
-				<!-- Title -->
-				<h6 class="d-none d-xl-block mb-3">Rechercher un livre</h6>
+                    <h1 class="fw-bold mt-3">
+                        Découvrez des
+                        <span class="text-primary">
+                            histoires africaines
+                        </span>
+                        qui vous ressemblent.
+                    </h1>
 
-				<!-- Booking from START -->
-                <form class="card shadow rounded-3 position-relative p-3">
 
-                    <div class="d-flex align-items-center flex-nowrap w-100">
+                    <p class="hero-description">
+                        KaMa vous ouvre les portes d’un univers riche en
+                        récits africains à travers des ebooks et des
+                        audiolivres accessibles partout et à tout moment.
+                        Découvrez de nouveaux auteurs, explorez différentes
+                        cultures et laissez-vous transporter par chaque histoire.
+                    </p>
 
-                        <i class="bi bi-search fs-4 me-2 text-muted"></i>
 
-                        <input
-                            type="text"
-                            class="form-control border-0 shadow-none flex-grow-1"
-                            placeholder="Rechercher des ebooks, auteurs africains, audio..."
-                        >
 
-                        <button type="submit" class="btn btn-dark rounded-3 ms-3 flex-shrink-0">
-                            Rechercher
-                        </button>
+                    <div class="d-flex flex-wrap gap-3 mt-4">
+
+                        <a href="{{ url('/catalogue') }}" 
+                           class="btn btn-kama px-4 py-3">
+                            <i class="bi bi-book me-2"></i>
+                            Explorer le catalogue
+                        </a>
+
+
+                        <a href="{{ url('/authors') }}" 
+                           class="btn btn-outline-dark px-4 py-3">
+                            Découvrir les auteurs
+                        </a>
 
                     </div>
 
-                </form>
-				<!-- Booking from END -->
-			</div>
-		</div>
-		<!-- Search END -->
-	</div>
+                </div>
+
+            </div>
+
+
+
+
+
+            <!-- IMAGE -->
+            <div class="col-lg-6">
+
+                <div class="kama-hero-image position-relative">
+
+
+                    <img src="{{ asset('assets/images/KaMa.png') }}"
+                         class="img-fluid rounded-4"
+                         alt="KaMa bibliothèque africaine">
+
+
+
+                    <!-- DECORATION -->
+                    <div class="hero-circle-decoration"></div>
+
+
+
+                    <!-- STATS OVERLAY -->
+                    <div class="kama-hero-stats-wrapper">
+
+
+                        <div class="kama-hero-stats">
+
+
+                            <div class="hero-stat">
+
+                                <div class="stat-icon">
+                                    <i class="bi bi-book"></i>
+                                </div>
+
+                                <div>
+                                    <strong>{{ $totalBooks }}+</strong>
+                                    <span>Livres disponibles</span>
+                                </div>
+
+                            </div>
+
+
+                            <div class="hero-stat">
+
+                                <div class="stat-icon">
+                                    <i class="bi bi-person"></i>
+                                </div>
+
+                                <div>
+                                    <strong>{{ $authors->count() }}+</strong>
+                                    <span>Auteurs africains</span>
+                                </div>
+
+                            </div>
+
+
+
+
+
+                            <div class="hero-stat">
+
+                                <div class="stat-icon">
+                                    <i class="bi bi-headphones"></i>
+                                </div>
+
+                                <div>
+                                    <strong>Audio</strong>
+                                    <span>& Ebook</span>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- SMALL CARD -->
+                    <div class="hero-floating-card">
+
+                        <i class="bi bi-globe-africa"></i>
+
+                        <div>
+                            <strong>24/7</strong>
+                            <span>Accessible partout</span>
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
 </section>
 <!-- =======================
 Main Banner END -->
@@ -123,7 +174,7 @@ Sponsoring END -->
 <!-- =======================
 About START -->
 <section>
-	<div class="container">
+	<div class="kama-hero-container">
 		<div class="row g-4">
 			
 			<div class="col-lg-4 position-relative">
@@ -260,7 +311,7 @@ About END -->
 <!-- =======================
 Livres à la une START-->
 <section class="pt-0">
-	<div class="container">
+	<div class="kama-hero-container">
         <div class="row mb-5">
             <div class="col-12 text-center">
                 <span class="section-subtitle">La sélection de nos lecteurs</span>
@@ -363,7 +414,7 @@ Livres à la une END -->
 <!-- =======================
 Top Categories START -->
 <section class="bg-light category-section ">
-	<div class="container">
+	<div class="kama-hero-container">
 		<div class="row g-4 align-items-center">
 			<!-- Title -->
 			<div class="col-lg-4">
@@ -407,7 +458,7 @@ Meilleurs livres START-->
 <section class="best-books">
 
     <!-- Section Title -->
-     <div class="row mb-5">
+        <div class="row mb-5">
             <div class="col-12 text-center">
                 <span class="section-subtitle">Le choix de nos lecteurs</span>
                 <h2 class="section-title">
@@ -416,352 +467,351 @@ Meilleurs livres START-->
             </div>
         </div>
 
-    <div class="best-layout">
-
-        <!-- Featured Book -->
-        {{-- <div class="featured-book position-relative">
-
-            <div class="best-badge">
-                BEST SELLER
-            </div>
-
-            <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Featured Book">
-
-            <div class="featured-content">
-
-                <span class="featured-category">
-                    Développement personnel
-                </span>
-
-                <h3>Atomic Habits</h3>
-
-                <p class="featured-author">
-                    Par James Clear
-                </p>
-
-                <p class="featured-description">
-                    Découvrez comment de petits changements quotidiens peuvent produire des résultats extraordinaires.
-                    Un guide incontournable pour créer de bonnes habitudes, éliminer les mauvaises et transformer durablement votre vie.
-                </p>
-
-                <div class="stars">
-
-                    ★★★★★
-
-                    <span>
-                        5
-                    </span>
-
-                </div>
-
-                <div class="featured-actions">
-
-                    <button class="cart-btn">
-                        <i class="bi bi-cart"></i>
-                        Ajouter au panier
-                    </button>
-
-                    <button class="read-btn">
-                        Lire un extrait
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div> --}}
-
-        <!-- Side Books -->
-        {{-- <div class="side-books">
-
-                <div class="mini-book">
-                    <span class="book-category business">Business</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>Atomic Habits</h4>
-
-                        <p>Par James Clear</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.3
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="mini-book">
-                    <span class="book-category psychology">Psychology</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>The 5 AM Club</h4>
-
-                        <p>Par Robin Sharma</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.5
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="mini-book">
-                    <span class="book-category finance">Finance</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>The Psychology of Money</h4>
-
-                        <p>Par Morgan Housel</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.5
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                 <div class="mini-book">
-                    <span class="book-category history">History</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>Atomic Habits</h4>
-
-                        <p>Par James Clear</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.3
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="mini-book">
-                    <span class="book-category children">Children</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>The 5 AM Club</h4>
-
-                        <p>Par Robin Sharma</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.5
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="mini-book">
-                    <span class="book-category science">Science</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>The Psychology of Money</h4>
-
-                        <p>Par Morgan Housel</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.5
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="mini-book">
-                    <span class="book-category science">Science</span>
-                    <div class="mini-cover">
-                        <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
-                    </div>
-
-                    <div class="mini-content">
-
-                        <h4>The Psychology of Money</h4>
-
-                        <p>Par Morgan Housel</p>
-
-                        <div class="mini-meta">
-
-                            <span class="mini-rating">
-                                ⭐ 4.5
-                            </span>
-
-                            <span class="mini-action">
-                                Voir →
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-        </div> --}}
-
-
-        {{-- Code donnees reelles --}}
-        @if($bestRatedBook)
-
+        <div class="best-layout">
             <!-- Featured Book -->
-            <div class="featured-book position-relative">
+            {{-- <div class="featured-book position-relative">
 
                 <div class="best-badge">
-                    Le mieux noté
+                    BEST SELLER
                 </div>
-                <img src="{{ asset('storage/'.$bestRatedBook->cover_image) }}" 
-                    alt="{{ $bestRatedBook->title }}">
+
+                <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Featured Book">
 
                 <div class="featured-content">
+
                     <span class="featured-category">
-                        {{ $bestRatedBook->category->name ?? 'Catégorie' }}
+                        Développement personnel
                     </span>
-                    <h3>
-                        {{ $bestRatedBook->title }}
-                    </h3>
+
+                    <h3>Atomic Habits</h3>
+
                     <p class="featured-author">
-                        Par 
-                        {{ $bestRatedBook->author->firstname ?? '' }}
-                        {{ $bestRatedBook->author->lastname ?? '' }}
+                        Par James Clear
                     </p>
 
                     <p class="featured-description">
-                        {{ Str::limit($bestRatedBook->short_description, 250) }}
+                        Découvrez comment de petits changements quotidiens peuvent produire des résultats extraordinaires.
+                        Un guide incontournable pour créer de bonnes habitudes, éliminer les mauvaises et transformer durablement votre vie.
                     </p>
 
                     <div class="stars">
+
                         ★★★★★
+
                         <span>
-                            {{ number_format($bestRatedBook->reviews_avg_rating ?? 0,1) }}
-                            ({{ $bestRatedBook->reviews_count ?? 0 }} avis)
+                            5
                         </span>
+
                     </div>
 
                     <div class="featured-actions">
-                        <a href="#" class="cart-btn">
+
+                        <button class="cart-btn">
                             <i class="bi bi-cart"></i>
                             Ajouter au panier
-                        </a>
-
+                        </button>
 
                         <button class="read-btn">
                             Lire un extrait
                         </button>
+
                     </div>
+
                 </div>
-            </div>
-        @endif
 
-        <!-- Side Books -->
-        <div class="side-books">
-            @foreach($topRatedBooks as $book)
-                <div class="mini-book">
-                    <span class="book-category business">
-                        {{ $book->category->name ?? 'Livre' }}
-                    </span>
+            </div> --}}
 
-                    <div class="mini-cover">
-                        <img src="{{ asset('storage/'.$book->cover_image) }}" 
-                            alt="{{ $book->title }}">
+            <!-- Side Books -->
+            {{-- <div class="side-books">
+
+                    <div class="mini-book">
+                        <span class="book-category business">Business</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>Atomic Habits</h4>
+
+                            <p>Par James Clear</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.3
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <div class="mini-content">
-                        <h4>
-                            {{ $book->title }}
-                        </h4>
-                        <p>
+                    <div class="mini-book">
+                        <span class="book-category psychology">Psychology</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>The 5 AM Club</h4>
+
+                            <p>Par Robin Sharma</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.5
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mini-book">
+                        <span class="book-category finance">Finance</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>The Psychology of Money</h4>
+
+                            <p>Par Morgan Housel</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.5
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mini-book">
+                        <span class="book-category history">History</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>Atomic Habits</h4>
+
+                            <p>Par James Clear</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.3
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mini-book">
+                        <span class="book-category children">Children</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>The 5 AM Club</h4>
+
+                            <p>Par Robin Sharma</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.5
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mini-book">
+                        <span class="book-category science">Science</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>The Psychology of Money</h4>
+
+                            <p>Par Morgan Housel</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.5
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mini-book">
+                        <span class="book-category science">Science</span>
+                        <div class="mini-cover">
+                            <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
+                        </div>
+
+                        <div class="mini-content">
+
+                            <h4>The Psychology of Money</h4>
+
+                            <p>Par Morgan Housel</p>
+
+                            <div class="mini-meta">
+
+                                <span class="mini-rating">
+                                    ⭐ 4.5
+                                </span>
+
+                                <span class="mini-action">
+                                    Voir →
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+            </div> --}}
+
+
+            {{-- Code donnees reelles --}}
+            @if($bestRatedBook)
+
+                <!-- Featured Book -->
+                <div class="featured-book position-relative">
+
+                    <div class="best-badge">
+                        Le mieux noté
+                    </div>
+                    <img src="{{ asset('storage/'.$bestRatedBook->cover_image) }}" 
+                        alt="{{ $bestRatedBook->title }}">
+
+                    <div class="featured-content">
+                        <span class="featured-category">
+                            {{ $bestRatedBook->category->name ?? 'Catégorie' }}
+                        </span>
+                        <h3>
+                            {{ $bestRatedBook->title }}
+                        </h3>
+                        <p class="featured-author">
                             Par 
-                            {{ $book->author->firstname ?? '' }}
-                            {{ $book->author->lastname ?? '' }}
+                            {{ $bestRatedBook->author->firstname ?? '' }}
+                            {{ $bestRatedBook->author->lastname ?? '' }}
                         </p>
-                        <div class="mini-meta">
-                            <span class="mini-rating">
-                                ⭐ 
-                                {{ number_format($book->reviews_avg_rating ?? 0,1) }}
+
+                        <p class="featured-description">
+                            {{ Str::limit($bestRatedBook->short_description, 250) }}
+                        </p>
+
+                        <div class="stars">
+                            ★★★★★
+                            <span>
+                                {{ number_format($bestRatedBook->reviews_avg_rating ?? 0,1) }}
+                                ({{ $bestRatedBook->reviews_count ?? 0 }} avis)
                             </span>
-                            <a href="{{ route('books.show', $book) }}" 
-                            class="mini-action">
-                                Voir →
+                        </div>
+
+                        <div class="featured-actions">
+                            <a href="#" class="cart-btn">
+                                <i class="bi bi-cart"></i>
+                                Ajouter au panier
                             </a>
+
+
+                            <button class="read-btn">
+                                Lire un extrait
+                            </button>
                         </div>
                     </div>
                 </div>
-            @endforeach
+            @endif
+
+            <!-- Side Books -->
+            <div class="side-books">
+                @foreach($topRatedBooks as $book)
+                    <div class="mini-book">
+                        <span class="book-category business">
+                            {{ $book->category->name ?? 'Livre' }}
+                        </span>
+
+                        <div class="mini-cover">
+                            <img src="{{ asset('storage/'.$book->cover_image) }}" 
+                                alt="{{ $book->title }}">
+                        </div>
+
+                        <div class="mini-content">
+                            <h4>
+                                {{ $book->title }}
+                            </h4>
+                            <p>
+                                Par 
+                                {{ $book->author->firstname ?? '' }}
+                                {{ $book->author->lastname ?? '' }}
+                            </p>
+                            <div class="mini-meta">
+                                <span class="mini-rating">
+                                    ⭐ 
+                                    {{ number_format($book->reviews_avg_rating ?? 0,1) }}
+                                </span>
+                                <a href="{{ route('books.show', $book) }}" 
+                                class="mini-action">
+                                    Voir →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
-    </div>
 </section>
 <!-- =======================
 Meilleurs livres END -->

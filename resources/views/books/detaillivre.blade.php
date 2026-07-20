@@ -4,273 +4,369 @@
 
 <section class="details-hero">
 
-  <!-- BACKGROUND LAYERS -->
-  <div class="hero-bg-circle c1"></div>
-  <div class="hero-bg-circle c2"></div>
+    <!-- DECORATION -->
+    <div class="hero-bg-circle c1"></div>
+    <div class="hero-bg-circle c2"></div>
 
-  <!-- CONTENT -->
-  <div class="hero-content">
 
-    <div class="breadcrumb">
-      <a href="{{ url('/catalogue') }}">Catalogue</a> / <span>{{ $book->title }}</span>
+    <div class="kama-hero-container">
+        <div class="hero-content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="{{ url('/catalogue') }}">
+                    <i class="bi bi-arrow-left"></i>
+                    Catalogue
+                </a>
+
+                <span>
+                    /
+                </span>
+
+                <span>
+                    {{ $book->title }}
+                </span>
+            </div>
+
+            <!-- Category -->
+            @if($book->category)
+                <span class="book-category-badge">
+                    <i class="bi bi-bookmark-fill"></i>
+                    {{ $book->category->name }}
+                </span>
+            @endif
+
+            <h1>
+                {{ $book->title }}
+            </h1>
+
+            <div class="hero-author">
+                <div class="author-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+
+                <div>
+                    <span>
+                        Écrit par
+                    </span>
+
+                    <strong>
+                        {{ $book->author->firstname }}
+                        {{ $book->author->lastname }}
+                    </strong>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <h1>{{ $book->title }}</h1>
-
-  </div>
-
 </section>
-
 <!-- =======================
 Advertisement START -->
-@foreach($sponsoredBooks as $sponsored)
-    <section class="pb-2 pb-lg-5">
-        <div class="container">
-            <!-- Slider START -->
-            <div class="tiny-slider arrow-round arrow-blur arrow-hover">
-                <div class="tiny-slider-inner" data-autoplay="true" data-arrow="true" data-edge="2" data-dots="false" data-items-xl="3" data-items-lg="2" data-items-md="1">
-                    <!-- Slider item -->
-                    <div>
-                        <div class="card border rounded-3 overflow-hidden">
-                                <span class="ad-badge">Sponsorisé</span>
-                            <div class="row g-0 align-items-center">
-
-                                <!-- Image -->
-                                <div class="col-sm-6">
-                                    <img src="{{ asset('storage/'.$sponsored->book->cover_image) }}" class="card-img rounded-0" alt="{{ $sponsored->book->title }}">
-                                </div>
-
-                                <!-- Title and content -->
-                                <div class="col-sm-6">
-                                    <div class="card-body px-3">
-                                        <h6 class="card-title"><a href="{{ route('books.show', $book) }}" class="stretched-link">{{ $sponsored->book->title }}</a></h6>
-                                        <p class="mb-0 author">Par {{ $sponsored->book->author->firstname }}
-                                            {{ $sponsored->book->author->lastname }}
-                                         </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-    
-                </div>
-            </div>	
-            <!-- Slider END -->
-        </div>
-    </section>
-@endforeach
+@include('partials.sponsored-books-banner')
 <!-- =======================
 Advertisement END -->
 
 <section class="details-book">
+    <div class="details-container">
+        <!-- LEFT IMAGE -->
+        <div class="book-image">
+        <img src="{{  asset('storage/'.$book->cover_image)  }}" alt="{{ $book->title }}">
+        </div>
 
-  <div class="details-container">
+            <!-- RIGHT CONTENT -->
+        <div class="book-content">
 
-    <!-- LEFT IMAGE -->
-    <div class="book-image">
-      <img src="{{  asset('storage/'.$book->cover_image)  }}" alt="{{ $book->title }}">
-    </div>
-
-    <!-- RIGHT CONTENT -->
-    <div class="book-content">
-
-      <span class="category">{{ $book->category->name }}</span>
-
-      <h1>{{ $book->title }}</h1>
-
-      <!-- RATING -->
-      <div class="rating">
-        <i class="bi bi-star-fill star"></i>
-        <span>
-          {{ number_format($book->reviews_avg_rating ?? 0,1) }}
-          •
-          {{ $book->reviews_count }} avis
-        </span>
-      </div>
-
-      <!-- DESCRIPTION -->
-      <p class="summary">
-        {{ $book->short_description }}
-      </p>
-
-      <!-- META INFOS -->
-      <div class="meta-line">
-
-        <span class="meta-chip">
-          @if ($book->type == 'ebook')
-            <i class="bi bi-file-text meta-icon"></i>
-            {{ $book->pages}}pages
-          @else
-           <i class="bi bi-headphones meta-icon"></i>
-            {{ $book->duration }} 
-          @endif
-        </span>
-
-        <span class="meta-sep">•</span>
-
-        <span class="meta-chip">
-          <i class="bi bi-calendar meta-icon"></i>
-          {{ $book->publication_year }} 
-        </span>
-
-        <span class="meta-sep">•</span>
-
-        <span class="meta-chip">
-          <i class="bi bi-globe meta-icon"></i>
-          {{ $book->language }} 
-        </span>
-
-        <span class="meta-sep">•</span>
-
-        <span class="meta-chip">
-          <i class="bi bi-tag meta-icon"></i>
-          {{ $book->subcategory->name }} 
-        </span>
-
-        <span class="meta-chip">
-          <i class="bi bi-tag meta-icon"></i>
-          {{ $book->category->name }} 
-        </span>
+            <!-- CATEGORY -->
+            <span class="category">
+                <i class="bi bi-bookmark-fill"></i>
+                {{ $book->category->name }}
+            </span>
 
 
-      </div>
+            <!-- TITLE -->
+            <h1>
+                {{ $book->title }}
+            </h1>
 
-      <!-- PRICE -->
-      <div class="price">
-        {{ number_format($book->price,2) }} $
-      </div>
 
-      <!-- ACTIONS -->
-      <div class="actions">
+            <!-- AUTHOR -->
+            <div class="author-box">
 
-        <!-- Lire un peu -->
-        <a href="#full-description" class="primary-btn">
-            <i class="bi bi-book"></i>
-            Lire un peu
-        </a>
+                <div class="author-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
 
-        <!-- Add to cart -->
-        <button class="cart-btn">
-          <i class="bi bi-cart"></i>
-          Ajouter au panier
-        </button>
 
-        <!-- Wishlist -->
-        <button class="wishlist-btn">
-          <i class="bi bi-heart"></i>
-        </button>
+                <div class="author-text">
 
-      </div>
+                    <small>
+                        Écrit par
+                    </small>
 
-      {{-- <div class="same-author">
-
-        <h3 class="same-title">Autres livres du même auteur</h3>
-
-        <div class="same-grid">
-          @foreach($sameAuthorBooks as $sameBook)
-            <div class="same-card">
-
-                <img src="{{ asset('storage/'.$sameBook->cover_image) }}"
-                    alt="{{ $sameBook->title }}">
-
-                <div class="same-info">
-
-                    <h4>{{ $sameBook->title }}</h4>
-
-                    <a href="{{ route('books.show',$sameBook) }}"
-                      class="see-more">
-
-                        <i class="bi bi-eye"></i>
-
-                    </a>
+                    <strong>
+                        {{ $book->author->firstname }}
+                        {{ $book->author->lastname }}
+                    </strong>
 
                 </div>
 
+
+                <button class="bio-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#authorModal">
+
+                    Voir la biographie
+                    <i class="bi bi-arrow-right"></i>
+
+                </button>
+
             </div>
-          @endforeach
-          
-      </div> --}}
-     </div>
-    </div>
-   
 
-    {{-- <section class="book-full-description">
-        <!-- FULL WIDTH SECTION INSIDE CARD -->
-        <div class="book-full-description" id="full-description">
 
-        <h2>Résumé détaillé</h2>
 
-        <p>
-            Atomic Habits explique comment de petits changements quotidiens peuvent produire des résultats extraordinaires.
-            Le livre montre comment les habitudes se construisent et comment les transformer durablement.
-        </p>
+            <!-- RATING -->
+            <div class="rating">
 
-        <p>
-            L’idée centrale est simple : tu n’as pas besoin de changer radicalement ta vie, mais d’améliorer ton système
-            jour après jour.
-            
-        </p>
+                <i class="bi bi-star-fill star"></i>
 
-        <ul>
-            <li>Comprendre la formation des habitudes</li>
-            <li>Supprimer les mauvaises habitudes</li>
-            <li>Construire de nouveaux systèmes</li>
-            <li>Améliorer la discipline personnelle</li>
-        </ul>
+                <strong>
+                    {{ number_format($book->reviews_avg_rating ?? 0,1) }}
+                </strong>
+
+                <span>
+                    ({{ $book->reviews_count }} avis)
+                </span>
+
+            </div>
+
+
+
+            <!-- DESCRIPTION -->
+            <h5>Résumé</h5>
+            <p class="summary">
+                {{ $book->short_description }}
+            </p>
+
+
+            <!-- META -->
+            <div class="meta-line">
+
+
+                <div class="meta-chip">
+
+                    <i class="bi bi-file-earmark-text meta-icon"></i>
+
+                    @if($book->type == 'ebook')
+                        {{ $book->pages }} pages
+                    @else
+                        {{ $book->duration }}
+                    @endif
+
+                </div>
+
+
+
+                <div class="meta-chip">
+
+                    <i class="bi bi-calendar meta-icon"></i>
+
+                    {{ $book->publication_year }}
+
+                </div>
+
+
+
+                <div class="meta-chip">
+
+                    <i class="bi bi-globe meta-icon"></i>
+
+                    {{ $book->language }}
+
+                </div>
+
+
+
+                <div class="meta-chip">
+
+                    <i class="bi bi-tag meta-icon"></i>
+
+                    {{ $book->subcategory->name ?? '' }}
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PRICE -->
+            <div class="price-box">
+
+                <span>
+                    Prix
+                </span>
+
+                <strong>
+                    {{ number_format($book->price,2) }} $
+                </strong>
+
+            </div>
+
+
+
+            <!-- ACTIONS -->
+            <div class="actions">
+
+
+                <a href="#full-description"
+                class="primary-btn">
+
+                    <i class="bi bi-book"></i>
+
+                    Lire un extrait
+
+                </a>
+
+
+
+                <button class="cart-btn">
+
+                    <i class="bi bi-cart"></i>
+
+                    Ajouter
+
+                </button>
+
+
+
+                <button class="wishlist-btn">
+
+                    <i class="bi bi-heart"></i>
+
+                </button>
+
+
+            </div>
+
 
         </div>
-    </section> --}}
 
-   <section class="book-full-description" id="full-description">
+    </div>
+</section>
 
-    <h2>
-        Extrait du livre
-        @if ($book->preview_type == 'pages')
-            (Cliquez sur l'image de couverture pour lire)
+<section class="book-preview-section" id="full-description">
+
+
+    <div class="preview-card">
+
+
+        <!-- HEADER -->
+
+        <div class="preview-title">
+             <div class="row mb-2">
+                <div class="col-12 text-center">
+                    <span class="section-subtitle"> <i class="bi bi-book-half"></i>Aperçu</span>
+                    <h2 class="section-title">
+                        @if ($book->preview_type == 'pages')
+                          Feuilletez <span>quelques pages</span>
+                        @else
+                            Découvrez <span>le livre</span>
+
+                        @endif  
+                    </h2>
+                </div>
+            </div>
+
+
+
+            @if($book->preview_type == 'pages')
+
+                <p>
+                    Parcourez un extrait avant de commencer votre lecture.
+                </p>
+
+            @endif
+
+
+        </div>
+
+
+
+
+        <!-- CONTENT -->
+
+
+        @if($book->preview_type == 'pages')
+
+
+            <div class="flipbook-zone">
+
+
+                <div class="reading-tip">
+
+                    <i class="bi bi-hand-index"></i>
+
+                    Tournez les pages pour lire l'extrait
+
+                </div>
+
+
+
+                <div class="flipbook-frame">
+
+                    <div id="book-preview"></div>
+
+                </div>
+
+
+            </div>
+
+
+
+        @else
+
+
+
+            <article class="book-text-preview">
+
+                {!! $book->long_description !!}
+
+            </article>
+
+
+
         @endif
-    </h2>
 
-    @if($book->preview_type == 'pages')
-        <div class="d-flex align-items-center justify-content-center gap-3">
-            <div class="book-wrapper">
-                <div id="book-preview"></div>
-            </div>
-        </div>
-    @else
 
-    <div class="book-text-preview">
-        {!! $book->long_description !!}
+
     </div>
 
-    @endif
 
 </section>
 
-
-     <section class="same-author-section">
+<section class="same-author-section">
         <div class="container">
-
-            <h2 class="section-title mb-4">
-                Autres livres de 
-                <span>
-                    {{ $book->author->firstname }}
-                    {{ $book->author->lastname }}
-                </span>
-            </h2>
+            <div class="row mb-2">
+                <div class="col-12 text-center">
+                    <span class="section-subtitle"> <i class="bi bi-person"></i>Du même auteur</span>
+                    <h2 class="section-title">
+                        Autres livres <span>de  {{ $book->author->firstname }}
+                        {{ $book->author->lastname }}
+                    </h2>
+                </div>
+            </div>
 
 
             <!-- Slider START -->
             <div class="tiny-slider arrow-round arrow-blur arrow-hover">
                 <div class="tiny-slider-inner"
-                    data-autoplay="true"
-                    data-arrow="true"
-                    data-dots="false"
-                    data-edge="2"
-                    data-items-xl="4"
-                    data-items-lg="3"
-                    data-items-md="2"
-                    data-items="1">
+                data-autoplay="true"
+                data-arrow="true"
+                data-dots="false"
+                data-edge="0"
+                data-items-xl="4"
+                data-items-lg="3"
+                data-items-md="2"
+                data-items-sm="1"
+                data-items="1">
 
                     @foreach($sameAuthorBooks as $sameBook)
                     <!-- Slider item -->
@@ -296,270 +392,121 @@ Advertisement END -->
             </div>
             <!-- Slider END -->
         </div>
-    </section>
-  </div>
-
 </section>
 
 
 
 <section class="reviews-section">
+     <div class="row mb-2">
+            <div class="col-12 text-center">
+                <span class="section-subtitle"> <i class="bi bi-chat-square-text"></i>Témoignages</span>
+                <h2 class="section-title">
+                    Avis <span>des lecteurs</span>
+                </h2>
+            </div>
+        </div>
 
-  <h2 class="reviews-title">Avis des lecteurs</h2>
+    <div class="reviews-container">
+        <!-- AVIS -->
+        <div class="reviews-carousel">
+            <div class="carousel-track">
+                @foreach($book->reviews as $review)
+                <div class="review-card">
+                    <div class="avatar">
+                        <img src="{{ $review->user->avatar 
+                            ? asset('storage/'.$review->user->avatar)
+                            : asset('assets/images/avatar/01.jpg') }}"
+                            alt="">
+                    </div>
 
-  <div class="reviews-grid">
 
-    <!-- LEFT: AUTO CAROUSEL -->
-    <div class="reviews-carousel carousel">
+                    <div class="review-content">
+                        <h4>
+                            {{ $review->user->firstname }}
+                            {{ $review->user->lastname }}
+                        </h4>
+                        <div class="stars">
+                            @for($i=1;$i<=5;$i++)
+                                @if($i <= $review->rating)
+                                    ★
+                                @else
+                                    ☆
+                                @endif
+                            @endfor
+                        </div>
 
+                        <p>
+                            {{ $review->comment }}
+                        </p>
+                    </div>
+                </div>
 
-        <div class="carousel-track">
-            <!-- CARD 1 -->
-            <div class="review-card">
-            <div class="avatar">
-                <img src="{{ asset ('assets/images/authors/author1.jpg') }}" alt="">
+                @endforeach
             </div>
+        </div>
 
-            <div class="review-content">
-                <h4>Marie K.</h4>
-                <div class="stars">★★★★★</div>
-                <p>Un livre incroyable qui change la façon de penser les habitudes.</p>
-            </div>
-            </div>
+        <!-- RATING SUMMARY -->
+        <div class="rating-summary">
+            <h3>
+                Note moyenne
+            </h3>
 
-            <!-- CARD 2 -->
-            <div class="review-card">
-            <div class="avatar">
-                <img src="{{ asset ('assets/images/authors/author1.jpg') }}" alt="">
-            </div>
-            <div class="review-content">
-                <h4>John D.</h4>
-                <div class="stars">★★★★☆</div>
-                <p>Très fluide à lire, concret et utile au quotidien.</p>
-            </div>
-            </div>
-
-            <!-- CARD 3 -->
-            <div class="review-card">
-            <div class="avatar">
-                <img src="{{ asset ('assets/images/authors/author1.jpg') }}" alt="">
-            </div>
-            <div class="review-content">
-                <h4>Amina S.</h4>
-                <div class="stars">★★★★★</div>
-                <p>Un must-read pour la discipline personnelle.</p>
-            </div>
-            </div>
-
-            <!-- DUPLICATION POUR LOOP -->
-            <div class="review-card">
-            <div class="avatar">
-                <img src="{{ asset ('assets/images/authors/author1.jpg') }}" alt="">
-            </div>            <div class="review-content">
-                <h4>Marie K.</h4>
-                <div class="stars">★★★★★</div>
-                <p>Un livre incroyable qui change la façon de penser les habitudes.</p>
-            </div>
-            </div>
-
-            <div class="review-card">
-            <div class="avatar">
-                <img src="{{ asset ('assets/images/authors/author1.jpg') }}" alt="">
-            </div>            <div class="review-content">
-                <h4>John D.</h4>
-                <div class="stars">★★★★☆</div>
-                <p>Très fluide à lire, concret et utile au quotidien.</p>
-            </div>
+            <div class="big-rating">
+                {{ number_format($book->reviews_avg_rating ?? 0,1) }}
+                <span>/5</span>
             </div>
 
+            <div class="stars large">
+                ★★★★★
+            </div>
+
+            <p>
+                Basé sur 
+                {{ $book->reviews_count }}
+                avis lecteurs
+            </p>
+
+            @auth
+                <a href="#"
+                   class="review-btn">
+                    Donner mon avis
+                </a>
+            @endauth
         </div>
     </div>
-
-    <!-- RIGHT: FORM -->
-    <div class="reviews-form-box">
-
-      <h3>Laisser un avis</h3>
-
-      <form class="review-form">
-
-        <div class="form-row">
-          <input type="text" placeholder="Nom">
-          <input type="text" placeholder="Prénom">
-        </div>
-
-        <input type="email" placeholder="Email">
-
-        <textarea rows="5" placeholder="Votre avis..."></textarea>
-        <div class="rating-select">
-                    <label>Note</label>
-                    <select name="rating">
-                    <option value="5">★★★★★ (5/5)</option>
-                    <option value="4">★★★★☆ (4/5)</option>
-                    <option value="3">★★★☆☆ (3/5)</option>
-                    <option value="2">★★☆☆☆ (2/5)</option>
-                    <option value="1">★☆☆☆☆ (1/5)</option>
-                    </select>
-        </div>
-
-        <button type="submit">Publier</button>
-
-      </form>
-
-    </div>
-
-  </div>
-
 </section>
 
 
-{{-- Code flip --}}
-{{-- @if($book->preview_type == 'pages')
+<div class="modal fade" id="authorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
 
-<script type="module">
-    import * as pdfjsLib from "/js/pdfjs/pdf.mjs";
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {{ $book->author->firstname }}
+                    {{ $book->author->lastname }}
+                </h5>
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "/js/pdfjs/pdf.worker.mjs";
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
 
-   // CHARGEMENT PDF
+            <div class="modal-body">
 
-    const pdf = await pdfjsLib.getDocument({
+                @if($book->author->bio)
+                    {!! nl2br(e($book->author->bio)) !!}
+                @else
+                    <p class="text-muted mb-0">
+                        Cet auteur n'a pas encore ajouté de biographie.
+                    </p>
+                @endif
 
-        url: "{{ route('book.preview',$book->id) }}"
-
-    }).promise;
-
-    const startPage = {{ $previewStart }};
-    const pdfLastPage = {{ $previewEnd }};
-
-    let pages = [];
-
-    // COUVERTURE
-
-    const cover = document.createElement("div");
-    cover.className = "page cover";
-    const coverImage = document.createElement("img");
-    coverImage.src = "/storage/{{ $book->cover_image }}";
-    coverImage.style.width = "100%";
-    coverImage.style.height = "100%";
-    coverImage.style.objectFit = "cover";
-    cover.appendChild(coverImage);
-    pages.push(cover);
-
-   // PAGES PDF PREVIEW
-    for(
-        let pageNumber = startPage;
-        pageNumber <= pdfLastPage;
-        pageNumber++
-    ){
-
-    const pdfPage = await pdf.getPage(pageNumber);
-
-    const viewport = pdfPage.getViewport({
-        scale:3
-    });
-
-    const canvas = document.createElement("canvas");
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const context = canvas.getContext("2d");
-
-    await pdfPage.render({
-        canvasContext:context,
-        viewport:viewport
-    }).promise;
-
-    const pageContainer = document.createElement("div");
-    pageContainer.className = "page";
-    pageContainer.appendChild(canvas);
-    pages.push(pageContainer);
-    }
-
-    // PAGE FINALE DU PREVIEW
-
-    const finalPage = document.createElement("div");
-
-        finalPage.className =
-        "page preview-end-page";
-
-        finalPage.innerHTML = `
-
-        <div class="preview-end-content">
-
-
-            <h2>
-                Fin de l'aperçu
-            </h2>
-
-
-            <p>
-                Vous venez de lire la dernière page sélectionnée.
-            </p>
-
-
-
-            <h3>
-                {{ number_format($book->price,2) }} $
-            </h3>
-
-
-
-            <p>
-                Par :
-                <strong>
-                    {{ $book->author->firstname .' '.$book->author->lastname  ?? 'Auteur' }}
-                </strong>
-            </p>
-
-
-
-            <a href="#"
-            class="btn btn-danger">
-
-                Acheter le livre
-
-            </a>
-
+            </div>
 
         </div>
-
-        `;
-
-        pages.push(finalPage);
-
-        // CREATION FLIPBOOK
-
-        const isMobile = window.innerWidth <= 992;
-
-        const flipBook = new St.PageFlip(
-
-            document.getElementById("book-preview"),
-            {
-                width: isMobile ? 320 : 450,
-                height: isMobile ? 480 : 650,
-                size:"stretch",
-                minWidth: isMobile ? 280 : 315,
-                maxWidth:900,
-                minHeight: isMobile ? 400 : 420,
-                maxHeight:1200,
-                showCover:true,
-                usePortrait:isMobile,
-                drawShadow:true,
-                maxShadowOpacity:1,
-                flippingTime:1200,
-                mobileScrollSupport:true
-            }
-
-        );
-
-
-    // CHARGEMENT
-    console.log("Pages chargées :", pages.length);
-    flipBook.loadFromHTML(pages);
-
-</script>
-
-@endif --}}
+    </div>
+</div>
 
 @if($book->preview_type == 'pages')
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
@@ -568,180 +515,196 @@ Advertisement END -->
 <script>
 
 
-let pages = [];
+    let pages = [];
 
 
 
-// =============================
-// COUVERTURE
-// =============================
+    // =============================
+    // COUVERTURE
+    // =============================
 
-const cover = document.createElement("div");
+    const cover = document.createElement("div");
 
-cover.className="page cover";
+    cover.className="page cover";
 
 
-cover.innerHTML = `
+    cover.innerHTML = `
 
-<img src="/storage/{{ $book->cover_image }}">
+    <img src="/storage/{{ $book->cover_image }}">
 
-`;
+    `;
 
 
-pages.push(cover);
+    pages.push(cover);
 
 
 
 
-// =============================
-// PAGES PREVIEW IMAGES
-// =============================
+    // =============================
+    // PAGES PREVIEW IMAGES
+    // =============================
 
 
-@for(
-$i=$previewStart;
-$i<=$previewEnd;
-$i++
-)
+    @for(
+    $i=$previewStart;
+    $i<=$previewEnd;
+    $i++
+    )
 
 
-const page{{ $i }} = document.createElement("div");
+    const page{{ $i }} = document.createElement("div");
 
 
-page{{ $i }}.className="page";
+    page{{ $i }}.className="page";
 
 
-page{{ $i }}.innerHTML = `
+    page{{ $i }}.innerHTML = `
 
-<img src="{{ route('book.preview.page',[$book->id,$i]) }}">
+    <img src="{{ route('book.preview.page',[$book->id,$i]) }}">
 
-`;
+    `;
 
+    pages.push(page{{ $i }});
 
+    @endfor
 
-pages.push(page{{ $i }});
+    // =============================
+    // PAGE FIN
+    // =============================
 
 
+    const finalPage=document.createElement("div");
 
-@endfor
 
+    finalPage.className="page preview-end-page";
 
 
+    finalPage.innerHTML=`
 
+    <div class="preview-end-content">
 
 
+        <!-- ICON -->
+        <div class="end-book-icon">
 
-// =============================
-// PAGE FIN
-// =============================
+            <i class="bi bi-book"></i>
 
+        </div>
 
-const finalPage=document.createElement("div");
 
 
-finalPage.className="page preview-end-page";
+        <!-- LABEL -->
+        <span class="end-label">
 
+            Aperçu terminé
 
-finalPage.innerHTML=`
+        </span>
 
-<div class="preview-end-content">
 
 
-<h2>
-Fin de l'aperçu
-</h2>
+        <!-- TITLE -->
+        <h2>
 
+            Fin de l'aperçu
 
-<p>
-Vous venez de lire la dernière page sélectionnée.
-</p>
+        </h2>
 
 
-<h3>
-{{ number_format($book->price,2) }} $
-</h3>
 
+        <!-- DESCRIPTION -->
+        <p>
 
-<a href="#" class="btn btn-danger">
-Acheter le livre
-</a>
+            Vous venez de découvrir un extrait de ce livre.
+            Continuez votre lecture complète et plongez dans toute l’histoire.
 
+        </p>
 
-</div>
 
-`;
 
+        <!-- PRICE -->
+        <div class="end-price">
 
+            {{ number_format($book->price,2) }} $
 
-pages.push(finalPage);
+        </div>
 
 
 
+        <!-- ACTION -->
+        <a href="#"
+        class="end-buy-btn">
 
+            <i class="bi bi-cart"></i>
 
+            Acheter le livre
 
+        </a>
 
-// =============================
-// FLIPBOOK
-// =============================
 
+    </div>
 
-const isMobile = window.innerWidth <= 992;
+    `;
 
 
 
-const flipBook = new St.PageFlip(
+    pages.push(finalPage);
 
-document.getElementById("book-preview"),
 
+    // =============================
+    // FLIPBOOK
+    // =============================
 
-{
 
+    const isMobile = window.innerWidth <= 992;
 
-width:isMobile ? 320 : 450,
 
-height:isMobile ? 480 : 650,
 
+    const flipBook = new St.PageFlip(
 
-size:"stretch",
+    document.getElementById("book-preview"),
 
+    {
 
-minWidth:280,
+        width: isMobile ? 320 : 400,
 
-maxWidth:900,
+        height: isMobile ? 480 : 560,
 
 
-minHeight:400,
+        size: "fixed",
 
-maxHeight:1200,
 
+        minWidth: 280,
 
-showCover:true,
+        maxWidth: 800,
 
 
-usePortrait:isMobile,
+        minHeight: 400,
 
+        maxHeight: 1000,
 
-drawShadow:true,
 
+        showCover: true,
 
-maxShadowOpacity:1,
 
+        usePortrait: isMobile,
 
-flippingTime:1200,
 
+        drawShadow: true,
 
-mobileScrollSupport:true
 
+        maxShadowOpacity: 0.4,
 
-}
 
+        flippingTime: 900,
+
+
+        mobileScrollSupport: true
+
+    }
 
 );
 
-
-
-flipBook.loadFromHTML(pages);
+    flipBook.loadFromHTML(pages);
 
 
 

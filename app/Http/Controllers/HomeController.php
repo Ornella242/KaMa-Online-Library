@@ -16,6 +16,9 @@ class HomeController extends Controller
       public function index()
     {
         $totalBooks = Book::published()->count();
+        $authors = User::whereHas('books', function($query){
+            $query->where('status', 'published');
+        })->get();
 
         $books = Book::published()->with(['author', 'category'])
             ->latest()
@@ -109,7 +112,7 @@ class HomeController extends Controller
             'categories',
             'bestRatedBook',
             'topRatedBooks','highestRatedBooks',
-            'bestSellingBooks','latestReviews','topAuthors','sponsoredBooks'
+            'bestSellingBooks','latestReviews','topAuthors','sponsoredBooks', 'authors'
         ));
 
     }

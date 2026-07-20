@@ -7,104 +7,141 @@ CATALOG HERO START
 ======================= -->
 <section class="catalog-hero">
 
-    <div class="catalog-container">
+    <div class="kama-hero-container">
 
-        <!-- LEFT -->
-        <div class="catalog-text">
-
-            <h1>Catalogue des livres</h1>
-
-            <p>
-                Explorez notre collection complète de livres, ebooks et audios.
-                Trouvez facilement ce que vous cherchez.
-            </p>
-
-            <!-- SEARCH BAR -->
-            <form class="catalog-search" method="GET" action="{{ route('catalogue') }}">
-
-					<input 
-						type="text"
-						name="search"
-						value="{{ request('search') }}"
-						placeholder="Rechercher un livre, auteur, catégorie..."
-					>
-
-					<button type="submit">
-						<i class="bi bi-search"></i>
-					</button>
-
-			</form>
-
-            <!-- QUICK FILTERS -->
-            {{-- <div class="catalog-filters">
-				<a href="{{ route('catalogue') }}"
-				class="filter {{ !request('category') ? 'active' : '' }}">
-					Tous
-				</a>
-				@foreach($categories as $category)
-
-					<a href="{{ route('catalogue',['category'=>$category->id]) }}"
-					class="filter {{ request('category') == $category->id ? 'active' : '' }}">
-
-						{{ $category->name }}
-
-					</a>
-				@endforeach
-			</div> --}}
-
-			<div class="catalog-filters">
-
-				<a href="{{ route('catalogue') }}"
-				class="filter {{ !request('category') && !request('subcategory') ? 'active' : '' }}">
-					Tous
-				</a>
+        <div class="catalog-hero-content">
 
 
-				@foreach($categories as $category)
-
-					<div class="filter-dropdown">
-
-						<a href="{{ route('catalogue',['category'=>$category->id]) }}"
-						class="filter {{ request('category') == $category->id ? 'active' : '' }}">
-
-							{{ $category->name }}
-
-							@if($category->subcategories->count())
-								<i class="bi bi-chevron-down small"></i>
-							@endif
-
-						</a>
+            <!-- LEFT CONTENT -->
+            <div class="catalog-text">
 
 
-						@if($category->subcategories->count())
+                <span class="catalog-badge">
+                    <i class="bi bi-book"></i>
+                    Bibliothèque africaine numérique
+                </span>
 
-							<div class="subcategory-menu">
 
-								@foreach($category->subcategories as $subcategory)
+                <h1>
+                    Découvrez les histoires
+                    <span>d'Afrique</span>
+                    en un seul endroit
+                </h1>
 
-									<a href="{{ route('catalogue',['subcategory'=>$subcategory->id]) }}"
-									class="{{ request('subcategory') == $subcategory->id ? 'active' : '' }}">
 
-										{{ $subcategory->name }}
+                <p>
+                    Explorez une collection unique de livres, ebooks et audiolivres
+                    créés par des auteurs africains. Plongez dans des récits,
+                    des cultures et des imaginaires venus de tout le continent.
+                </p>
 
-									</a>
 
-								@endforeach
 
-							</div>
+                <!-- SEARCH -->
 
-						@endif
+                <form class="catalog-search" 
+                      method="GET" 
+                      action="{{ route('catalogue') }}">
 
-					</div>
 
-				@endforeach
+                    <input 
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Rechercher un livre, auteur..."
+                    >
 
-			</div>
+
+                    <button type="submit">
+
+                        <i class="bi bi-search"></i>
+
+                    </button>
+
+
+                </form>
+
+
+
+                <!-- MINI INFOS -->
+
+                <div class="hero-mini-info">
+                    <div>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Lecture instantanée
+                    </div>
+
+
+                    <div>
+                        <i class="bi bi-headphones"></i>
+                        Audiobooks disponibles
+                    </div>
+
+
+                    <div>
+                        <i class="bi bi-phone"></i>
+                        Accessible partout
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- RIGHT VISUAL -->
+
+            <div class="catalog-visual">
+                <div class="book-decoration">
+                    <i class="bi bi-book-half"></i>
+                </div>
+
+                <div class="floating-card">
+                    <i class="bi bi-globe"></i>
+                    <div>
+                        <strong>{{ $representedCountries }}</strong>
+                        <span>Pays africains</span>
+                    </div>
+                </div>
+
+                <div class="floating-card second">
+                    <i class="bi bi-people"></i>
+                    <div>
+                        <strong>{{ $authors->count() }}+</strong>
+                        <span>Auteurs</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-    </div>
+        <!-- STATS -->
+        <div class="catalog-stats">
+            <div class="catalog-stat-item">
+                <i class="bi bi-book"></i>
+                <div>
+                    <strong>{{ $books->total() }}+</strong>
+                    <span>Livres disponibles</span>
+                </div>
+            </div>
 
+            <div class="catalog-stat-item">
+                <i class="bi bi-person"></i>
+                <div>
+                    <strong>{{ $authors->count() }}+</strong>
+                    <span>Auteurs africains</span>
+                </div>
+            </div>
+
+            <div class="catalog-stat-item">
+                <i class="bi bi-globe"></i>
+                <div>
+                    <strong>54</strong>
+                    <span>Pays représentés</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+
 <!-- =======================
 CATALOG HERO END
 ======================= -->
@@ -117,269 +154,404 @@ Sponsoring END -->
 
 <!-- =======================
 Title and Tabs START -->
-<section class="pt-0 pb-4">
-	<div class="container position-relative">
+<section class="catalog-filter-section">
 
-		<!-- Title and button START -->
-		<div class="row">
-			<div class="col-12">
-				<!-- Meta START -->
-				<div class="d-flex justify-content-between">
-					<!-- Filter collapse button -->
-					<input type="checkbox" class="btn-check" id="btn-check-soft">
-					<label class="btn btn-primary-soft btn-primary-check mb-0" for="btn-check-soft" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-controls="collapseFilter">
-						<i class="bi fa-fe bi-sliders me-2"></i>Filtres
-					</label>
-			    </div>
-				<!-- Meta END -->
-			</div>
-		</div>
-		<!-- Title and button END -->
+    <div class="kama-hero-container">
 
-		<!-- Collapse body START -->
-		<div class="collapse" id="collapseFilter">
-			<div class="card card-body bg-light p-4 mt-4 z-index-9">
+        <!-- FILTER BUTTON -->
+        <div class="filter-header">
 
-				<!-- Form START -->
-				<form class="row g-4" method="GET" action="{{ route('catalogue') }}">
-					<!-- Input item -->
-					<div class="col-md-6 col-lg-4">
-						<div class="form-control-borderless">
-							<label class="form-label">Entrez le nom du livre</label>
-							<input 
-								type="text" 
-								name="title"
-								value="{{ request('title') }}"
-								class="form-control form-control-lg"
-								placeholder="Nom du livre">
-						</div>
-					</div>
+            <button class="filter-toggle"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseFilter">
 
-					<!-- nouislider item -->
-					<div class="col-md-6 col-lg-4">
-						<div class="form-size-lg form-control-borderless">
-							<label class="form-label">Prix</label>
-							<select name="price" class="form-select js-choice border-0">
+                <i class="bi bi-sliders"></i>
+                Filtrer les livres
 
-								<option value="">
-									Sélectionnez une option
-								</option>
+            </button>
 
-								<option value="10-20"
-								{{ request('price') == '10-20' ? 'selected' : '' }}>
-								10 - 20$
-								</option>
+            <a href="{{ route('catalogue') }}" class="clear-filter">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Réinitialiser
+            </a>
+
+        </div>
 
 
-								<option value="30-40"
-								{{ request('price') == '30-40' ? 'selected' : '' }}>
-								30 - 40$
-								</option>
+
+        <!-- FILTER BOX -->
+
+        <div class="collapse" id="collapseFilter">
+            <div class="premium-filter-box">
+                <form method="GET" action="{{ route('catalogue') }}#books-list" 
+                      class="row g-4">
+
+                    <!-- TITLE -->
+                    <div class="col-lg-4">
+                        <label>
+                            <i class="bi bi-book"></i>
+                            Nom du livre
+                        </label>
+
+                        <input 
+                            type="text"
+                            name="title"
+                            value="{{ request('title') }}"
+                            placeholder="Rechercher un titre..."
+                        >
+
+                    </div>
 
 
-								<option value="50+"
-								{{ request('price') == '50+' ? 'selected' : '' }}>
-								+50$
-								</option>
 
-								</select>
-						</div>
-					</div>
+                    <!-- CATEGORY -->
 
-					<!-- Select item -->
-					<div class="col-md-6 col-lg-4">
-						<div class="form-size-lg form-control-borderless">
-							<label class="form-label">Categorie</label>
-							<select name="category" class="form-select js-choice border-0">
+                    <div class="col-lg-4">
 
-								<option value="">
-								Sélectionnez une option
-								</option>
+                        <label>
+                            <i class="bi bi-grid"></i>
+                            Catégorie
+                        </label>
 
-								@foreach($categories as $category)
-									<option value="{{ $category->id }}"
-										{{ request('category') == $category->id ? 'selected' : '' }}>
-										{{ $category->name }}
-									</option>
-								@endforeach
-							</select>
-						</div>
-					</div>
 
-					<!-- Customer rating -->
-						<div class="col-md-6 col-lg-4">
-						<div class="form-size-lg form-control-borderless">
-							<label class="form-label">Auteurs</label>
-							<select name="author" class="form-select js-choice border-0">
+                        <select name="category">
 
-								<option value="">
-								Sélectionnez une option
-								</option>
+                            <option value="">
+                                Toutes les catégories
+                            </option>
 
-								@foreach($authors as $author)
-									<option value="{{ $author->id }}"
-									{{ request('author') == $author->id ? 'selected' : '' }}>
 
-									{{ $author->firstname }}
-									{{ $author->lastname }}
-									</option>
-								@endforeach
+                            @foreach($categories as $category)
 
-							</select>
-						</div>
-					</div>
+                                <option value="{{ $category->id }}"
+                                {{ request('category') == $category->id ? 'selected':'' }}>
 
-					<!-- Star rating -->
-					<div class="col-md-6 col-lg-4">
-						<div class="form-control-borderless">
-							<label class="form-label">Nombre d'etoiles</label>
-							<ul class="list-inline mb-0 g-3">
-								@for($i=1;$i<=5;$i++)
-									<li class="list-inline-item">
-										<input type="radio" class="btn-check" name="rating" value="{{ $i }}" id="rating{{ $i }}" {{ request('rating') == $i ? 'checked':'' }}>
-										<label class="btn btn-white btn-primary-soft-check" for="rating{{ $i }}">
-										{{ $i }}
-										<i class="bi bi-star-fill"></i>
-										</label>
-									</li>
-								@endfor
-							</ul>
-						</div>	
-					</div>
+                                    {{ $category->name }}
 
-					<!-- Select item -->
-					<div class="col-md-6 col-lg-4">
-						<div class="form-size-lg form-control-borderless">
-							<label class="form-label">Type du livre</label>
-							<select name="type" class="form-select js-choice border-0">
+                                </option>
 
-								<option value="">
-								Sélectionnez une option
-								</option>
+                            @endforeach
 
-								<option value="ebook"
-								{{ request('type')=='ebook'?'selected':'' }}>
-								Ebook
-								</option>
 
-								<option value="audio"
-								{{ request('type')=='audio'?'selected':'' }}>
-								Audio
-								</option>
+                        </select>
 
-							</select>
-						</div>
-					</div>
 
-					<!-- Button -->
-					<div class="text-end align-items-center">
-						<a href="{{ route('catalogue') }}" class="btn btn-link p-0 mb-0">
-							Tout effacer
-						</a>
-						<button class="btn btn-dark mb-0 ms-3">Appliquer le filtre</button>
-					</div>
-				</form>
-				<!-- Form END -->
-			</div>
-		</div>
-		<!-- Collapse body END -->
+                    </div>
 
-	</div>
+
+
+
+                    <!-- AUTHOR -->
+
+                    <div class="col-lg-4">
+
+                        <label>
+                            <i class="bi bi-person"></i>
+                            Auteur
+                        </label>
+
+
+                        <select name="author">
+
+                            <option value="">
+                                Tous les auteurs
+                            </option>
+
+
+                            @foreach($authors as $author)
+
+                                <option value="{{ $author->id }}"
+                                {{ request('author') == $author->id ? 'selected':'' }}>
+
+                                    {{ $author->firstname }}
+                                    {{ $author->lastname }}
+
+                                </option>
+
+
+                            @endforeach
+
+                        </select>
+
+
+                    </div>
+
+
+
+
+
+                    <!-- PRICE -->
+
+                    <div class="col-lg-4">
+
+                        <label>
+                            <i class="bi bi-currency-dollar"></i>
+                            Prix
+                        </label>
+
+
+                        <select name="price">
+
+
+                            <option value="">
+                                Tous les prix
+                            </option>
+
+
+                            <option value="10-20">
+                                10 - 20 $
+                            </option>
+
+
+                            <option value="30-40">
+                                30 - 40 $
+                            </option>
+
+
+                            <option value="40-50">
+                                40 - 50 $
+                            </option>
+
+
+                            <option value="50+">
+                                Plus de 50 $
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+
+
+
+                    <!-- TYPE -->
+
+                    <div class="col-lg-4">
+
+                        <label>
+                            <i class="bi bi-headphones"></i>
+                            Format
+                        </label>
+
+
+                        <select name="type">
+
+
+                            <option value="">
+                                Tous les formats
+                            </option>
+
+
+                            <option value="ebook">
+                                Ebook
+                            </option>
+
+
+                            <option value="audio">
+                                Audiobook
+                            </option>
+
+
+                        </select>
+
+
+                    </div>
+
+
+
+
+                    <!-- RATING -->
+
+                    <div class="col-lg-4">
+
+                        <label>
+                            <i class="bi bi-star"></i>
+                            Note minimale
+                        </label>
+
+
+                        <div class="rating-filter">
+
+
+                            @for($i=1;$i<=5;$i++)
+
+                            <input 
+                            type="radio"
+                            name="rating"
+                            value="{{ $i }}"
+                            id="star{{$i}}">
+
+
+                            <label for="star{{$i}}">
+                                {{ $i }}
+                                <i class="bi bi-star-fill"></i>
+                            </label>
+
+
+                            @endfor
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- BUTTON -->
+
+                    <div class="col-12 text-end">
+
+
+                        <button class="apply-filter">
+
+                            <i class="bi bi-search"></i>
+                            Appliquer les filtres
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+
 </section>
 <!-- =======================
 Title and Tabs END -->
 
 <!-- =======================
 Book list START -->
-<section class="pt-0">
-	<div class="container">
-		<div class="row g-4">
+<section class="pt-0" id="books-list">
+	<div class="kama-hero-container">
+		<div class="row g-4 books-grid">
 
 			@forelse($books as $book)
 
 				<div class="col-md-6 col-xl-4">
-					<div class="card shadow p-2 pb-0 h-100">
 
-						<img src="{{ asset('storage/'.$book->cover_image) }}"
-						class="rounded-2 catalog-img"
+			<div class="book-card h-100">
+
+				<!-- COVER -->
+				<div class="book-cover-wrapper">
+
+					<img src="{{ asset('storage/'.$book->cover_image) }}"
+						class="book-cover-img"
 						alt="{{ $book->title }}">
 
-						<div class="card-body px-3 pb-0">
 
-							<div class="d-flex justify-content-between mb-3">
-
-								<a class="badge bg-dark text-white">
-									<i class="bi fa-fw bi-star-fill me-2 text-warning"></i>
-									{{ number_format($book->reviews_avg_rating ?? 0,1) }}
-								</a>
-
-								<a class="h6 mb-0">
-									<i class="bi bi-heart"></i>
-								</a>
-
-							</div>
+					<span class="book-type-badge">
+						{{ strtoupper($book->type) }}
+					</span>
 
 
-							<h5 class="card-title">
-								<a href="{{ route('books.show',$book) }}">
-									{{ $book->title }}
-								</a>
-							</h5>
+					<button class="favorite-btn">
+						<i class="bi bi-heart"></i>
+					</button>
+
+				</div>
 
 
-							<p class="author">
-								Par {{ $book->author->firstname }} {{ $book->author->lastname }}
-							</p>
+				<!-- CONTENT -->
+				<div class="book-card-body">
 
 
-							<ul class="nav nav-divider mb-2 mb-sm-3">
+					<div class="book-rating">
 
-								@if($book->type == 'ebook')
-									<li class="nav-item">
-										{{ $book->pages }} pages
-									</li>
-								@else
-									<li class="nav-item">
-										{{ $book->duration }}
-									</li>
-								@endif
+						<i class="bi bi-star-fill"></i>
 
-								<li class="nav-item">
-									{{ $book->language }}
-								</li>
-
-								<li class="nav-item">
-									{{ $book->publication_year }}
-								</li>
-
-							</ul>
-
-						</div>
-
-
-						<div class="card-footer pt-0">
-
-							<div class="d-flex justify-content-between align-items-center">
-
-								<h5 class="price mb-0">
-									{{ number_format($book->price,2) }}$
-								</h5>
-
-
-								<a href="{{ route('books.show',$book) }}"
-								class="btn btn-sm btn-primary-soft">
-
-									Voir plus
-									<i class="bi bi-arrow-right ms-2"></i>
-
-								</a>
-
-							</div>
-
-						</div>
+						{{ number_format($book->reviews_avg_rating ?? 0,1) }}
 
 					</div>
+
+
+					<h5 class="book-title">
+
+						<a href="{{ route('books.show',$book) }}">
+							{{ $book->title }}
+						</a>
+
+					</h5>
+
+
+					<p class="book-author">
+
+						Par 
+						{{ $book->author->firstname }}
+						{{ $book->author->lastname }}
+
+					</p>
+
+
+					<div class="book-meta">
+
+						@if($book->type == 'ebook')
+
+							<span>
+								<i class="bi bi-file-earmark-text"></i>
+								{{ $book->pages }} pages
+							</span>
+
+						@else
+
+							<span>
+								<i class="bi bi-headphones"></i>
+								{{ $book->duration }}
+							</span>
+
+						@endif
+
+
+						<span>
+							<i class="bi bi-translate"></i>
+							{{ $book->language }}
+						</span>
+
+
+						<span>
+							<i class="bi bi-calendar"></i>
+							{{ $book->publication_year }}
+						</span>
+
+					</div>
+
 				</div>
+
+
+
+				<!-- FOOTER -->
+
+				<div class="book-card-footer">
+
+					<strong>
+						{{ number_format($book->price,2) }}$
+					</strong>
+
+
+					<a href="{{ route('books.show',$book) }}"
+					class="book-btn">
+
+						Voir plus
+						<i class="bi bi-arrow-right"></i>
+
+					</a>
+
+				</div>
+
+
+			</div>
+
+		</div>
 
 			@empty
 
@@ -418,13 +590,14 @@ Book list START -->
 		<!-- Pagination -->
 		<div class="row">
 			<div class="col-12">
-				<div class="d-flex justify-content-center mt-4">
+				<div class="kama-pagination-wrapper">
 					<div class="kama-pagination">
 						{{ $books->links() }}
 					</div>
 				</div>
 			</div>
 		</div>
+
 	</div>
 </section>
 <!-- =======================
@@ -432,42 +605,93 @@ Book list END -->
 
 <section class="author-cta">
 
-  <div class="author-cta-container">
+    <div class="author-cta-container">
 
-    <div class="author-cta-text">
 
-      <h2>Vous êtes écrivain ?</h2>
+        <div class="author-cta-text">
 
-      <p>
-        Faites découvrir vos œuvres au monde entier. Publiez vos livres sur KaMa
-        et rejoignez une communauté d’écrivains passionnés.
-      </p>
+            <span class="cta-badge">
+                <i class="bi bi-pen-fill"></i>
+                Espace écrivains KaMa
+            </span>
 
-      <p class="highlight">
-        Inscrivez-vous aujourd’hui et commencez à partager vos histoires.
-      </p>
 
-      <a href="/register" class="cta-btn">
-        S’inscrire sur KaMa
-      </a>
+            <h2>
+                Faites partie des premiers écrivains à représenter votre pays
+                <span>et portez haut votre drapeau !</span>
+            </h2>
+
+
+            <p>
+                KaMa ouvre une nouvelle porte aux auteurs africains.
+                Publiez vos histoires, partagez votre culture et faites découvrir
+                votre univers à des lecteurs du monde entier.
+            </p>
+
+
+            <p class="highlight">
+                Rejoignez les premiers écrivains de votre pays sur KaMa et
+                contribuez à écrire la prochaine page de la littérature africaine.
+            </p>
+
+
+            <a href="/register" class="cta-btn">
+                Devenir auteur KaMa
+                <i class="bi bi-arrow-right"></i>
+            </a>
+
+        </div>
+
+
+
+        <div class="author-cta-card">
+
+
+            <div class="floating-badge">
+                Auteurs KaMa
+            </div>
+
+
+            <div class="cta-icon">
+                <i class="bi bi-book-half"></i>
+            </div>
+
+
+            <h3 class="text-white">
+                Votre histoire.
+                <br>
+                Votre voix.
+                <br>
+                Votre héritage.
+            </h3>
+
+
+            <ul>
+
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Publiez vos livres facilement
+                </li>
+
+
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Touchez des lecteurs partout
+                </li>
+
+
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Valorisez votre culture
+                </li>
+
+            </ul>
+
+
+        </div>
+
 
     </div>
-
-    <div class="author-cta-card">
-
-      <div class="floating-badge">Auteurs KaMa</div>
-
-      <h3>Publiez. Partagez. Inspirez.</h3>
-
-      <ul>
-        <li>Publication rapide</li>
-        <li>Audience internationale</li>
-        <li>Statistiques de lecture</li>
-      </ul>
-
-    </div>
-
-  </div>
 
 </section>
 
