@@ -769,7 +769,13 @@ class BooksController extends Controller
         }
 
         /* Enregistrement */
+        $wasRevisionRequired = $book->status === 'revision_required';
+
         $book->update($data);
+
+        if ($wasRevisionRequired) {
+            return $this->sendBackForReview($book);
+        }
 
         return redirect()
             ->route('writer.books')
@@ -783,30 +789,36 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
 
-        if($book->status !== 'revision_required'){
+        if ($book->status !== 'revision_required') {
             abort(403);
         }
 
+        return $this->sendBackForReview($book);
+    }
+
+    /**
+     * Renvoie un livre corrigé vers la validation éditoriale.
+     */
+    private function sendBackForReview(Book $book)
+    {
         $book->update([
             'status' => 'waiting_review',
-            'rejection_reason' => null
+            'rejection_reason' => null,
         ]);
 
-        $admins = User::whereHas('role', function($query){
-            $query->where('name','admin');
+        $admins = User::whereHas('role', function ($query) {
+            $query->where('name', 'admin');
         })->get();
 
-        foreach($admins as $admin){
-            $admin->notify(
-                new BookResubmittedNotification($book)
-            );
+        foreach ($admins as $admin) {
+            $admin->notify(new BookResubmittedNotification($book));
         }
 
         return redirect()
             ->route('writer.books')
             ->with(
                 'success',
-                'Votre livre a été renvoyé pour validation éditoriale.'
+                'Vos corrections ont été enregistrées et le livre a été renvoyé pour validation éditoriale.'
             );
     }
 
@@ -1067,7 +1079,12 @@ class BooksController extends Controller
 
 
         return response()->file(
-            Storage::disk('local')->path($book->file_path)
+            Storage::disk('local')->path($book->file_path),
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="'.basename($book->original_file_name ?: $book->file_path).'"',
+                'X-Frame-Options' => 'SAMEORIGIN',
+            ]
         );
     }
 
@@ -1091,6 +1108,7 @@ class BooksController extends Controller
             Storage::disk('local')->path($book->file_path),
             [
                 'Content-Type' => 'audio/mpeg',
+                'Content-Disposition' => 'inline; filename="'.basename($book->original_file_name ?: $book->file_path).'"',
             ]
         );
     }

@@ -12,12 +12,16 @@ Page Banner START -->
             <!-- LEFT -->
             <div class="col-lg-12">
 
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
-                    <i class="bi bi-book me-2"></i>
-                    Modification d'un livre existant
-                </span>
+                <a href="{{ route('writer.books') }}" class="btn btn-outline-secondary rounded-pill px-3 mb-3">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Retour à ma bibliothèque
+                </a>
                 <h5 class="display-6 fw-bold mb-3">
-                    Modifier le livre  <span class="text-red"> {{ $book->title }} </span>
+                    @if($book->status === 'revision_required')
+                        Corriger le livre <span class="text-red">{{ $book->title }}</span>
+                    @else
+                        Modifier le livre <span class="text-red">{{ $book->title }}</span>
+                    @endif
                 </h5>
             </div>
         </div>
@@ -103,7 +107,7 @@ Steps START -->
 
 			@if($book->status == 'revision_required')
 
-				<div class="alert alert-warning">
+				<div class="alert alert-warning mt-4">
 
 					<h6>
 						<i class="bi bi-exclamation-triangle"></i>
@@ -138,7 +142,7 @@ Steps START -->
 									<div class="card book-card">
 										<div class="card-header border-bottom">
 											<h4 class="mb-0">
-												<i class="bi bi-book me-2"></i>
+												<i class="bi bi-book text-danger me-2"></i>
 												Détails du livre
 											</h4>
 										</div>
@@ -173,7 +177,7 @@ Steps START -->
                                                         </div>
 
 
-                                                        <label class="btn btn-outline-primary w-100 mt-3">
+														<label class="btn btn-outline-danger w-100 mt-3">
 
                                                             <i class="bi bi-upload me-2"></i>
 
@@ -413,12 +417,17 @@ Steps START -->
 																Année de publication *
 															</label>
 
-															<input
-																type="number"
+															<select
 																name="publication_year"
-                                                                value="{{ old('publication_year', $book->publication_year) }}"
-																class="form-control book-input"
-																placeholder="2026">
+																class="form-select book-input"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
+																<option value="">Choisir une année</option>
+																@for($y = date('Y'); $y >= 1900; $y--)
+																	<option value="{{ $y }}" @selected((string) old('publication_year', $book->publication_year) === (string) $y)>
+																		{{ $y }}
+																	</option>
+																@endfor
+															</select>
 														</div>
 
 														<div class="col-md-4">
@@ -445,10 +454,11 @@ Steps START -->
 
 									<!-- Next -->
 
-									<div class="text-end">
+									<div class="text-end wizard-actions wizard-actions-end">
 										<button 
 											type="button"
-											class="btn btn-primary next-btn px-5">
+											id="step1NextBtn"
+											class="btn btn-danger next-btn wizard-action-btn wizard-action-primary">
 											Continuer
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
@@ -588,10 +598,11 @@ Steps START -->
 															<input
 																type="number"
 																name="preview_start_page"
+																id="previewStartPage"
 																min="1"
 																class="form-control"
 																value="{{ old('preview_start_page', $book->preview_start_page) }}"
-																>
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														</div>
 
@@ -605,18 +616,22 @@ Steps START -->
 															<input
 																type="number"
 																name="preview_end_page"
+																id="previewEndPage"
 																min="1"
 																class="form-control"
 																value="{{ old('preview_end_page', $book->preview_end_page) }}"
-																>
+																{{ $readOnlyReview ? 'disabled' : '' }}>
 
 														</div>
 
 													</div>
 
 
-													<small class="text-black">
+													<small class="text-black" id="pagesPreviewHint">
 														Vous pouvez sélectionner au maximum 5 pages consécutives.
+													</small>
+													<small class="text-danger d-none" id="pagesPreviewError">
+														L'écart entre la première et la dernière page ne doit pas dépasser 5 pages.
 													</small>
 
 												</div>
@@ -642,55 +657,182 @@ Steps START -->
 
 												<div class="col-12">
 
+													@php
+														$isAudioBook = $book->type === 'audio';
+														$existingFileName = $book->original_file_name
+															?: ($book->file_path ? basename($book->file_path) : null);
+														$existingPreviewUrl = $book->file_path
+															? ($isAudioBook
+																? route('writer.books.audio', $book)
+																: route('writer.books.preview.file', $book))
+															: null;
+														$existingFileSize = $book->file_size
+															? number_format($book->file_size / 1048576, 2).' MB'
+															: null;
+													@endphp
+
 													<label class="form-label">
-														Fichier du livre <span class="text-danger">*</span>
+														Fichier du livre
+														@if(!$book->file_path)
+															<span class="text-danger">*</span>
+														@endif
 													</label>
 
-													<div class="upload-box book-upload">
+													@if($book->file_path)
+														<small class="text-muted d-block mb-3">
+															Voici le fichier téléversé lors de la création. Vous pouvez le consulter ci-dessous ou le remplacer.
+														</small>
+													@endif
 
-														<div class="upload-icon" id="uploadIcon">
+													<div class="upload-box book-upload {{ $book->file_path ? 'has-existing-file' : '' }}" id="uploadDropZone"
+														data-existing-file="{{ $existingFileName ?: '' }}"
+														data-existing-url="{{ $existingPreviewUrl ?: '' }}"
+														data-book-type="{{ $book->type }}">
 
-															<i class="bi bi-file-earmark-pdf-fill"></i>
+														{{-- Fichier déjà enregistré : aperçu visible --}}
+														@if($book->file_path && $existingPreviewUrl)
+															<div id="existingFilePanel" class="existing-file-panel">
+																<div class="existing-file-meta">
+																	<span class="existing-file-badge">
+																		<i class="bi {{ $isAudioBook ? 'bi-headphones' : 'bi-file-earmark-pdf-fill' }}"></i>
+																		{{ strtoupper($book->file_type ?: ($isAudioBook ? 'mp3' : 'pdf')) }}
+																	</span>
+																	<div>
+																		<strong id="existingFileLabel">{{ $existingFileName }}</strong>
+																		<small>
+																			Fichier actuel
+																			@if($existingFileSize)
+																				· {{ $existingFileSize }}
+																			@endif
+																		</small>
+																	</div>
+																</div>
 
+																<div class="existing-file-preview">
+																	@if($isAudioBook)
+																		<div class="existing-audio-preview">
+																			<div class="upload-success-icon mx-auto mb-3">
+																				<i class="bi bi-headphones"></i>
+																			</div>
+																			<p class="mb-3 text-muted">Écoutez le livre audio déjà enregistré</p>
+																			<audio id="existingAudioPlayer" controls class="w-100" style="max-width: 520px;" preload="metadata">
+																				<source src="{{ $existingPreviewUrl }}" type="audio/mpeg">
+																			</audio>
+																		</div>
+																	@else
+																		<iframe
+																			id="existingPdfPreview"
+																			class="existing-pdf-preview"
+																			src="{{ $existingPreviewUrl }}#toolbar=1&navpanes=0"
+																			title="Aperçu du livre téléversé">
+																		</iframe>
+																	@endif
+																</div>
+
+																<div class="upload-actions mt-3">
+																	<button type="button" class="upload-action-btn upload-action-preview" id="previewBookBtn">
+																		<span class="upload-action-icon">
+																			<i class="{{ $isAudioBook ? 'bi bi-play-circle-fill' : 'bi bi-arrows-fullscreen' }}" id="previewActionIcon"></i>
+																		</span>
+																		<span class="upload-action-label" id="previewActionLabel">
+																			{{ $isAudioBook ? 'Écouter en grand' : 'Agrandir l’aperçu' }}
+																		</span>
+																	</button>
+
+																	<button type="button" class="upload-action-btn upload-action-change" id="changeFileBtn" {{ $readOnlyReview ? 'disabled' : '' }}>
+																		<span class="upload-action-icon">
+																			<i class="bi bi-arrow-repeat"></i>
+																		</span>
+																		<span class="upload-action-label">Remplacer le fichier</span>
+																	</button>
+																</div>
+															</div>
+														@endif
+
+														<div id="uploadInitialState" class="{{ $book->file_path ? 'd-none' : '' }}">
+															<div class="upload-icon" id="uploadIcon">
+																@if($isAudioBook)
+																	<i class="bi bi-headphones"></i>
+																@else
+																	<i class="bi bi-file-earmark-pdf-fill"></i>
+																@endif
+															</div>
+
+															<h5 id="uploadTitle">
+																{{ $isAudioBook ? 'Téléverser votre livre audio' : 'Téléverser votre ebook' }}
+															</h5>
+
+															<p id="uploadDescription">
+																{{ $isAudioBook
+																	? 'Sélectionnez le fichier MP3 de votre livre audio.'
+																	: 'Sélectionnez le fichier PDF de votre ebook.' }}
+															</p>
+
+															<input
+																type="file"
+																id="bookFileInput"
+																name="{{ $isAudioBook ? 'audio_file' : 'ebook_file' }}"
+																class="form-control mt-3"
+																accept="{{ $isAudioBook ? '.mp3,audio/mpeg' : '.pdf' }}"
+																{{ $readOnlyReview ? 'disabled' : '' }}>
+
+															<div class="upload-info mt-3">
+																<span id="acceptedFormat" class="badge bg-danger">
+																	{{ $isAudioBook ? 'MP3 uniquement' : 'PDF uniquement' }}
+																</span>
+																<small class="text-muted d-block mt-2">
+																	Taille maximale : 100 MB
+																</small>
+															</div>
 														</div>
 
-														<h5 id="uploadTitle">
+														<div id="uploadProgressState" class="d-none">
+															<div class="upload-icon">
+																<i class="bi bi-cloud-arrow-up text-danger"></i>
+															</div>
+															<h5 class="mb-2">Téléversement en cours...</h5>
+															<p class="text-muted mb-3" id="uploadFileName"></p>
 
-															Téléverser votre ebook
+															<div class="upload-progress-wrapper">
+																<div class="upload-progress-bar-bg">
+																	<div class="upload-progress-bar" id="uploadProgressBar" style="width: 0%"></div>
+																</div>
+																<span class="upload-progress-text" id="uploadProgressText">0%</span>
+															</div>
+														</div>
 
-														</h5>
+														<div id="uploadCompleteState" class="d-none">
 
-														<p id="uploadDescription">
+															<div class="upload-success-card">
+																<div class="upload-success-icon">
+																	<i class="bi bi-check-lg"></i>
+																</div>
 
-															Sélectionnez le fichier PDF de votre ebook.
+																<h5 class="upload-success-title">Nouveau fichier prêt à être enregistré</h5>
 
-														</p>
+																<div class="upload-file-info" id="uploadedFileName"></div>
 
-														<input
-															type="file"
-															id="bookFileInput"
-															name="ebook_file"
-															class="form-control mt-3"
-															accept=".pdf"
-															{{ $readOnlyReview ? 'disabled' : '' }}>
+																<div class="upload-actions">
+																	<button type="button" class="upload-action-btn upload-action-preview" id="previewNewBookBtn">
+																		<span class="upload-action-icon">
+																			<i class="bi bi-eye-fill" id="previewNewActionIcon"></i>
+																		</span>
+																		<span class="upload-action-label" id="previewNewActionLabel">Voir le livre</span>
+																	</button>
 
-														<div class="upload-info mt-3">
-
-															<span id="acceptedFormat" class="badge bg-danger">
-
-																PDF uniquement
-
-															</span>
-
-															<small class="text-muted d-block mt-2">
-
-																Taille maximale : 100 MB
-
-															</small>
+																	<button type="button" class="upload-action-btn upload-action-change" id="changeNewFileBtn">
+																		<span class="upload-action-icon">
+																			<i class="bi bi-arrow-repeat"></i>
+																		</span>
+																		<span class="upload-action-label">Changer</span>
+																	</button>
+																</div>
+															</div>
 
 														</div>
 
 													</div>
+
 
 												</div>
 
@@ -700,21 +842,103 @@ Steps START -->
 									</div>
 									<!-- FILE UPLOAD CARD END -->
 
+									<!-- COPYRIGHT DECLARATION START -->
+
+									<div class="card book-card border-danger">
+
+										<div class="card-header border-bottom">
+
+											<h4 class="mb-0 text-white">
+												<i class="bi bi-shield-check text-danger me-2"></i>
+												Déclaration de droits d'auteur
+											</h4>
+
+										</div>
+
+
+										<div class="card-body">
+
+
+											<div class="alert alert-warning mb-4">
+
+												<i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+												<strong>Important :</strong>
+												
+												En téléversant ce livre sur KaMa Online Library,
+												vous engagez votre responsabilité concernant les droits liés
+												à cette œuvre.
+
+											</div>
+
+
+											<p class="mb-3">
+
+												Je déclare être l'auteur ou le détenteur légal des droits
+												nécessaires pour publier ce livre sur KaMa Online Library.
+
+												Je confirme que le contenu ajouté ne porte pas atteinte aux
+												droits d'auteur, droits de propriété intellectuelle ou autres
+												droits de tiers.
+
+											</p>
+
+
+											<p class="mb-3">
+												Je comprends que toute déclaration frauduleuse, publication
+												non autorisée ou violation des droits d'un tiers peut entraîner
+												le retrait du contenu, la suspension de mon compte ainsi que
+												d'éventuelles poursuites conformément aux lois applicables.
+											</p>
+
+
+
+											<div class="form-check">
+												<input
+													class="form-check-input"
+													type="checkbox"
+													id="authorDeclaration"
+													name="copyright_accepted"
+													value="1"
+													{{ old('copyright_accepted', $book->copyright_accepted) ? 'checked' : '' }}
+													{{ $readOnlyReview ? 'disabled' : '' }}>
+
+												<label 
+													class="form-check-label"
+													for="authorDeclaration">
+
+													Je confirme avoir lu et accepté cette déclaration et
+													j'assume la responsabilité du contenu que je publie.
+
+												</label>
+
+											</div>
+
+
+										</div>
+
+									</div>
+
+									<!-- COPYRIGHT DECLARATION END -->
+
 									<!-- BUTTONS -->
-									<div class="hstack gap-2 justify-content-between">
+									<div class="hstack gap-2 justify-content-between wizard-actions">
 										<button
 											type="button"
-											class="btn btn-secondary prev-btn">
+											class="btn btn-secondary prev-btn wizard-action-btn wizard-action-secondary">
 											<i class="bi bi-arrow-left me-2"></i>
 											Retour
 										</button>
 
 										<button
 											type="button"
-											class="btn btn-danger next-btn px-4">
+											id="continueUploadBtn"
+											class="btn btn-danger next-btn wizard-action-btn wizard-action-primary"
+											{{ ($book->file_path && $book->copyright_accepted) ? '' : 'disabled' }}>
 											Continuer
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
+
 									</div>
 								</div>
 							</div>
@@ -1024,20 +1248,26 @@ Steps START -->
 									@endif
 
 									<!-- BUTTONS -->
-									<div class="d-flex justify-content-between">
+									<div class="d-flex justify-content-between wizard-actions">
 
 
 										<button
 											type="button"
-											class="btn btn-light prev-btn">
+											class="btn btn-secondary prev-btn wizard-action-btn wizard-action-secondary">
 											<i class="bi bi-arrow-left me-2"></i>
+											Retour
 										</button>
 
 										<button
 											type="submit"
-											class="btn btn-danger btn-lg px-5">
-											<i class="bi bi-cloud-check me-2"></i>
+											class="btn btn-danger wizard-action-btn wizard-action-primary js-correction-submit">
+											@if($book->status === 'revision_required')
+												<i class="bi bi-send-check me-2"></i>
+												Enregistrer et envoyer les corrections
+											@else
+												<i class="bi bi-cloud-check me-2"></i>
 												Modifier
+											@endif
 										</button>
 									</div>
 								</div>
@@ -1056,6 +1286,375 @@ Steps START -->
 	</div>
 <!-- =======================
 Steps END -->
+
+{{-- Preview overlay --}}
+<div id="bookPreviewOverlay" class="book-preview-overlay d-none">
+	<div class="book-preview-container">
+		<div class="book-preview-header">
+			<h5 class="mb-0 text-white">
+				<i class="bi bi-book me-2" id="previewHeaderIcon"></i>
+				<span id="previewHeaderTitle">Aperçu du livre</span>
+			</h5>
+			<button type="button" class="book-preview-close" id="closePreviewOverlay">
+				<i class="bi bi-x-lg"></i>
+			</button>
+		</div>
+		<div class="book-preview-body">
+			<iframe id="bookPreviewFrame" class="book-preview-frame d-none"></iframe>
+			<div id="audioPreviewPanel" class="d-none text-center p-4">
+				<div class="upload-success-icon mx-auto mb-3">
+					<i class="bi bi-headphones"></i>
+				</div>
+				<h4 class="mt-3 mb-2">Écouter le livre audio</h4>
+				<p class="text-muted mb-4" id="audioPreviewFileName"></p>
+				<audio id="bookAudioPreview" controls class="w-100" style="max-width: 480px;"></audio>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	const durationInput = document.getElementById('durationInput');
+	if (!durationInput) return;
+
+	durationInput.addEventListener('beforeinput', function(event) {
+		if (event.data && !/^[0-9:]+$/.test(event.data)) {
+			event.preventDefault();
+		}
+	});
+
+	durationInput.addEventListener('input', function() {
+		const parts = this.value
+			.replace(/[^0-9:]/g, '')
+			.split(':')
+			.slice(0, 3);
+
+		this.value = parts
+			.map((part, index) => part.slice(0, index === 0 ? 3 : 2))
+			.join(':');
+	});
+})();
+</script>
+
+<script>
+(function() {
+	const bookFileInput = document.getElementById('bookFileInput');
+	const dropZone = document.getElementById('uploadDropZone');
+	const existingFilePanel = document.getElementById('existingFilePanel');
+	const initialState = document.getElementById('uploadInitialState');
+	const progressState = document.getElementById('uploadProgressState');
+	const completeState = document.getElementById('uploadCompleteState');
+	const progressBar = document.getElementById('uploadProgressBar');
+	const progressText = document.getElementById('uploadProgressText');
+	const uploadFileName = document.getElementById('uploadFileName');
+	const uploadedFileName = document.getElementById('uploadedFileName');
+	const previewBookBtn = document.getElementById('previewBookBtn');
+	const previewNewBookBtn = document.getElementById('previewNewBookBtn');
+	const previewNewActionIcon = document.getElementById('previewNewActionIcon');
+	const previewNewActionLabel = document.getElementById('previewNewActionLabel');
+	const previewHeaderIcon = document.getElementById('previewHeaderIcon');
+	const previewHeaderTitle = document.getElementById('previewHeaderTitle');
+	const bookPreviewFrame = document.getElementById('bookPreviewFrame');
+	const audioPreviewPanel = document.getElementById('audioPreviewPanel');
+	const bookAudioPreview = document.getElementById('bookAudioPreview');
+	const audioPreviewFileName = document.getElementById('audioPreviewFileName');
+	const existingAudioPlayer = document.getElementById('existingAudioPlayer');
+	const changeFileBtn = document.getElementById('changeFileBtn');
+	const changeNewFileBtn = document.getElementById('changeNewFileBtn');
+	const continueUploadBtn = document.getElementById('continueUploadBtn');
+	const authorDeclaration = document.getElementById('authorDeclaration');
+
+	if (!bookFileInput || !dropZone) return;
+
+	const existingUrl = dropZone.dataset.existingUrl || null;
+	const existingName = dropZone.dataset.existingFile || '';
+	let currentFileURL = existingUrl;
+	let usingExistingFile = Boolean(existingUrl && existingFilePanel);
+	let objectUrlCreated = false;
+
+	function isAudioType() {
+		return document.querySelector('[name="type"]:checked')?.value === 'audio'
+			|| dropZone.dataset.bookType === 'audio';
+	}
+
+	function hasLoadedFile() {
+		if (usingExistingFile && existingFilePanel && !existingFilePanel.classList.contains('d-none')) {
+			return true;
+		}
+
+		return bookFileInput.files.length > 0
+			&& completeState
+			&& !completeState.classList.contains('d-none');
+	}
+
+	function updateContinueBtn() {
+		if (!continueUploadBtn) return;
+		continueUploadBtn.disabled = !(hasLoadedFile() && authorDeclaration && authorDeclaration.checked);
+	}
+
+	function updateNewPreviewLabels() {
+		const isAudio = isAudioType();
+		if (previewNewActionIcon) {
+			previewNewActionIcon.className = isAudio ? 'bi bi-play-circle-fill' : 'bi bi-eye-fill';
+		}
+		if (previewNewActionLabel) {
+			previewNewActionLabel.textContent = isAudio ? 'Écouter le livre audio' : 'Voir le livre';
+		}
+	}
+
+	function pauseEmbeddedPlayers() {
+		if (existingAudioPlayer) existingAudioPlayer.pause();
+	}
+
+	function showReplaceMode() {
+		pauseEmbeddedPlayers();
+		if (existingFilePanel) existingFilePanel.classList.add('d-none');
+		completeState.classList.add('d-none');
+		progressState.classList.add('d-none');
+		initialState.classList.remove('d-none');
+		dropZone.classList.remove('has-existing-file');
+		progressBar.style.width = '0%';
+		progressText.textContent = '0%';
+		bookFileInput.value = '';
+		usingExistingFile = false;
+
+		if (objectUrlCreated && currentFileURL) {
+			URL.revokeObjectURL(currentFileURL);
+		}
+		currentFileURL = null;
+		objectUrlCreated = false;
+		updateContinueBtn();
+	}
+
+	function restoreExistingFile() {
+		if (!existingUrl || !existingFilePanel) return;
+
+		pauseEmbeddedPlayers();
+		if (objectUrlCreated && currentFileURL) {
+			URL.revokeObjectURL(currentFileURL);
+		}
+
+		bookFileInput.value = '';
+		initialState.classList.add('d-none');
+		progressState.classList.add('d-none');
+		completeState.classList.add('d-none');
+		existingFilePanel.classList.remove('d-none');
+		dropZone.classList.add('has-existing-file');
+		currentFileURL = existingUrl;
+		objectUrlCreated = false;
+		usingExistingFile = true;
+		updateContinueBtn();
+	}
+
+	function showCompleteState(fileName, fileUrl, isObjectUrl) {
+		if (existingFilePanel) existingFilePanel.classList.add('d-none');
+		progressState.classList.add('d-none');
+		initialState.classList.add('d-none');
+		completeState.classList.remove('d-none');
+		uploadedFileName.textContent = fileName;
+
+		if (objectUrlCreated && currentFileURL) {
+			URL.revokeObjectURL(currentFileURL);
+		}
+
+		currentFileURL = fileUrl;
+		objectUrlCreated = Boolean(isObjectUrl);
+		usingExistingFile = false;
+		updateNewPreviewLabels();
+		updateContinueBtn();
+	}
+
+	function openPreview(fileUrl, fileName) {
+		if (!fileUrl) return;
+		const overlay = document.getElementById('bookPreviewOverlay');
+		const isAudio = isAudioType();
+
+		pauseEmbeddedPlayers();
+
+		if (isAudio) {
+			bookPreviewFrame.classList.add('d-none');
+			bookPreviewFrame.src = '';
+			audioPreviewPanel.classList.remove('d-none');
+			audioPreviewFileName.textContent = fileName || '';
+			previewHeaderIcon.className = 'bi bi-headphones me-2';
+			previewHeaderTitle.textContent = 'Aperçu du livre audio';
+			bookAudioPreview.src = fileUrl;
+			bookAudioPreview.load();
+		} else {
+			bookAudioPreview.pause();
+			bookAudioPreview.removeAttribute('src');
+			audioPreviewPanel.classList.add('d-none');
+			bookPreviewFrame.classList.remove('d-none');
+			bookPreviewFrame.src = fileUrl;
+			previewHeaderIcon.className = 'bi bi-book me-2';
+			previewHeaderTitle.textContent = 'Aperçu du livre';
+		}
+
+		overlay.classList.remove('d-none');
+		document.body.style.overflow = 'hidden';
+	}
+
+	function closePreview() {
+		const overlay = document.getElementById('bookPreviewOverlay');
+		overlay.classList.add('d-none');
+		bookPreviewFrame.src = '';
+		bookAudioPreview.pause();
+		bookAudioPreview.currentTime = 0;
+		bookAudioPreview.removeAttribute('src');
+		bookAudioPreview.load();
+		document.body.style.overflow = '';
+	}
+
+	bookFileInput.addEventListener('change', function() {
+		const file = this.files[0];
+		if (!file) return;
+
+		usingExistingFile = false;
+		if (existingFilePanel) existingFilePanel.classList.add('d-none');
+		initialState.classList.add('d-none');
+		progressState.classList.remove('d-none');
+		completeState.classList.add('d-none');
+		uploadFileName.textContent = file.name;
+
+		let progress = 0;
+		const fileSize = file.size;
+		const speed = Math.max(2, Math.min(8, fileSize / (1024 * 1024)));
+		const interval = setInterval(() => {
+			progress += speed;
+			if (progress >= 100) {
+				progress = 100;
+				clearInterval(interval);
+				setTimeout(() => {
+					showCompleteState(file.name, URL.createObjectURL(file), true);
+					if (typeof updateFileSummary === 'function') {
+						updateFileSummary(file);
+					}
+				}, 300);
+			}
+			progressBar.style.width = progress + '%';
+			progressText.textContent = Math.round(progress) + '%';
+		}, 50);
+	});
+
+	if (previewBookBtn) {
+		previewBookBtn.addEventListener('click', function() {
+			openPreview(existingUrl || currentFileURL, existingName);
+		});
+	}
+
+	if (previewNewBookBtn) {
+		previewNewBookBtn.addEventListener('click', function() {
+			openPreview(currentFileURL, bookFileInput.files[0]?.name || uploadedFileName.textContent);
+		});
+	}
+
+	document.getElementById('closePreviewOverlay').addEventListener('click', closePreview);
+
+	document.getElementById('bookPreviewOverlay').addEventListener('click', function(e) {
+		if (e.target === this) closePreview();
+	});
+
+	if (changeFileBtn) {
+		changeFileBtn.addEventListener('click', function() {
+			if (!document.getElementById('bookPreviewOverlay').classList.contains('d-none')) {
+				closePreview();
+			}
+			showReplaceMode();
+		});
+	}
+
+	if (changeNewFileBtn) {
+		changeNewFileBtn.addEventListener('click', function() {
+			if (!document.getElementById('bookPreviewOverlay').classList.contains('d-none')) {
+				closePreview();
+			}
+
+			if (existingUrl && existingFilePanel) {
+				restoreExistingFile();
+			} else {
+				showReplaceMode();
+			}
+		});
+	}
+
+	if (authorDeclaration) {
+		authorDeclaration.addEventListener('change', updateContinueBtn);
+	}
+
+	const originalBookType = dropZone.dataset.bookType;
+
+	document.querySelectorAll('input[name="type"]').forEach((input) => {
+		input.addEventListener('change', function() {
+			dropZone.dataset.bookType = this.value;
+			updateNewPreviewLabels();
+
+			if (!document.getElementById('bookPreviewOverlay').classList.contains('d-none')) {
+				closePreview();
+			}
+
+			// Le layout déclenche un Event('change') au chargement :
+			// on ne force le remplacement que si le type change vraiment.
+			if (this.value === originalBookType && existingUrl) {
+				restoreExistingFile();
+				return;
+			}
+
+			showReplaceMode();
+		});
+	});
+
+	// Garantit l'affichage du fichier déjà téléversé à l'ouverture de la page
+	if (existingUrl && existingFilePanel) {
+		restoreExistingFile();
+	}
+
+	updateContinueBtn();
+})();
+</script>
+
+<script>
+const previewStartPage = document.getElementById('previewStartPage');
+const previewEndPage = document.getElementById('previewEndPage');
+const pagesPreviewError = document.getElementById('pagesPreviewError');
+const pagesPreviewHint = document.getElementById('pagesPreviewHint');
+
+function validatePreviewPages() {
+    if (!previewStartPage || !previewEndPage) return true;
+
+    const start = parseInt(previewStartPage.value);
+    const end = parseInt(previewEndPage.value);
+
+    if (!isNaN(start) && !isNaN(end)) {
+        if (end < start) {
+            pagesPreviewError.textContent = 'La dernière page doit être supérieure ou égale à la première.';
+            pagesPreviewError.classList.remove('d-none');
+            pagesPreviewHint.classList.add('d-none');
+            previewEndPage.classList.add('is-invalid');
+            return false;
+        }
+        if (end - start + 1 > 5) {
+            pagesPreviewError.textContent = "L'écart entre la première et la dernière page ne doit pas dépasser 5 pages.";
+            pagesPreviewError.classList.remove('d-none');
+            pagesPreviewHint.classList.add('d-none');
+            previewEndPage.classList.add('is-invalid');
+            previewEndPage.value = start + 4;
+            return false;
+        }
+    }
+
+    pagesPreviewError.classList.add('d-none');
+    pagesPreviewHint.classList.remove('d-none');
+    previewEndPage.classList.remove('is-invalid');
+    previewStartPage.classList.remove('is-invalid');
+    return true;
+}
+
+if (previewStartPage && previewEndPage) {
+    previewStartPage.addEventListener('input', validatePreviewPages);
+    previewEndPage.addEventListener('input', validatePreviewPages);
+}
+</script>
 
 <script>
 
@@ -1077,6 +1676,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function togglePreviewType() {
 
+		if (!previewType || !textPreview || !pagesPreview) return;
 
         if (previewType.value === 'text') {
 
@@ -1099,14 +1699,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    previewType.addEventListener(
-        'change',
-        togglePreviewType
-    );
+	if (previewType) {
+		previewType.addEventListener(
+			'change',
+			togglePreviewType
+		);
 
-
-    // Initialisation selon la valeur existante
-    togglePreviewType();
+		// Initialisation selon la valeur existante
+		togglePreviewType();
+	}
 
 
 

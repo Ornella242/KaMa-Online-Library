@@ -18,74 +18,46 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-
-        // Nombre total utilisateurs
         $totalUsers = User::count();
+        $totalReaders = User::whereHas('role', fn ($q) => $q->where('name', 'reader'))->count();
+        $totalWriters = User::whereHas('role', fn ($q) => $q->where('name', 'writer'))->count();
+        $totalAdmins = User::whereHas('role', fn ($q) => $q->where('name', 'admin'))->count();
 
-        // Lecteurs = utilisateurs ayant acheté au moins un livre
-        $totalReaders = User::whereHas('payments', function($query){
-            $query->where('type', 'purchase');
-        })->count();
+        $query = User::with(['role', 'country']);
 
-        // Ecrivains
-        // ici je suppose que role_id = 2 pour écrivain
-        $totalWriters = User::whereHas('role', function($query){
-
-            $query->where('name', 'writer');
-
-        })->count();
-
-        $query = User::with(['role', 'payments']);
-
-        // recherche
         if ($request->filled('search')) {
-
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
-
                 $q->where('firstname', 'like', "%{$search}%")
-                ->orWhere('lastname', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%");
-
+                    ->orWhere('lastname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
-
         }
 
-        // filtre
-        if ($request->type == 'writer') {
-
-            $query->whereHas('role', function ($q) {
-
-                $q->where('name', 'writer');
-
+        if ($request->filled('type') && in_array($request->type, ['reader', 'writer', 'admin'], true)) {
+            $query->whereHas('role', function ($q) use ($request) {
+                $q->where('name', $request->type);
             });
-
-        }
-
-        if ($request->type == 'reader') {
-
-            $query
-                ->whereHas('role', function ($q) {
-                    $q->where('name', 'reader');
-                })
-                ->whereHas('payments', function ($q) {
-                    $q->where('type', 'purchase');
-                });
-
         }
 
         $users = $query
             ->latest()
-            ->paginate(15)
+            ->paginate(12)
             ->withQueryString();
 
+        $roles = Role::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
 
         return view('admin.users.users', compact(
             'users',
             'totalUsers',
             'totalReaders',
-            'totalWriters'
+            'totalWriters',
+            'totalAdmins',
+            'roles',
+            'countries'
         ));
     }
 
@@ -138,11 +110,11 @@ class UserController extends Controller
             ],
             'phone' => 'nullable|string|max:30',
             'country_id' => [
-                'required',
+                'nullable',
                 'exists:countries,id'
             ],
             'city' => [
-                'required',
+                'nullable',
                 'string',
                 'max:100'
             ],
@@ -161,7 +133,9 @@ class UserController extends Controller
             'bio'       => $request->bio,
         ]);
 
-        return back()->with('success', 'Utilisateur modifié avec succès.');
+        return redirect()
+            ->route('admin.users')
+            ->with('success', 'Utilisateur modifié avec succès.');
     }
 
     public function destroy(User $user)

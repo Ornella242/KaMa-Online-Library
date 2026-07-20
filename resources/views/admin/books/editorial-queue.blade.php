@@ -43,6 +43,13 @@
                 </div>
             </header>
 
+            @if($books->isEmpty())
+                <div class="editorial-empty">
+                    <span><i class="bi bi-check-circle-fill"></i></span>
+                    <h3>La file éditoriale est à jour</h3>
+                    <p>Aucun livre n’est actuellement en cours de vérification.</p>
+                </div>
+            @else
             <div class="table-responsive">
                 <table class="table editorial-table align-middle">
                     <thead>
@@ -56,7 +63,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($books as $book)
+                        @foreach($books as $book)
                             @php
                                 $authorName = trim(
                                     ($book->author?->firstname ?? '') . ' ' . ($book->author?->lastname ?? '')
@@ -119,20 +126,11 @@
                                     </div>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6">
-                                    <div class="editorial-empty">
-                                        <span><i class="bi bi-check-circle-fill"></i></span>
-                                        <h3>La file éditoriale est à jour</h3>
-                                        <p>Aucun livre n’est actuellement en cours de vérification.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
+            @endif
 
             @if($books->hasPages())
                 <footer class="editorial-pagination">
@@ -271,7 +269,7 @@
                         <button type="button" class="secondary js-editorial-close">Annuler</button>
                         <form method="POST" action="{{ route('admin.books.publish', $book) }}">
                             @csrf
-                            <button type="submit" class="success"><i class="bi bi-check2-circle"></i> Confirmer la
+                            <button type="submit" class="success js-editorial-submit"><i class="bi bi-check2-circle"></i> Confirmer la
                                 publication</button>
                         </form>
                     </footer>
@@ -307,7 +305,7 @@
                         </div>
                         <footer class="editorial-overlay-footer">
                             <button type="button" class="secondary js-editorial-close">Annuler</button>
-                            <button type="submit" class="danger"><i class="bi bi-send"></i> Envoyer la demande</button>
+                            <button type="submit" class="danger js-editorial-submit"><i class="bi bi-send"></i> Envoyer la demande</button>
                         </footer>
                     </form>
                 </div>
@@ -600,9 +598,12 @@
 
         .editorial-empty {
             display: grid;
+            width: 100%;
             min-height: 310px;
             place-items: center;
             align-content: center;
+            justify-items: center;
+            padding: 40px 24px;
             text-align: center
         }
 
@@ -948,6 +949,17 @@
             color: #fff
         }
 
+        .editorial-overlay-footer button.is-loading {
+            pointer-events: none;
+            opacity: .88
+        }
+
+        .editorial-overlay-footer button.is-loading .spinner-border {
+            width: .95rem;
+            height: .95rem;
+            border-width: .14em
+        }
+
         .editorial-confirm-container {
             width: min(100%, 590px)
         }
@@ -1243,6 +1255,34 @@
 
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') closeOverlay(document.querySelector('.editorial-overlay:not(.d-none)'));
+            });
+
+            const setSubmitLoading = (button, label) => {
+                if (!button || button.dataset.loading === 'true') return;
+                button.dataset.loading = 'true';
+                button.dataset.originalHtml = button.innerHTML;
+                button.disabled = true;
+                button.setAttribute('aria-busy', 'true');
+                button.classList.add('is-loading');
+                button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${label}`;
+            };
+
+            document.querySelectorAll('.editorial-overlay form').forEach((form) => {
+                form.addEventListener('submit', () => {
+                    const submitBtn = form.querySelector('.js-editorial-submit');
+                    if (!submitBtn || submitBtn.disabled) return;
+                    if (!form.checkValidity()) return;
+
+                    const loadingLabel = submitBtn.classList.contains('danger')
+                        ? 'Envoi en cours…'
+                        : 'Publication en cours…';
+
+                    setSubmitLoading(submitBtn, loadingLabel);
+
+                    form.closest('.editorial-overlay')?.querySelectorAll('.js-editorial-close, .secondary').forEach((btn) => {
+                        btn.disabled = true;
+                    });
+                });
             });
         });
     </script>

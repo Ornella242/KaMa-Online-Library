@@ -374,13 +374,10 @@
                                             </div>
                                         @endif
                                     @elseif($book->status === 'revision_required')
-                                        <form method="POST"
-                                              action="{{ route('writer.books.resubmit', $book) }}">
-                                            @csrf
-                                            <button type="submit" class="book-resubmit-action">
-                                                <i class="bi bi-send-check"></i> Envoyer les corrections
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('writer.books.edit', $book) }}"
+                                           class="book-resubmit-action">
+                                            <i class="bi bi-pencil-square"></i> Corriger et renvoyer
+                                        </a>
                                     @endif
 
                                     <div class="book-card-utility-actions">
@@ -388,10 +385,10 @@
                                             <i class="bi bi-eye"></i><span>Détails</span>
                                         </a>
 
-                                        @if(in_array($book->status, ['draft', 'revision_required'], true))
+                                        @if($book->status === 'draft')
                                             <a href="{{ route('writer.books.edit', $book) }}">
                                                 <i class="bi bi-pencil"></i>
-                                                <span>{{ $book->status === 'revision_required' ? 'Corriger' : 'Modifier' }}</span>
+                                                <span>Modifier</span>
                                             </a>
                                         @endif
 

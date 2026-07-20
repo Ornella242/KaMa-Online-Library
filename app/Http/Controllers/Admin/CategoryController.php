@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use App\Models\Category;
+use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -41,17 +43,22 @@ class CategoryController extends Controller
 
             ->latest()
 
-            ->paginate(5)
+            ->paginate(8)
 
             ->withQueryString();
 
-            
-        
-            return view(
-            'admin.categories.index',
-            compact('categories')
-        );
+        $totalCategories = Category::count();
+        $totalSubcategories = Subcategory::count();
+        $totalBooksClassified = Book::whereNotNull('category_id')->count();
+        $emptyCategories = Category::doesntHave('books')->count();
 
+        return view('admin.categories.index', compact(
+            'categories',
+            'totalCategories',
+            'totalSubcategories',
+            'totalBooksClassified',
+            'emptyCategories'
+        ));
     }
 
     /**

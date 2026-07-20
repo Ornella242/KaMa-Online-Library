@@ -27037,6 +27037,78 @@ transition:.3s;
   padding: 18px;
 }
 
+.upload-box.book-upload.has-existing-file {
+  padding: 18px;
+}
+
+.upload-box.book-upload.has-existing-file:hover {
+  transform: none;
+}
+
+.existing-file-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #f0d0d0;
+  border-radius: 14px;
+  background: #fff7f7;
+  text-align: left;
+}
+
+.existing-file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #b30000;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.existing-file-meta strong,
+.existing-file-meta small {
+  display: block;
+}
+
+.existing-file-meta strong {
+  color: #1f2329;
+  font-size: .95rem;
+}
+
+.existing-file-meta small {
+  margin-top: 3px;
+  color: #8a8f97;
+  font-size: .78rem;
+}
+
+.existing-file-preview {
+  overflow: hidden;
+  border: 1px solid #e6e8ec;
+  border-radius: 16px;
+  background: #f7f8fa;
+}
+
+.existing-pdf-preview {
+  display: block;
+  width: 100%;
+  height: min(62vh, 620px);
+  border: 0;
+  background: #fff;
+}
+
+.existing-audio-preview {
+  display: grid;
+  place-items: center;
+  padding: 36px 20px;
+  text-align: center;
+}
+
 .upload-success-icon {
   display: grid;
   place-items: center;
@@ -34898,13 +34970,8 @@ BOOK SHOW
 
 
 
-.d-none {
-
-    display:none!important;
-
-}
-
-
+/* NOTE: ne pas redéclarer .d-none ici — cela casserait les utilitaires
+   responsives Bootstrap (ex: .d-none.d-sm-flex de la pagination). */
 
 
 
@@ -41384,6 +41451,9 @@ font-size:13px;
     align-items: flex-end;
     justify-content: space-between;
     gap: 20px;
+    /* Annule le fond blanc appliqué globalement aux balises header par le thème */
+    background: transparent;
+    z-index: auto;
 }
 
 .writer-page-eyebrow {
@@ -42907,6 +42977,12 @@ font-size:13px;
 .kama-writer-library .book-resubmit-action {
     justify-content: center;
     cursor: pointer;
+    text-decoration: none;
+}
+
+.kama-writer-library a.book-resubmit-action:hover {
+    color: #fff;
+    filter: brightness(1.05);
 }
 
 .kama-writer-library .book-payment-state {
