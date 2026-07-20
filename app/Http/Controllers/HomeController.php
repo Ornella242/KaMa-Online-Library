@@ -42,11 +42,12 @@ class HomeController extends Controller
         $bestRatedBook = Book::published()->with(['author', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
-            ->has('reviews', '>=', 3)
+            ->has('reviews', '>=', 1)
+            // ->has('reviews', '>=', 3)
             ->orderByDesc('reviews_avg_rating')
             ->first();
 
-        
+        // dd($bestRatedBook);
 
         // Autres livres les mieux notés (mini cartes)
         $topRatedBooks = Book::published()->with(['author', 'category'])

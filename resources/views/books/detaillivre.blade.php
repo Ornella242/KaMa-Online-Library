@@ -34,27 +34,10 @@
                     {{ $book->category->name }}
                 </span>
             @endif
-
+{{-- 
             <h1>
                 {{ $book->title }}
-            </h1>
-
-            <div class="hero-author">
-                <div class="author-avatar">
-                    <i class="bi bi-person-fill"></i>
-                </div>
-
-                <div>
-                    <span>
-                        Écrit par
-                    </span>
-
-                    <strong>
-                        {{ $book->author->firstname }}
-                        {{ $book->author->lastname }}
-                    </strong>
-                </div>
-            </div>
+            </h1> --}}
         </div>
     </div>
 </section>
