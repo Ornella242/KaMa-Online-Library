@@ -20,6 +20,7 @@ use App\Http\Controllers\Writer\DashboardController as WriterDashboardController
 use App\Http\Controllers\Writer\SettingsController as WriterSettingsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\BookSponsorshipController as AdminBookSponsorshipController;
+use App\Http\Controllers\Admin\SponsorshipPlanController as AdminSponsorshipPlanController;
 use App\Http\Controllers\Writer\RevenueController as WriterRevenuesController;
 use App\Http\Controllers\Writer\ActivityController as WriterActivityController;
 use App\Http\Controllers\SponsorshipController;
@@ -231,6 +232,16 @@ Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function (
         ->name('writer.sponsorship.payment');
 
         Route::post(
+            '/sponsorships/{sponsorship}/payment',
+            [SponsorshipController::class, 'preparePayment'])
+        ->name('writer.sponsorship.pay');
+
+        Route::post(
+            '/sponsorships/{sponsorship}/verify',
+            [SponsorshipController::class, 'verify'])
+        ->name('writer.sponsorship.verify');
+
+        Route::post(
             '/books/{book}/resubmit',
             [BooksController::class,'resubmit']
         )
@@ -286,10 +297,24 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
         Route::post('/users', [UserController::class, 'store'])
             ->name('users.store');
 
-        Route::resource(
-            'categories',
-            CategoryController::class
-        );
+        Route::resource('categories', CategoryController::class);
+
+        Route::get('/sponsorship-plans', [AdminSponsorshipPlanController::class, 'index'])
+            ->name('sponsorship-plans.index');
+        Route::post('/sponsorship-plans', [AdminSponsorshipPlanController::class, 'store'])
+            ->name('sponsorship-plans.store');
+        Route::put('/sponsorship-plans/{sponsorship_plan}', [AdminSponsorshipPlanController::class, 'update'])
+            ->name('sponsorship-plans.update');
+        Route::delete('/sponsorship-plans/{sponsorship_plan}', [AdminSponsorshipPlanController::class, 'destroy'])
+            ->name('sponsorship-plans.destroy');
+
+        Route::get('/sponsorships', [AdminBookSponsorshipController::class, 'index'])
+            ->name('sponsorships.index');
+        Route::post('/sponsorships/{sponsorship}/approve', [AdminBookSponsorshipController::class, 'approve'])
+            ->name('sponsorships.approve');
+        Route::post('/sponsorships/{sponsorship}/reject', [AdminBookSponsorshipController::class, 'reject'])
+            ->name('sponsorships.reject');
+
         Route::get('/books/create', [AdminBooksController::class, 'create'])
             ->name('books.create');
 

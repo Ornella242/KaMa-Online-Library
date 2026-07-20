@@ -45,6 +45,16 @@
             <i class="bi bi-tags-fill"></i>
             <span>Catégories</span>
         </a>
+        <a href="{{ route('admin.sponsorship-plans.index') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.sponsorship-plans.*') ? 'active' : '' }}">
+            <i class="bi bi-stars"></i>
+            <span>Formules sponsoring</span>
+        </a>
+        <a href="{{ route('admin.sponsorships.index') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.sponsorships.*') ? 'active' : '' }}">
+            <i class="bi bi-megaphone-fill"></i>
+            <span>Demandes sponsoring</span>
+        </a>
         <a href="{{ route('admin.books.create') }}"
            class="kama-admin-nav-link {{ request()->routeIs('admin.books.create') ? 'active' : '' }}">
             <i class="bi bi-plus-square-fill"></i>
