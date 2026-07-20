@@ -23,7 +23,7 @@ CATALOG HERO START
 
 
                 <h1>
-                    Découvrez les histoires
+                    Découvrez les œuvres littéraires
                     <span>d'Afrique</span>
                     en un seul endroit
                 </h1>

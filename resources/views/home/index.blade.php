@@ -22,7 +22,7 @@ Main Banner START -->
                     <h1 class="fw-bold mt-3">
                         Découvrez des
                         <span class="text-primary">
-                            histoires africaines
+                            œuvres littéraires
                         </span>
                         qui vous ressemblent.
                     </h1>

@@ -19,7 +19,7 @@
 
                     <h1>
                         KaMa, la plateforme qui
-                        <span>connecte les histoires africaines</span>
+                        <span>connecte les œuvres littéraires africaines</span>
                         au monde.
                     </h1>
 
