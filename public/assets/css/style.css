@@ -45389,9 +45389,7 @@ font-size:13px;
 
 
 
-/* ===========================================
-                IMAGE
-=========================================== */
+/* IMAGE */
 
 .about-page .about-hero-image{
 
@@ -45428,46 +45426,198 @@ font-size:13px;
 }
 
 
+/* =========================================
+        ABOUT INTRO SECTION
+========================================= */
 
-/* ===========================================
-            FLOAT CARD
-=========================================== */
 
-.about-page .floating-card{
+.about-page .about-intro{
 
-    width:85%;
+    padding:100px 0;
 
-    margin:-45px auto 0;
-
-    background:#fff;
-
-    border-radius:20px;
-
-    padding:22px 25px;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:18px;
-
-    box-shadow:
-
-    0 20px 50px rgba(0,0,0,.12);
-
-    position:relative;
-
-    z-index:2;
+    background:#faf8f6;
 
 }
 
 
 
-.about-page .floating-icon{
+/* =========================================
+        SECTION HEADER
+========================================= */
 
-    width:60px;
 
-    height:60px;
+.about-page .section-heading{
+
+    max-width:850px;
+
+    margin:0 auto 60px;
+
+    text-align:center;
+
+}
+
+
+
+.about-page .about-section-label{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:8px 20px;
+
+    border-radius:50px;
+
+    background:#fff0f0;
+
+    color:#b30000;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.about-page .section-heading h2{
+
+    font-size:42px;
+
+    line-height:1.2;
+
+    font-weight:800;
+
+    color:#222;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.about-page .section-heading p{
+
+    font-size:18px;
+
+    line-height:1.8;
+
+    color:#666;
+
+    margin:0 auto;
+
+    max-width:720px;
+
+}
+
+
+
+/* =========================================
+        CARDS CONTAINER
+========================================= */
+
+
+.about-page .about-cards{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:30px;
+
+}
+
+
+
+
+
+/* =========================================
+        CARD
+========================================= */
+
+
+.about-page .about-card{
+
+    background:#fff;
+
+    border-radius:24px;
+
+    padding:40px 35px;
+
+    text-align:center;
+
+    border:1px solid #eeeeee;
+
+    position:relative;
+
+    overflow:hidden;
+
+    transition:.35s ease;
+
+}
+
+
+
+.about-page .about-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:4px;
+
+    background:#b30000;
+
+    transform:scaleX(0);
+
+    transition:.35s ease;
+
+}
+
+
+
+.about-page .about-card:hover::before{
+
+    transform:scaleX(1);
+
+}
+
+
+
+.about-page .about-card:hover{
+
+    transform:translateY(-10px);
+
+    box-shadow:
+
+    0 25px 60px rgba(0,0,0,.10);
+
+}
+
+
+
+/* =========================================
+        ICON
+========================================= */
+
+
+.about-page .about-card-icon{
+
+    width:80px;
+
+    height:80px;
+
+    margin:0 auto 25px;
 
     border-radius:50%;
 
@@ -45481,41 +45631,244 @@ font-size:13px;
 
     justify-content:center;
 
-    font-size:26px;
+    font-size:34px;
 
-    flex-shrink:0;
+    transition:.35s ease;
 
 }
 
 
 
-.about-page .floating-card strong{
+.about-page .about-card:hover .about-card-icon{
 
-    display:block;
+    background:#b30000;
 
-    font-size:18px;
+    color:#fff;
+
+    transform:rotate(5deg);
+
+}
+
+
+
+
+
+/* =========================================
+        TEXT
+========================================= */
+
+
+.about-page .about-card h3{
+
+    font-size:23px;
+
+    font-weight:750;
 
     color:#222;
 
-    margin-bottom:6px;
+    margin-bottom:15px;
 
 }
 
 
 
-.about-page .floating-card span{
+.about-page .about-card p{
+
+    font-size:16px;
+
+    line-height:1.8;
 
     color:#666;
 
-    line-height:1.6;
+    margin-bottom:25px;
 
 }
 
 
 
-/* ===========================================
-                TABLET
-=========================================== */
+/* =========================================
+        LINK
+========================================= */
+
+
+.about-page .about-card a{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#b30000;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    text-decoration:none;
+
+    transition:.3s ease;
+
+}
+
+
+
+.about-page .about-card a i{
+
+    transition:.3s ease;
+
+}
+
+
+
+.about-page .about-card a:hover i{
+
+    transform:translateX(5px);
+
+}
+
+
+
+/* =========================================
+        LARGE SCREEN
+========================================= */
+
+
+@media(min-width:1200px){
+
+
+    .about-page .about-cards{
+
+        gap:40px;
+
+    }
+
+
+    .about-page .about-card{
+
+        padding:45px 40px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================================
+        TABLET
+========================================= */
+
+
+@media(max-width:991px){
+
+
+    .about-page .about-intro{
+
+        padding:80px 0;
+
+    }
+
+
+    .about-page .about-cards{
+
+        grid-template-columns:1fr;
+
+        max-width:560px;
+
+        margin:auto;
+
+    }
+
+
+    .about-page .section-heading h2{
+
+        font-size:34px;
+
+    }
+
+
+}
+
+
+
+/* =========================================
+        MOBILE
+========================================= */
+
+
+@media(max-width:576px){
+
+
+    .about-page .about-intro{
+
+        padding:60px 15px;
+
+    }
+
+
+
+    .about-page .section-heading{
+
+        margin-bottom:40px;
+
+    }
+
+
+
+    .about-page .section-heading h2{
+
+        font-size:28px;
+
+    }
+
+
+
+    .about-page .section-heading p{
+
+        font-size:16px;
+
+        line-height:1.7;
+
+    }
+
+
+
+    .about-page .about-card{
+
+        padding:30px 22px;
+
+        border-radius:20px;
+
+    }
+
+
+
+    .about-page .about-card h3{
+
+        font-size:21px;
+
+    }
+
+
+
+    .about-page .about-card-icon{
+
+        width:70px;
+
+        height:70px;
+
+        font-size:30px;
+
+    }
+
+
+}
+
+
+/* TABLET */
 
 @media(max-width:991px){
 
@@ -45618,6 +45971,504 @@ font-size:13px;
         padding:18px;
 
     }
+
+}
+
+/* =====================================
+   HOW KAMA WORKS SECTION
+===================================== */
+
+.kama-how-section {
+
+    padding: 90px 0;
+    background: #faf8f6;
+
+}
+
+
+
+/* =====================================
+   SECTION HEADER
+===================================== */
+
+
+.kama-how-section .kama-section-heading {
+
+    text-align:center;
+    max-width:850px;
+    margin:0 auto 60px;
+
+}
+
+
+
+.kama-how-section .kama-section-heading span {
+
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+
+    color:#b30000;
+
+    font-size:14px;
+    font-weight:700;
+
+    margin-bottom:15px;
+
+}
+
+
+
+.kama-how-section .kama-section-heading h2 {
+
+    font-size:38px;
+    line-height:1.25;
+
+    font-weight:800;
+
+    color:#222;
+
+    margin-bottom:18px;
+
+}
+
+
+
+.kama-how-section .kama-section-heading h2 strong {
+
+    color:#b30000;
+
+}
+
+
+
+.kama-how-section .kama-section-heading p {
+
+    color:#666;
+
+    font-size:17px;
+
+    line-height:1.7;
+
+}
+
+
+
+/* =====================================
+   PROCESS GRID
+===================================== */
+
+
+.kama-process-grid {
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:35px;
+
+}
+
+
+
+/* =====================================
+   PROCESS CARD
+===================================== */
+
+
+.kama-process-card {
+
+    background:#fff;
+
+    border-radius:25px;
+
+    padding:35px;
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,.07);
+
+    border:1px solid #f0eeee;
+
+    transition:.3s ease;
+
+}
+
+
+
+.kama-process-card:hover {
+
+    transform:translateY(-6px);
+
+}
+
+
+
+/* HEADER CARD */
+
+.process-header {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    margin-bottom:35px;
+
+}
+
+
+
+.process-header h3 {
+
+    margin:0;
+
+    font-size:25px;
+
+    font-weight:750;
+
+    color:#222;
+
+}
+
+
+
+/* ICON */
+
+
+.process-icon {
+
+    width:65px;
+
+    height:65px;
+
+    border-radius:18px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:30px;
+
+}
+
+
+
+.process-icon.reader {
+
+    background:#fff1f1;
+
+    color:#b30000;
+
+}
+
+
+
+.process-icon.author {
+
+    background:#f4f0ff;
+
+    color:#6b4eff;
+
+}
+
+
+
+
+
+/* =====================================
+   STEPS
+===================================== */
+
+
+.process-steps {
+
+    position:relative;
+
+}
+
+
+
+/* Ligne verticale */
+
+.process-steps::before {
+
+    content:"";
+
+    position:absolute;
+
+    left:22px;
+
+    top:25px;
+
+    bottom:25px;
+
+    width:2px;
+
+    background:#eee;
+
+}
+
+
+
+
+
+.process-step {
+
+    display:flex;
+
+    gap:20px;
+
+    position:relative;
+
+    margin-bottom:30px;
+
+}
+
+
+
+.process-step:last-child {
+
+    margin-bottom:0;
+
+}
+
+
+
+/* NUMBER */
+
+.process-step span {
+
+    flex-shrink:0;
+
+    width:45px;
+
+    height:45px;
+
+    border-radius:50%;
+
+    background:#b30000;
+
+    color:#fff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-weight:700;
+
+    z-index:2;
+
+}
+
+
+
+.process-step div {
+
+    padding-top:3px;
+
+}
+
+
+
+.process-step h4 {
+
+    margin:0 0 8px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#222;
+
+}
+
+
+
+.process-step p {
+
+    margin:0;
+
+    color:#666;
+
+    font-size:15px;
+
+    line-height:1.6;
+
+}
+
+
+
+
+
+/* =====================================
+   TABLET
+===================================== */
+
+
+@media(max-width:992px){
+
+
+    .kama-how-section {
+
+        padding:70px 0;
+
+    }
+
+
+    .kama-how-section .kama-section-heading h2 {
+
+        font-size:32px;
+
+    }
+
+
+
+    .kama-process-grid {
+
+        grid-template-columns:1fr;
+
+        gap:30px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+
+@media(max-width:576px){
+
+
+    .kama-how-section {
+
+        padding:50px 15px;
+
+    }
+
+
+
+    .kama-how-section .kama-section-heading {
+
+        margin-bottom:40px;
+
+    }
+
+
+
+    .kama-how-section .kama-section-heading h2 {
+
+        font-size:25px;
+
+    }
+
+
+
+    .kama-how-section .kama-section-heading p {
+
+        font-size:15px;
+
+    }
+
+
+
+
+    .kama-process-card {
+
+        padding:25px 20px;
+
+        border-radius:20px;
+
+    }
+
+
+
+
+    .process-header {
+
+        gap:12px;
+
+        margin-bottom:30px;
+
+    }
+
+
+
+    .process-icon {
+
+        width:55px;
+
+        height:55px;
+
+        font-size:25px;
+
+    }
+
+
+
+    .process-header h3 {
+
+        font-size:21px;
+
+    }
+
+
+
+    .process-step {
+
+        gap:15px;
+
+        margin-bottom:25px;
+
+    }
+
+
+
+    .process-step span {
+
+        width:38px;
+
+        height:38px;
+
+        font-size:14px;
+
+    }
+
+
+
+    .process-steps::before {
+
+        left:18px;
+
+    }
+
+
+
+    .process-step h4 {
+
+        font-size:16px;
+
+    }
+
+
+
+    .process-step p {
+
+        font-size:14px;
+
+    }
+
 
 }
 
