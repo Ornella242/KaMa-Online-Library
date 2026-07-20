@@ -75,6 +75,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role?->name === 'admin';
     }
 
+    /**
+     * Accès à l’espace auteur (écrivain ou admin publiant ses propres livres).
+     */
+    public function canAccessWriterSpace(): bool
+    {
+        return $this->isWriter() || $this->isAdmin();
+    }
+
     public function sendEmailVerificationNotification()
     {
         $this->notify(new VerifyEmailNotification);

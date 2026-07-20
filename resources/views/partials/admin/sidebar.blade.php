@@ -55,10 +55,32 @@
             <i class="bi bi-megaphone-fill"></i>
             <span>Demandes sponsoring</span>
         </a>
+
+        <span class="kama-admin-nav-label">Mon espace auteur</span>
+        <a href="{{ route('admin.books.index') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.books.index', 'admin.books.edit', 'admin.books.deposit') ? 'active' : '' }}">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            <span>Mes livres</span>
+        </a>
         <a href="{{ route('admin.books.create') }}"
            class="kama-admin-nav-link {{ request()->routeIs('admin.books.create') ? 'active' : '' }}">
             <i class="bi bi-plus-square-fill"></i>
             <span>Ajouter un livre</span>
+        </a>
+        <a href="{{ route('admin.author.reviews') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.author.reviews') ? 'active' : '' }}">
+            <i class="bi bi-chat-square-quote-fill"></i>
+            <span>Avis lecteurs</span>
+        </a>
+        <a href="{{ route('admin.author.revenues') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.author.revenues') ? 'active' : '' }}">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Revenus</span>
+        </a>
+        <a href="{{ route('admin.author.activities') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.author.activities*') ? 'active' : '' }}">
+            <i class="bi bi-bell-fill"></i>
+            <span>Notifications</span>
         </a>
 
         <span class="kama-admin-nav-label">Communauté</span>

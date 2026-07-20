@@ -17,6 +17,7 @@ use App\Notifications\BookUnderReviewNotification;
 use App\Notifications\BookPublishedNotification;
 use App\Notifications\BookRejectedNotification;
 use App\Notifications\BookRevisionRequiredNotification;
+use App\Models\User;
 use Imagick;
 
 class BooksController extends Controller
@@ -24,95 +25,89 @@ class BooksController extends Controller
 
     public function listBooks(Request $request)
     {
-
         $userId = Auth::id();
 
         $query = Book::query()->where('user_id', $userId)
             ->with([
                 'category',
-                'subcategory'
+                'subcategory',
+                'publicationPayment',
+                'activeSponsorship',
             ]);
 
-        if($request->filled('search')){
-
-            $query->where('title','like',
-                '%'.$request->search.'%'
-            );
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%'.$request->search.'%');
         }
 
-        if($request->filled('status')){
-            $query->where(
-                'status',
-                $request->status
-            );
-
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
-        if($request->filled('type')){
-
-            $query->where(
-                'type',
-                $request->type
-            );
-
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
         }
 
-        switch($request->sort){
+        switch ($request->sort) {
             case 'oldest':
-
                 $query->oldest();
-
-            break;
+                break;
             case 'price_high':
-
-                $query->orderBy(
-                    'price',
-                    'desc'
-                );
-
-            break;
-
+                $query->orderBy('price', 'desc');
+                break;
             case 'price_low':
-                $query->orderBy(
-                    'price',
-                    'asc'
-                );
-            break;
-
+                $query->orderBy('price', 'asc');
+                break;
             default:
                 $query->latest();
-            break;
+                break;
         }
 
-        $books = $query
-            ->paginate(5)
-            ->withQueryString();
+        $books = $query->paginate(9)->withQueryString();
 
-        $totalBooks = Book::where('user_id', Auth::id())->count();
+        $authorBooks = Book::query()->where('user_id', $userId);
+        $totalBooks = (clone $authorBooks)->count();
+        $draftBooks = (clone $authorBooks)->where('status', 'draft')->count();
+        $pendingBooks = (clone $authorBooks)->where('status', 'waiting_review')->count();
+        $reviewBooks = (clone $authorBooks)->where('status', 'under_review')->count();
+        $publishedBooks = (clone $authorBooks)->where('status', 'published')->count();
+        $revisionBooks = (clone $authorBooks)->where('status', 'revision_required')->count();
 
-        $publishedBooks = Book::where('user_id', Auth::id())
-            ->where('status', 'published')
-            ->count();
-
-        $soldBooks = Payment::where('type', 'purchase')
-            ->whereHas('book', function ($q) {
-                $q->where('user_id', Auth::id());
-            })
-            ->count();
-
+        $publicationFees = \App\Models\PublicationFee::query()
+            ->get()
+            ->keyBy('book_type');
 
         return view(
             'admin.books.index',
-            compact('books','totalBooks','publishedBooks','soldBooks')
+            compact(
+                'books',
+                'totalBooks',
+                'draftBooks',
+                'pendingBooks',
+                'reviewBooks',
+                'publishedBooks',
+                'revisionBooks',
+                'publicationFees'
+            )
         );
     }
 
-
-      public function create()
+    public function create()
     {
         $categories = Category::with('subcategories')->get();
 
-        return view('admin.books.create', compact('categories'));
+        $categoryOptions = $categories->mapWithKeys(function ($category) {
+            return [
+                (string) $category->id => $category->subcategories
+                    ->map(fn ($sub) => [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                    ])
+                    ->values()
+                    ->all(),
+            ];
+        });
+
+        return view('admin.books.create', compact('categories', 'categoryOptions'));
     }
 
     public function getSubcategories(int $category)
@@ -271,7 +266,7 @@ class BooksController extends Controller
             'original_file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getClientOriginalExtension(),
             'file_size' => $file->getSize(),
-            'status' => 'published',
+            'status' => 'draft',
             'copyright_accepted' => true,
             'copyright_accepted_at' => now(),
         ]);
@@ -286,8 +281,11 @@ class BooksController extends Controller
         return redirect()
             ->route('admin.books.index')
             ->with(
-                'success',
-                'Votre livre a été ajouté avec succès.'
+                'book_created',
+                [
+                    'book_id' => $book->id,
+                    'message' => 'Votre livre a été ajouté avec succès. Veuillez régler les frais de publication afin de poursuivre sa mise en ligne.',
+                ]
             );
     }
 
@@ -301,7 +299,12 @@ class BooksController extends Controller
 
     public function edit(Book $book)
     {
-        abort(403, 'L’administrateur peut consulter et valider un livre, mais ne peut pas modifier son contenu.');
+        abort_unless($this->isOwnBook($book), 403, 'Vous ne pouvez modifier que vos propres livres.');
+        abort_unless(
+            in_array($book->status, ['draft', 'revision_required'], true),
+            409,
+            'Ce livre ne peut plus être modifié dans son état actuel.'
+        );
 
         $categories = Category::all();
         $subcategories = $book->category->subcategories;
@@ -314,7 +317,12 @@ class BooksController extends Controller
 
     public function update(Request $request, Book $book)
     {
-        abort(403, 'L’administrateur peut consulter et valider un livre, mais ne peut pas modifier son contenu.');
+        abort_unless($this->isOwnBook($book), 403, 'Vous ne pouvez modifier que vos propres livres.');
+        abort_unless(
+            in_array($book->status, ['draft', 'revision_required'], true),
+            409,
+            'Ce livre ne peut plus être modifié dans son état actuel.'
+        );
 
         if ($book->status === 'published') {
 
@@ -732,41 +740,90 @@ class BooksController extends Controller
 
     public function destroy(Book $book)
     {
+        abort_unless($this->isOwnBook($book), 403);
+        abort_unless(
+            in_array($book->status, ['draft', 'revision_required'], true),
+            409,
+            'Seul un brouillon ou un livre à corriger peut être supprimé.'
+        );
 
-        /* Supprimer la couverture */
-
-        if(
+        if (
             $book->cover_image &&
             Storage::disk('public')->exists($book->cover_image)
-        ){
-
-            Storage::disk('public')
-                ->delete($book->cover_image);
-
+        ) {
+            Storage::disk('public')->delete($book->cover_image);
         }
 
-        /* Supprimer le fichier PDF / MP3 */
-
-        if(
-            $book->file_path &&
-            Storage::disk('public')->exists($book->file_path)
-        ){
-
-            Storage::disk('public')
-                ->delete($book->file_path);
-
+        if ($book->file_path && Storage::disk('local')->exists($book->file_path)) {
+            Storage::disk('local')->delete($book->file_path);
         }
 
-        /* Supprimer le livre */
-        // $book->delete();
-        \App\Models\Book::destroy($book->id);
+        $book->delete();
+
         return redirect()
             ->route('admin.books.index')
-            ->with(
-                'success',
-                'Livre supprimé avec succès.'
-            );
+            ->with('success', 'Livre supprimé avec succès.');
+    }
 
+    public function deposit(Book $book)
+    {
+        abort_unless($this->isOwnBook($book), 403);
+        abort_unless($book->status === 'draft', 409, 'Ce livre ne peut pas être payé dans son état actuel.');
+
+        $fee = \App\Models\PublicationFee::forType($book->type);
+        abort_unless(
+            $fee && (float) $fee->amount > 0,
+            503,
+            'Les frais de publication ne sont pas encore configurés pour ce format.'
+        );
+        abort_unless(
+            strtoupper($fee->currency) === 'XOF',
+            503,
+            'Le tarif doit être enregistré en XOF pour être utilisé avec KKiaPay.'
+        );
+
+        $kkiapayPublicKey = config('services.kkiapay.public_key');
+        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
+        $kkiapayConfigured = filled($kkiapayPublicKey)
+            && filled(config('services.kkiapay.private_key'))
+            && filled(config('services.kkiapay.secret'));
+
+        return view(
+            'admin.books.deposit',
+            compact(
+                'book',
+                'fee',
+                'kkiapayPublicKey',
+                'kkiapaySandbox',
+                'kkiapayConfigured'
+            )
+        );
+    }
+
+    public function resubmit(Book $book)
+    {
+        abort_unless($this->isOwnBook($book), 403);
+
+        if ($book->status !== 'revision_required') {
+            abort(403);
+        }
+
+        $book->update([
+            'status' => 'waiting_review',
+            'rejection_reason' => null,
+        ]);
+
+        $admins = User::whereHas('role', function ($query) {
+            $query->where('name', 'admin');
+        })->where('id', '!=', Auth::id())->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\BookResubmittedNotification($book));
+        }
+
+        return redirect()
+            ->route('admin.books.index')
+            ->with('success', 'Votre livre a été renvoyé pour vérification éditoriale.');
     }
 
      public function generatePreviewPages(Book $book)
@@ -1026,6 +1083,13 @@ class BooksController extends Controller
 
     public function review(Book $book)
     {
+        if ($this->isOwnBook($book)) {
+            return back()->with(
+                'error',
+                'Vous ne pouvez pas valider éditorialement vos propres livres. Utilisez un autre compte admin.'
+            );
+        }
+
         if ($book->status !== 'waiting_review') {
             return back()->with('error', 'Seul un livre en attente peut passer en vérification.');
         }
@@ -1124,6 +1188,13 @@ class BooksController extends Controller
 
     public function publish(Book $book)
     {
+        if ($this->isOwnBook($book)) {
+            return back()->with(
+                'error',
+                'Vous ne pouvez pas publier vos propres livres depuis la file éditoriale. Utilisez un autre compte admin.'
+            );
+        }
+
         if($book->status !== 'under_review'){
             return back()->with(
                 'error',
@@ -1148,6 +1219,13 @@ class BooksController extends Controller
 
     public function reject(Request $request, Book $book)
     {
+        if ($this->isOwnBook($book)) {
+            return back()->with(
+                'error',
+                'Vous ne pouvez pas retourner vos propres livres. Utilisez un autre compte admin.'
+            );
+        }
+
         if ($book->status !== 'under_review') {
             return back()->with('error', 'Seul un livre en cours de vérification peut être retourné.');
         }
@@ -1169,5 +1247,10 @@ class BooksController extends Controller
             'success',
             'Le livre a été retourné à l’auteur pour correction.'
         );
+    }
+
+    private function isOwnBook(Book $book): bool
+    {
+        return (int) $book->user_id === (int) Auth::id();
     }
 }

@@ -41013,6 +41013,36 @@ font-size:13px;
     color: #fff;
 }
 
+.writer-workspace-admin-back {
+    display: inline-flex;
+    min-height: 43px;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 13px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.writer-workspace-admin-back:hover {
+    background: rgba(255, 255, 255, .16);
+    color: #fff;
+}
+
+.writer-workspace-nav a.writer-admin-return {
+    margin-left: 4px;
+    border: 1px solid #eceef0;
+    color: #3d4148;
+}
+
+.writer-workspace-nav a.writer-admin-return:hover {
+    background: #f4f4f5;
+    color: #1f2125;
+}
+
 .writer-workspace-notification-menu {
     z-index: 1050;
     width: min(390px, calc(100vw - 24px));
@@ -41308,6 +41338,16 @@ font-size:13px;
 
     .writer-workspace-create span {
         display: none;
+    }
+
+    .writer-workspace-admin-back span {
+        display: none;
+    }
+
+    .writer-workspace-admin-back {
+        width: 42px;
+        padding: 0;
+        justify-content: center;
     }
 
     .writer-workspace-notification,

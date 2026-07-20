@@ -90,8 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const audio = type === 'audio';
         const pagesField = document.getElementById('pagesField');
         const durationField = document.getElementById('durationField');
-        pagesField?.classList.toggle('d-none', audio);
-        durationField?.classList.toggle('d-none', !audio);
+        if (pagesField) {
+            pagesField.style.display = audio ? 'none' : 'block';
+            pagesField.classList.toggle('d-none', audio);
+        }
+        if (durationField) {
+            durationField.style.display = audio ? 'block' : 'none';
+            durationField.classList.toggle('d-none', !audio);
+        }
 
         if (fileInput) {
             fileInput.name = audio ? 'audio_file' : 'ebook_file';
@@ -114,6 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (audio && previewType) previewType.value = 'text';
         textPreview?.classList.toggle('d-none', !audio && previewType?.value === 'pages');
         pagesPreview?.classList.toggle('d-none', audio || previewType?.value !== 'pages');
+
+        const summaryPagesBox = document.getElementById('summary_pages_box');
+        const summaryDurationBox = document.getElementById('summary_duration_box');
+        if (summaryPagesBox) summaryPagesBox.style.display = audio ? 'none' : 'block';
+        if (summaryDurationBox) summaryDurationBox.style.display = audio ? 'block' : 'none';
     };
     typeInputs.forEach((input) => input.addEventListener('change', updateBookType));
     document.getElementById('preview_type')?.addEventListener('change', updateBookType);

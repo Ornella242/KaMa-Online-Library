@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Reader\SettingsController as ReaderSettingsController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\BooksController as AdminBooksController;
+use App\Http\Controllers\Admin\AuthorSpaceController as AdminAuthorSpaceController;
 use App\Http\Controllers\Writer\BooksController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -147,7 +148,7 @@ Route::delete('/wishlist/{book}', [WishlistController::class, 'destroy'])
 
 // writer routes
 
-Route::prefix('writer') ->middleware(['auth', 'role:writer']) ->group(function () {
+Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () {
         Route::get('/settings', [WriterSettingsController::class, 'index'])
             ->name('writer.settings');
         Route::post('/notifications/update', [NotificationSettingController::class, 'update'])
@@ -324,6 +325,15 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
         Route::get('/books', [AdminBooksController::class, 'listBooks'])
             ->name('books.index');
 
+        Route::get('/author/reviews', [AdminAuthorSpaceController::class, 'reviews'])
+            ->name('author.reviews');
+        Route::get('/author/revenues', [AdminAuthorSpaceController::class, 'revenues'])
+            ->name('author.revenues');
+        Route::get('/author/activities', [AdminAuthorSpaceController::class, 'activities'])
+            ->name('author.activities');
+        Route::delete('/author/activities/{notification}', [AdminAuthorSpaceController::class, 'destroyNotification'])
+            ->name('author.activities.destroy');
+
         Route::get('/books/all', [AdminBooksController::class, 'allBooks'])
             ->name('books.all');
 
@@ -335,6 +345,15 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
 
          Route::get('/books/editorial-queue',[AdminBooksController::class,'editorialQueue']
         )->name('books.editorial.queue');
+
+        Route::get('/books/{book}/deposit', [AdminBooksController::class, 'deposit'])
+            ->name('books.deposit');
+
+        Route::post('/books/{book}/resubmit', [AdminBooksController::class, 'resubmit'])
+            ->name('books.resubmit');
+
+        Route::delete('/books/{book}', [AdminBooksController::class, 'destroy'])
+            ->name('books.destroy');
 
         Route::get('/books/{book}',[AdminBooksController::class, 'show']) 
             ->name('books.show');
@@ -377,12 +396,12 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
 Route::post('/books/{book}/publication-payment',
             [PaymentController::class,'payPublication']
         )
-        ->middleware(['auth', 'role:writer'])
+        ->middleware(['auth', 'role:writer,admin'])
         ->name('books.payment.publication');
 Route::post('/books/{book}/publication-payment/verify',
             [PaymentController::class, 'verifyKkiapayPublication']
         )
-        ->middleware(['auth', 'role:writer'])
+        ->middleware(['auth', 'role:writer,admin'])
         ->name('books.payment.publication.verify');
 
 

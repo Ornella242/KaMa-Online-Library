@@ -231,7 +231,7 @@
                             @endif
                         @endif
 
-                        @if($book->status == 'waiting_review')
+                        @if($book->status == 'waiting_review' && (int) $book->user_id !== (int) auth()->id())
 
                             @php
                                 $depositPaid = $book->payments()

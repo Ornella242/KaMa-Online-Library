@@ -99,7 +99,7 @@ class PaymentController extends Controller
 
         if ($payment->status === 'success' && $payment->transaction_id === $validated['transaction_id']) {
             return response()->json([
-                'redirect' => route('writer.books'),
+                'redirect' => $this->publicationSuccessRedirect(),
                 'message' => 'Paiement déjà confirmé.',
             ]);
         }
@@ -177,7 +177,7 @@ class PaymentController extends Controller
         $this->notifyAdmins($book);
 
         return response()->json([
-            'redirect' => route('writer.books'),
+            'redirect' => $this->publicationSuccessRedirect(),
             'message' => 'Paiement confirmé. Votre livre est maintenant en attente de vérification.',
         ]);
     }
@@ -212,6 +212,13 @@ class PaymentController extends Controller
             ->with('success', 'Paiement confirmé. Le livre est maintenant en attente de vérification.');
     }
 
+    private function publicationSuccessRedirect(): string
+    {
+        return Auth::user()?->isAdmin()
+            ? route('admin.books.index')
+            : route('writer.books');
+    }
+
     private function kkiapayIsConfigured(): bool
     {
         return filled(config('services.kkiapay.public_key'))
@@ -223,6 +230,7 @@ class PaymentController extends Controller
     {
         User::query()
             ->whereHas('role', fn ($query) => $query->where('name', 'admin'))
+            ->where('id', '!=', $book->user_id)
             ->each(fn (User $admin) => $admin->notify(new NewBookSubmittedNotification($book)));
     }
 }
