@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Country;
 use App\Models\Role;
 use App\Models\Payment;
+use App\Models\Wallet;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -219,16 +220,52 @@ class UserController extends Controller
 
     }
 
-    public function becomeWriter()
+    public function becomeWriter(Request $request)
     {
         $user = Auth::user();
 
-        $user->update([
-            'is_writer' => true
+        if ($user->isWriter()) {
+            return redirect()
+                ->route('writer.dashboard')
+                ->with('success', 'Vous êtes déjà écrivain.');
+        }
+
+        $validated = $request->validate([
+            'accept_fees' => ['accepted'],
+            'accept_rights' => ['accepted'],
+            'accept_terms' => ['accepted'],
+            'confirm_text' => ['required', 'string'],
+        ], [
+            'accept_fees.accepted' => 'Vous devez accepter les frais de publication.',
+            'accept_rights.accepted' => 'Vous devez confirmer détenir les droits sur vos contenus.',
+            'accept_terms.accepted' => 'Vous devez accepter les règles de publication KaMa.',
+            'confirm_text.required' => 'Veuillez taper ÉCRIVAIN pour confirmer.',
         ]);
 
-        return redirect('/writer/account')
-            ->with('success', 'Vous êtes maintenant écrivain !');
+        if (mb_strtoupper(trim($validated['confirm_text'])) !== 'ÉCRIVAIN') {
+            return back()
+                ->withErrors(['confirm_text' => 'Veuillez taper exactement ÉCRIVAIN pour confirmer.'])
+                ->withInput();
+        }
+
+        $writerRole = Role::query()->where('name', 'writer')->firstOrFail();
+
+        $user->update([
+            'role_id' => $writerRole->id,
+            'is_writer' => true,
+        ]);
+
+        if (! $user->wallet()->exists()) {
+            Wallet::query()->create([
+                'user_id' => $user->id,
+                'balance' => 0,
+                'currency' => 'USD',
+            ]);
+        }
+
+        return redirect()
+            ->route('writer.dashboard')
+            ->with('success', 'Bienvenue dans l’espace écrivain ! Votre espace auteur est prêt.');
     }
 
    public function updateProfile(Request $request)

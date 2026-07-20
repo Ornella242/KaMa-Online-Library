@@ -108,10 +108,19 @@ class CatalogueController extends Controller
         ->where('ends_at','>',now())
         ->get();
 
+        $wishlistIds = auth()->check()
+            ? \App\Models\Wishlist::query()
+                ->where('user_id', auth()->id())
+                ->pluck('book_id')
+                ->all()
+            : [];
+
         return view('books.catalogue', compact(
             'books',
             'categories',
-            'authors','sponsoredBooks'
+            'authors',
+            'sponsoredBooks',
+            'wishlistIds'
         ));
     }
 

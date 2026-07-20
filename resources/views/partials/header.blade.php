@@ -66,6 +66,16 @@
 				
 				<!-- ACTIONS -->
 				<ul class="navbar-nav align-items-center ms-auto">
+					<li class="nav-item me-2">
+						<a href="{{ route('cart.index') }}" class="nav-link position-relative px-2" title="Mon panier">
+							<i class="bi bi-cart3 fs-5"></i>
+							@if(($cartCount ?? 0) > 0)
+								<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.65rem;">
+									{{ $cartCount }}
+								</span>
+							@endif
+						</a>
+					</li>
 					@auth
 					<!-- Notification -->
 						@php
@@ -219,10 +229,10 @@
 								@elseif(Auth::user()->role->name === 'reader')
 									<!-- Links -->
 									<li> <hr class="dropdown-divider"></li>
-									<li><a class="dropdown-item" href="{{ url('/reader/account') }}"><i class="bi bi-person-fill icon-red fa-fw me-2"></i>Mon Compte</a></li>
-									<li><a class="dropdown-item" href="{{ url('/book') }}"><i class="bi bi-book icon-red fa-fw me-2"></i>Mes Livres</a></li>
-									<li><a class="dropdown-item" href="{{ url('/wishlist') }}"><i class="bi bi-heart icon-red fa-fw me-2"></i>Ma Liste de Souhaits</a></li>
-									<li><a class="dropdown-item" href="{{ url('/book') }}"><i class="bi bi-cart icon-red fa-fw me-2"></i>Mon panier</a></li>
+									<li><a class="dropdown-item" href="{{ route('reader.account') }}"><i class="bi bi-person-fill icon-red fa-fw me-2"></i>Mon Compte</a></li>
+									<li><a class="dropdown-item" href="{{ route('reader.books') }}"><i class="bi bi-book icon-red fa-fw me-2"></i>Mes Livres</a></li>
+									<li><a class="dropdown-item" href="{{ route('reader.wishlist') }}"><i class="bi bi-heart icon-red fa-fw me-2"></i>Ma Liste de Souhaits</a></li>
+									<li><a class="dropdown-item" href="{{ route('cart.index') }}"><i class="bi bi-cart icon-red fa-fw me-2"></i>Mon panier @if(($cartCount ?? 0) > 0)<span class="badge bg-danger ms-1">{{ $cartCount }}</span>@endif</a></li>
 
 									<li> <hr class="dropdown-divider"></li>
 									<li>

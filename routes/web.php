@@ -3,6 +3,10 @@
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\DetailsLivreController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\BookReviewController;
+use App\Http\Controllers\Reader\LibraryController as ReaderLibraryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -37,6 +41,25 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalogue', [CatalogueController::class, 'index'])->name('catalogue');
 Route::get('/books/{book}', [DetailsLivreController::class, 'index'])
     ->name('books.show');
+
+Route::get('/panier', [CartController::class, 'index'])->name('cart.index');
+Route::delete('/panier/clear', [CartController::class, 'clear'])->name('cart.clear');
+Route::post('/panier/{book}', [CartController::class, 'store'])->name('cart.store');
+Route::delete('/panier/{book}', [CartController::class, 'destroy'])->name('cart.destroy');
+
+Route::get('/commande', [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/commande', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/commande/{order}/paiement', [CheckoutController::class, 'payment'])->name('checkout.payment');
+Route::post('/commande/{order}/paiement', [CheckoutController::class, 'preparePayment'])->name('checkout.pay');
+Route::post('/commande/{order}/verifier', [CheckoutController::class, 'verify'])->name('checkout.verify');
+Route::get('/commande/{order}/succes', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/commande/{order}/telecharger/{book}', [CheckoutController::class, 'download'])
+    ->middleware('signed')
+    ->name('checkout.download');
+
+Route::post('/books/{book}/reviews', [BookReviewController::class, 'store'])
+    ->middleware('auth')
+    ->name('books.reviews.store');
 
 // Auth routes
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register.form');
@@ -78,39 +101,47 @@ Route::post('/email/verification-notification', function (Request $request) {
 // reader routes
 
 Route::prefix('reader')->middleware('auth')->group(function () {
-
-    Route::get('settings', [ReaderSettingsController::class, 'indexReader']);
+    Route::get('/settings', [ReaderSettingsController::class, 'indexReader'])
+        ->name('reader.settings');
     Route::post('/notifications/update', [NotificationSettingController::class, 'update'])
         ->name('reader.notifications.update');
 
-    Route::get('/account', function () {
-        return view('reader.profile');
-    });
+    Route::get('/account', [AccountController::class, 'account'])
+        ->name('reader.account');
+    Route::put('/account', [UserController::class, 'updateProfile'])
+        ->name('reader.account.update');
+    Route::put('/change-password', [UserController::class, 'changePassword'])
+        ->name('reader.password.update');
 
-    Route::get('/books', function () {
-        return view('reader.book');
-    });
+    Route::get('/books', [ReaderLibraryController::class, 'index'])
+        ->name('reader.books');
+    Route::get('/books/{book}/download', [ReaderLibraryController::class, 'download'])
+        ->name('reader.books.download');
 
-    Route::get('/wishlist', function () {
-        return view('reader.wishlist');
-    });
+    Route::get('/wishlist', [WishlistController::class, 'index'])
+        ->name('reader.wishlist');
+    Route::post('/wishlist/{book}', [WishlistController::class, 'store'])
+        ->name('reader.wishlist.store');
+    Route::delete('/wishlist/{book}', [WishlistController::class, 'destroy'])
+        ->name('reader.wishlist.destroy');
+    Route::delete('/wishlist', [WishlistController::class, 'clear'])
+        ->name('reader.wishlist.clear');
+    Route::post('/wishlist/{book}/panier', [WishlistController::class, 'moveToCart'])
+        ->name('reader.wishlist.cart');
 
+    Route::get('/cart', [CartController::class, 'index'])->name('reader.cart');
 });
-Route::get('/reader/account', [AccountController::class, 'account'])
-    ->middleware('auth')
-    ->name('reader.account');
 
 Route::post('/become-writer', [UserController::class, 'becomeWriter'])
-    ->middleware('auth');
-
-Route::put('/reader/account', [UserController::class, 'updateProfile'])
     ->middleware('auth')
-    ->name('reader.account.update');
+    ->name('become.writer');
 
-Route::put('/reader/change-password', [UserController::class, 'changePassword'])
+Route::post('/wishlist/{book}', [WishlistController::class, 'store'])
     ->middleware('auth')
-    ->name('reader.password.update');
-
+    ->name('wishlist.store');
+Route::delete('/wishlist/{book}', [WishlistController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('wishlist.destroy');
 
 
 // writer routes

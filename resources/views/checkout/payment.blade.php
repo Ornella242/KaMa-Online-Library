@@ -5,12 +5,15 @@
     <div class="container">
         <div class="kkiapay-checkout-heading">
             <div>
-                <a href="{{ route('writer.books') }}">
-                    <i class="bi bi-arrow-left"></i> Ma bibliothèque
+                <a href="{{ route('cart.index') }}">
+                    <i class="bi bi-arrow-left"></i> Panier
                 </a>
-                <span>Publication KaMa</span>
-                <h1>Finaliser les frais de publication</h1>
-                <p>Choisissez votre moyen de paiement. KKiaPay prend en charge la transaction dans son interface sécurisée.</p>
+                <span>Commande {{ $order->reference }}</span>
+                <h1>Payer ma commande</h1>
+                <p>
+                    {{ $order->fullName() }} · {{ $order->email }}
+                    @if($order->phone) · {{ $order->phone }} @endif
+                </p>
             </div>
             @if($kkiapaySandbox)
                 <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Sandbox</span>
@@ -19,30 +22,20 @@
 
         <div class="kkiapay-checkout-layout">
             <aside class="kkiapay-order-card">
-                <div class="kkiapay-order-cover">
-                    <img src="{{ $book->cover_image
-                        ? asset('storage/'.$book->cover_image)
-                        : asset('assets/images/book/01.jpg') }}"
-                         alt="Couverture de {{ $book->title }}">
-                    <span>
-                        <i class="bi {{ $book->type === 'audio' ? 'bi-headphones' : 'bi-file-earmark-text' }}"></i>
-                        {{ $book->type === 'audio' ? 'Livre audio' : 'Ebook' }}
-                    </span>
-                </div>
-
                 <div class="kkiapay-order-content">
-                    <small>Ouvrage concerné</small>
-                    <h2>{{ $book->title }}</h2>
-                    <div><span>Statut actuel</span><strong>Brouillon</strong></div>
-                    <div><span>Frais d’enregistrement</span><strong>{{ number_format($fee->amount, 0, ',', ' ') }} FCFA</strong></div>
-                    <div class="total"><span>Total à payer</span><strong>{{ number_format($fee->amount, 0, ',', ' ') }} FCFA</strong></div>
+                    <small>Articles</small>
+                    <h2>{{ $order->items->count() }} livre(s)</h2>
+                    @foreach($order->items as $item)
+                        <div>
+                            <span>{{ $item->title }}</span>
+                            <strong>{{ number_format($item->unit_price, 0, ',', ' ') }} FCFA</strong>
+                        </div>
+                    @endforeach
+                    <div class="total">
+                        <span>Total à payer</span>
+                        <strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong>
+                    </div>
                 </div>
-
-                {{-- <ol class="kkiapay-order-steps">
-                    <li class="done"><span><i class="bi bi-check-lg"></i></span><div><strong>Livre enregistré</strong><small>Brouillon créé</small></div></li>
-                    <li class="active"><span>2</span><div><strong>Paiement</strong><small>Étape actuelle</small></div></li>
-                    <li><span>3</span><div><strong>Validation éditoriale</strong><small>Après paiement confirmé</small></div></li>
-                </ol> --}}
             </aside>
 
             <section class="kkiapay-payment-card">
@@ -59,7 +52,7 @@
                         <i class="bi bi-exclamation-triangle"></i>
                         <div>
                             <strong>KKiaPay n’est pas encore configuré</strong>
-                            <p>Ajoutez les trois clés Sandbox dans le fichier <code>.env</code>, puis rechargez cette page.</p>
+                            <p>Ajoutez les clés KKiaPay dans le fichier <code>.env</code>, puis rechargez cette page.</p>
                         </div>
                     </div>
                 @endunless
@@ -81,9 +74,9 @@
                 </div>
 
                 <div class="kkiapay-payment-summary">
-                    <div><span>Montant</span><strong>{{ number_format($fee->amount, 0, ',', ' ') }} FCFA</strong></div>
+                    <div><span>Montant</span><strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong></div>
                     <div><span>Frais KaMa supplémentaires</span><strong>0 FCFA</strong></div>
-                    <div class="total"><span>Total maintenant</span><strong>{{ number_format($fee->amount, 0, ',', ' ') }} FCFA</strong></div>
+                    <div class="total"><span>Total maintenant</span><strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong></div>
                 </div>
 
                 <div id="kkiapayPaymentFeedback" class="kkiapay-payment-feedback d-none" role="alert"></div>
@@ -93,7 +86,7 @@
                         class="kkiapay-pay-button"
                         @disabled(! $kkiapayConfigured)>
                     <span><i class="bi bi-lock-fill"></i> Payer avec KKiaPay</span>
-                    <strong>{{ number_format($fee->amount, 0, ',', ' ') }} FCFA</strong>
+                    <strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong>
                 </button>
 
                 <button type="button"
@@ -140,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showFeedback('Paiement reçu. Vérification sécurisée en cours…', 'loading');
 
         try {
-            const response = await fetch(@json(route('books.payment.publication.verify', $book)), {
+            const response = await fetch(@json(route('checkout.verify', $order)), {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -179,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         feedback.classList.add('d-none');
 
         try {
-            const response = await fetch(@json(route('books.payment.publication', $book)), {
+            const response = await fetch(@json(route('checkout.pay', $order)), {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -204,12 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 theme: '#b30000',
                 paymentmethod: method,
                 partnerId: result.payment.reference,
-                name: @json(trim(auth()->user()->firstname.' '.auth()->user()->lastname)),
-                email: @json(auth()->user()->email),
-                phone: @json(auth()->user()->phone),
+                name: result.customer.name,
+                email: result.customer.email,
+                phone: result.customer.phone,
                 data: {
-                    book_id: @json($book->id),
-                    reference: result.payment.reference,
+                    order_reference: result.payment.reference,
                 },
             });
         } catch (error) {
