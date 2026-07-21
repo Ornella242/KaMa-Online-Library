@@ -36068,12 +36068,6 @@ BOOK SHOW
     align-items: center;
 
     gap: 20px;
-.kama-header{
-
-    position:relative;
-    background:white;
-    box-shadow:0 8px 30px rgba(0,0,0,.06);
-    z-index:1030;
 
 }
 
@@ -36085,7 +36079,7 @@ BOOK SHOW
    LOGO
 ===================================== */
 
-.kama-logo-wrapper{
+.kama-logo-wrapper {
 
     display:flex;
 
@@ -36280,15 +36274,12 @@ BOOK SHOW
     font-size:14px;
 
     color:#333;
-    border-radius:20px;
-    box-shadow:0 20px 50px rgba(0,0,0,.15);
-    z-index:1040;
 
 }
 
 
 
-.kama-mega-menu h6{
+.kama-search input::placeholder {
 
     color:#999;
 
