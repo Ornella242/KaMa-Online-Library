@@ -9,6 +9,7 @@ use App\Models\BookSponsorship;
 use App\Models\User;
 use App\Models\Review;
 use App\Models\Category;
+use App\Models\FaqCategory;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -121,5 +122,19 @@ class HomeController extends Controller
     public function about()
     {
          return view('home.about');
+    }
+
+    public function faq()
+    {
+         $categories = FaqCategory::with([
+            'faqs'=>function($q){
+                $q->where('status',true)
+                ->orderBy('order');
+            }
+        ])
+        ->orderBy('order')
+        ->get();
+
+        return view('home.faq',compact('categories'));
     }
 }

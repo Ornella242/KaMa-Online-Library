@@ -23,11 +23,11 @@
 					Catalogue
 				</a>
 
-				<a href="{{ route('about') }}">
+				<a href="{{ route('about') }}" class="{{ request()->is('about') ? 'active':'' }}">
 					A propos
 				</a>
 
-				<a href="#">
+				<a href="{{ route('faq') }}" class="{{ request()->is('faq') ? 'active':'' }}">
 					FAQ
 				</a>
 			</nav>

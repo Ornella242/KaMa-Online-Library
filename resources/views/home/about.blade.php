@@ -52,7 +52,7 @@
 
                     <div class="image-card-main">
 
-                        <img src="{{ asset('assets/images/africa.jpg') }}"
+                        <img src="{{ asset('assets/images/KaMa.png') }}"
                              alt="KaMa">
 
                     </div>
@@ -81,15 +81,6 @@
                         </h2>
                     </div>
                 </div>
-
-                {{-- <p>
-                    KaMa est née d'une ambition simple :
-                    rendre les livres africains plus accessibles
-                    tout en offrant aux écrivains africains une plateforme
-                    pour partager leurs créations avec le monde.
-                </p> --}}
-
-
             </div>
 
 
@@ -209,210 +200,213 @@
     </div>
 
     <!-- HOW KAMA WORKS -->
-<section class="kama-how-section">
+    <div class="kama-how-section">
 
-    <div class="container">
+        <div class="container">
 
-        <!-- HEADER -->
-        <div class="kama-section-heading">
+            <!-- HEADER -->
+            <div class="kama-section-heading">
 
-            <span>
-                <i class="bi bi-lightbulb"></i>
-                Comment ça marche ?
-            </span>
+                <span>
+                    <i class="bi bi-lightbulb"></i>
+                    Comment ça marche ?
+                </span>
 
-            <h2>
-                Une expérience simple pour
-                <strong>lecteurs</strong> et
-                <strong>écrivains</strong>
-            </h2>
+                <h2>
+                    Une expérience simple pour
+                    <strong>lecteurs</strong> et
+                    <strong>écrivains</strong>
+                </h2>
 
-            <p>
-                KaMa facilite la découverte, la lecture et la publication
-                des histoires africaines grâce à une plateforme pensée
-                pour tous.
-            </p>
-
-        </div>
-
-
-
-        <div class="kama-process-grid">
-
-
-            <!-- LECTEURS -->
-            <div class="kama-process-card">
-
-                <div class="process-header">
-
-                    <div class="process-icon reader">
-                        <i class="bi bi-book-half"></i>
-                    </div>
-
-                    <h3>
-                        Pour les lecteurs
-                    </h3>
-
-                </div>
-
-
-                <div class="process-steps">
-
-
-                    <div class="process-step">
-
-                        <span>1</span>
-
-                        <div>
-                            <h4>Découvrez</h4>
-                            <p>
-                                Explorez un catalogue riche en livres
-                                africains de différents genres.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="process-step">
-
-                        <span>2</span>
-
-                        <div>
-                            <h4>Feuilletez</h4>
-                            <p>
-                                Consultez un aperçu avant de choisir
-                                votre prochaine lecture.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="process-step">
-
-                        <span>3</span>
-
-                        <div>
-                            <h4>Achetez</h4>
-                            <p>
-                                Accédez facilement à vos livres numériques.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="process-step">
-
-                        <span>4</span>
-
-                        <div>
-                            <h4>Lisez partout</h4>
-                            <p>
-                                Retrouvez vos ouvrages à tout moment.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                </div>
+                <p>
+                    KaMa facilite la découverte, la lecture et la publication
+                    des oeuvres africaines grâce à une plateforme pensée
+                    pour tous.
+                </p>
 
             </div>
 
 
 
+            <div class="kama-process-grid">
 
 
+                <!-- LECTEURS -->
+                <div class="kama-process-card">
 
-            <!-- AUTEURS -->
-            <div class="kama-process-card">
+                    <div class="process-header">
 
-                <div class="process-header">
+                        <div class="process-icon reader">
+                            <i class="bi bi-book-half"></i>
+                        </div>
 
-                    <div class="process-icon author">
-                        <i class="bi bi-pen"></i>
+                        <h3>
+                            Pour les lecteurs
+                        </h3>
+
                     </div>
 
-                    <h3>
-                        Pour les écrivains
-                    </h3>
+
+                    <div class="process-steps">
+
+
+                        <div class="process-step">
+
+                            <span>1</span>
+
+                            <div>
+                                <h4>Découvrez</h4>
+                                <p>
+                                    Explorez un catalogue riche en livres
+                                    africains de différents genres.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="process-step">
+
+                            <span>2</span>
+
+                            <div>
+                                <h4>Feuilletez</h4>
+                                <p>
+                                    Consultez un aperçu avant de choisir
+                                    votre prochaine lecture.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="process-step">
+
+                            <span>3</span>
+
+                            <div>
+                                <h4>Achetez</h4>
+                                <p>
+                                    Accédez facilement à vos livres numériques.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="process-step">
+
+                            <span>4</span>
+
+                            <div>
+                                <h4>Lisez partout</h4>
+                                <p>
+                                    Retrouvez vos ouvrages à tout moment.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                    </div>
 
                 </div>
 
 
 
-                <div class="process-steps">
 
 
-                    <div class="process-step">
 
-                        <span>1</span>
+                <!-- AUTEURS -->
+                <div class="kama-process-card">
 
-                        <div>
-                            <h4>Créez votre espace</h4>
-                            <p>
-                                Inscrivez-vous et présentez votre profil auteur.
-                            </p>
+                    <div class="process-header">
+
+                        <div class="process-icon author">
+                            <i class="bi bi-pen"></i>
                         </div>
+
+                        <h3>
+                            Pour les écrivains
+                        </h3>
 
                     </div>
 
 
 
-                    <div class="process-step">
+                    <div class="process-steps">
 
-                        <span>2</span>
 
-                        <div>
-                            <h4>Publiez votre livre</h4>
-                            <p>
-                                Ajoutez votre œuvre et partagez votre histoire.
-                            </p>
+                        <div class="process-step">
+
+                            <span>1</span>
+
+                            <div>
+                                <h4>Créez votre espace</h4>
+                                <p>
+                                    Inscrivez-vous et présentez votre profil auteur.
+                                </p>
+                            </div>
+
                         </div>
 
-                    </div>
 
 
+                        <div class="process-step">
 
-                    <div class="process-step">
+                            <span>2</span>
 
-                        <span>3</span>
+                            <div>
+                                <h4>Publiez votre livre</h4>
+                                <p>
+                                    Ajoutez votre œuvre et partagez votre histoire.
+                                </p>
+                            </div>
 
-                        <div>
-                            <h4>Atteignez vos lecteurs</h4>
-                            <p>
-                                Rendez votre livre visible auprès d'une communauté.
-                            </p>
                         </div>
 
-                    </div>
 
 
+                        <div class="process-step">
 
-                    <div class="process-step">
+                            <span>3</span>
 
-                        <span>4</span>
+                            <div>
+                                <h4>Atteignez vos lecteurs</h4>
+                                <p>
+                                    Rendez votre livre visible auprès d'une communauté.
+                                </p>
+                            </div>
 
-                        <div>
-                            <h4>Développez votre audience</h4>
-                            <p>
-                                Construisez votre présence sur KaMa.
-                            </p>
                         </div>
+
+
+
+                        <div class="process-step">
+
+                            <span>4</span>
+
+                            <div>
+                                <h4>Développez votre audience</h4>
+                                <p>
+                                    Construisez votre présence sur KaMa.
+                                </p>
+                            </div>
+
+                        </div>
+
 
                     </div>
 
 
                 </div>
+
 
 
             </div>
-
 
 
         </div>
@@ -420,6 +414,262 @@
 
     </div>
 
+
+    <!-- WHY KAMA -->
+    <div class="kama-why-section">
+
+        <div class="container">
+
+            <div class="kama-why-header">
+
+                <span>
+                    <i class="bi bi-stars"></i>
+                    Pourquoi KaMa ?
+                </span>
+
+                <h2>
+                    Une plateforme pensée pour
+                    <strong>valoriser les histoires africaines</strong>
+                </h2>
+
+                <p>
+                    KaMa offre un espace unique où les lecteurs découvrent
+                    de nouvelles histoires et où les auteurs peuvent partager
+                    leurs œuvres avec le monde.
+                </p>
+
+            </div>
+
+
+
+            <div class="kama-why-grid">
+
+
+                <!-- CARD 1 -->
+
+                <div class="kama-why-card">
+
+                    <div class="why-icon">
+
+                        <i class="bi bi-book-half"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Des oeuvres africaines
+                    </h3>
+
+
+                    <p>
+                        Explorez une sélection de livres mettant en avant
+                        les cultures, les imaginaires et les talents africains.
+                    </p>
+
+                </div>
+
+
+
+
+                <!-- CARD 2 -->
+
+                <div class="kama-why-card">
+
+                    <div class="why-icon">
+
+                        <i class="bi bi-pen"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Un espace pour les auteurs
+                    </h3>
+
+
+                    <p>
+                        Publiez vos créations, développez votre visibilité
+                        et touchez une communauté de lecteurs passionnés.
+                    </p>
+
+                </div>
+
+
+
+
+
+                <!-- CARD 3 -->
+
+                <div class="kama-why-card">
+
+                    <div class="why-icon">
+
+                        <i class="bi bi-phone"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Accessible partout
+                    </h3>
+
+
+                    <p>
+                        Profitez de vos lectures depuis votre téléphone,
+                        tablette ou ordinateur, où que vous soyez.
+                    </p>
+
+                </div>
+
+
+
+
+
+                <!-- CARD 4 -->
+
+                <div class="kama-why-card">
+
+                    <div class="why-icon">
+
+                        <i class="bi bi-people"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Une communauté engagée
+                    </h3>
+
+
+                    <p>
+                        Une plateforme qui rapproche lecteurs et écrivains
+                        autour de la passion des livres.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <!-- JOIN KAMA -->
+<section class="kama-join-section">
+
+    <div class="container">
+
+
+        <div class="kama-join-content">
+
+
+            <span class="kama-join-label">
+
+                <i class="bi bi-heart-fill"></i>
+                Rejoignez KaMa
+
+            </span>
+
+
+
+            <h2>
+                Faites partie de l'aventure
+                <span>KaMa</span>
+            </h2>
+
+
+
+            <p>
+                Que vous soyez passionné de lecture ou auteur,
+                KaMa vous ouvre les portes d'un univers dédié
+                aux histoires africaines.
+            </p>
+
+
+
+            <div class="kama-join-cards">
+
+
+                <!-- READER -->
+
+                <div class="kama-join-card">
+
+                    <div class="join-icon">
+
+                        <i class="bi bi-book"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Vous êtes lecteur ?
+                    </h3>
+
+
+                    <p>
+                        Découvrez de nouveaux livres,
+                        explorez des œuvres uniques
+                        et plongez dans la richesse
+                        des imaginaires africains.
+                    </p>
+
+
+                    <a href="{{ route('catalogue') }}">
+
+                        <i class="bi bi-search"></i>
+                        Découvrir les livres
+
+                    </a>
+
+
+                </div>
+
+
+
+
+                <!-- AUTHOR -->
+
+                <div class="kama-join-card">
+
+                    <div class="join-icon">
+
+                        <i class="bi bi-pen"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Vous êtes écrivain ?
+                    </h3>
+
+
+                    <p>
+                        Publiez vos œuvres, partagez
+                        votre univers et faites découvrir
+                        vos livres aux lecteurs.
+                    </p>
+
+
+                    <a href="{{ route('register') }}">
+
+                        <i class="bi bi-pencil-square"></i>
+                        Publier mon livre
+
+                    </a>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
 
 </section>
 </div>

@@ -1286,7 +1286,7 @@ Testimonials START -->
 			</div>
 			
 			<!-- Testimonials -->
-			<div class="row">
+			{{-- <div class="row">
 				<div class="col-md-9 col-xl-7 mx-auto">
 					<!-- Slider START -->
 					<div class="tiny-slider dots-primary">
@@ -1332,10 +1332,10 @@ Testimonials START -->
 					</div>	
 					<!-- Slider END -->	
 				</div>
-			</div>
+			</div> --}}
 
             {{-- Code donnees reelles --}}
-            {{-- <div class="row">
+            <div class="row">
                 <div class="col-md-9 col-xl-7 mx-auto">
                     <!-- Slider START -->
                     <div class="tiny-slider dots-primary">
@@ -1435,7 +1435,7 @@ Testimonials START -->
                     </div>
                     <!-- Slider END -->
                 </div>
-            </div> --}}
+            </div>
 		</div>
 	</div>
 </section>

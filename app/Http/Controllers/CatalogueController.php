@@ -103,7 +103,7 @@ class CatalogueController extends Controller
 
         $books = $query
             ->latest()
-            ->paginate(3)
+            ->paginate(6)
             ->withQueryString();
 
         $authors = User::whereHas('books', function($query){

@@ -133,7 +133,7 @@ CATALOG HERO START
             <div class="catalog-stat-item">
                 <i class="bi bi-globe"></i>
                 <div>
-                    <strong>54</strong>
+                    <strong>{{ $representedCountries }}</strong>
                     <span>Pays représentés</span>
                 </div>
             </div>

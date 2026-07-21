@@ -24,7 +24,9 @@ class DatabaseSeeder extends Seeder
                 RoleSeeder::class,
                 CategorySeeder::class,
                 WalletSeeder::class,
-                SponsorshipPlanSeeder::class
+                SponsorshipPlanSeeder::class,
+                FaqCategorySeeder::class,
+                FaqSeeder::class,
             ]);
     }
 }

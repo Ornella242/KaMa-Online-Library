@@ -45977,19 +45977,22 @@ font-size:13px;
 /* =====================================
    HOW KAMA WORKS SECTION
 ===================================== */
+.kama-how-section .container {
+
+    max-width: 1400px;
+
+}
 
 .kama-how-section {
 
-    padding: 90px 0;
+    padding: 10px 0;
     background: #faf8f6;
 
 }
 
 
 
-/* =====================================
-   SECTION HEADER
-===================================== */
+/* SECTION HEADER */
 
 
 .kama-how-section .kama-section-heading {
@@ -46168,9 +46171,9 @@ font-size:13px;
 
 .process-icon.author {
 
-    background:#f4f0ff;
+    background:#fff1f1;
 
-    color:#6b4eff;
+    color:#b30000;
 
 }
 
@@ -46474,10 +46477,1088 @@ font-size:13px;
 
 
 
+/* WHY KAMA SECTION */
+
+.kama-why-section {
+    padding:30px 0;
+    background:#fff;
+}
+
+/* HEADER */
+.kama-why-header {
+    max-width:850px;
+    margin:0 auto 60px;
+    text-align:center;
+}
+
+
+.kama-why-header span {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#b30000;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    margin-bottom:15px;
+
+}
+
+
+
+.kama-why-header h2 {
+
+    font-size:38px;
+
+    line-height:1.3;
+
+    font-weight:800;
+
+    color:#222;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.kama-why-header h2 strong {
+
+    color:#b30000;
+
+}
+
+
+
+.kama-why-header p {
+
+    color:#666;
+
+    font-size:17px;
+
+    line-height:1.7;
+
+}
 
 
 
 
+
+/* GRID */
+
+.kama-why-grid {
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:25px;
+
+}
+
+
+
+
+
+/* CARD */
+
+.kama-why-card {
+
+    background:#faf8f6;
+
+    padding:35px 25px;
+
+    border-radius:25px;
+
+    text-align:center;
+
+    border:1px solid #f0eeee;
+
+    transition:.35s ease;
+
+}
+
+
+
+.kama-why-card:hover {
+
+    transform:translateY(-8px);
+
+    box-shadow:
+    0 20px 45px rgba(0,0,0,.08);
+
+}
+
+
+
+
+
+/* ICON */
+
+.why-icon {
+
+    width:75px;
+
+    height:75px;
+
+    border-radius:50%;
+
+    margin:0 auto 25px;
+
+    background:#fff1f1;
+
+    color:#b30000;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:32px;
+
+}
+
+
+
+
+
+/* TEXT */
+
+
+.kama-why-card h3 {
+
+    font-size:20px;
+
+    font-weight:750;
+
+    color:#222;
+
+    margin-bottom:15px;
+
+}
+
+
+
+.kama-why-card p {
+
+    font-size:15px;
+
+    line-height:1.7;
+
+    color:#666;
+
+    margin:0;
+
+}
+
+
+
+
+
+/* =====================================
+   TABLET
+===================================== */
+
+
+@media(max-width:992px){
+
+
+    .kama-why-section {
+
+        padding:70px 0;
+
+    }
+
+
+    .kama-why-grid {
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+
+    .kama-why-header h2 {
+
+        font-size:32px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+
+@media(max-width:576px){
+
+
+    .kama-why-section {
+
+        padding:50px 15px;
+
+    }
+
+
+
+    .kama-why-header {
+
+        margin-bottom:40px;
+
+    }
+
+
+
+    .kama-why-header h2 {
+
+        font-size:25px;
+
+    }
+
+
+
+    .kama-why-header p {
+
+        font-size:15px;
+
+    }
+
+
+
+    .kama-why-grid {
+
+        grid-template-columns:1fr;
+
+        gap:20px;
+
+    }
+
+
+
+    .kama-why-card {
+
+        padding:30px 20px;
+
+    }
+
+
+
+}
+
+
+/* =====================================
+   JOIN KAMA SECTION
+===================================== */
+
+
+.kama-join-section {
+
+    padding:90px 0;
+
+    background:#8f1d1d;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+
+
+/* subtle decoration */
+
+.kama-join-section::before {
+
+    content:"";
+
+    position:absolute;
+
+    width:350px;
+
+    height:350px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.08);
+
+    top:-120px;
+
+    right:-120px;
+
+}
+
+
+
+
+.kama-join-content {
+
+    position:relative;
+
+    text-align:center;
+
+    color:#fff;
+
+}
+
+
+
+.kama-join-label {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    margin-bottom:15px;
+
+    opacity:.9;
+
+}
+
+
+
+
+.kama-join-content h2 {
+
+    font-size:42px;
+
+    font-weight:800;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.kama-join-content h2 span {
+
+    color:#ffd6d6;
+
+}
+
+
+
+
+.kama-join-content > p {
+
+    max-width:700px;
+
+    margin:0 auto 55px;
+
+    font-size:17px;
+
+    line-height:1.7;
+
+    opacity:.95;
+
+}
+
+
+
+
+
+/* CARDS */
+
+
+.kama-join-cards {
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:40px;
+
+    width:100%;
+
+    max-width:1200px;
+
+    margin:0 auto;
+
+}
+
+
+
+
+
+.kama-join-card {
+
+    background:#fff;
+
+    color:#222;
+
+    padding:40px 35px;
+
+    border-radius:25px;
+
+    transition:.35s ease;
+
+}
+
+
+
+
+.kama-join-card:hover {
+
+    transform:translateY(-10px);
+
+    box-shadow:
+    0 25px 50px rgba(0,0,0,.2);
+
+}
+
+
+
+
+.join-icon {
+
+    width:75px;
+
+    height:75px;
+
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:#fff1f1;
+
+    color:#b30000;
+
+    font-size:32px;
+
+}
+
+
+
+
+
+.kama-join-card h3 {
+
+    font-size:23px;
+
+    font-weight:750;
+
+    margin-bottom:15px;
+
+}
+
+
+
+
+.kama-join-card p {
+
+    color:#666;
+
+    line-height:1.7;
+
+    font-size:15px;
+
+    margin-bottom:25px;
+
+}
+
+
+
+
+
+.kama-join-card a {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    background:#b30000;
+
+    color:#fff;
+
+    padding:13px 25px;
+
+    border-radius:30px;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+
+
+.kama-join-card a:hover {
+
+    background:#8f0000;
+
+}
+
+
+
+
+
+
+/* =====================================
+   TABLET
+===================================== */
+
+
+@media(max-width:992px){
+
+
+    .kama-join-content h2 {
+
+        font-size:34px;
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+
+@media(max-width:576px){
+
+
+    .kama-join-section {
+
+        padding:60px 15px;
+
+    }
+
+
+
+    .kama-join-content h2 {
+
+        font-size:27px;
+
+    }
+
+
+
+    .kama-join-content > p {
+
+        font-size:15px;
+
+        margin-bottom:35px;
+
+    }
+
+
+
+
+    .kama-join-cards {
+
+        grid-template-columns:1fr;
+
+        gap:20px;
+
+    }
+
+
+
+    .kama-join-card {
+
+        padding:30px 20px;
+
+    }
+
+
+
+}
+
+
+
+/* =====================================
+   FAQ PAGE
+===================================== */
+
+.kama-faq-page {
+
+    background:#fff;
+
+}
+
+
+
+/* =====================================
+   HERO FAQ
+===================================== */
+
+
+.kama-faq-hero {
+    padding:80px 0;
+    background:
+    linear-gradient(
+        135deg,
+        #faf3ee,
+        #ffffff
+    );
+
+
+}
+
+
+
+.kama-faq-hero span {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#b30000;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    margin-bottom:15px;
+
+}
+
+
+
+.kama-faq-hero h1 {
+
+    font-size:42px;
+
+    font-weight:800;
+
+    color:#222;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.kama-faq-hero p {
+
+    max-width:700px;
+
+
+    color:#666;
+
+    font-size:17px;
+
+    line-height:1.7;
+
+}
+
+
+
+
+
+/* =====================================
+   FAQ SECTION
+===================================== */
+
+
+.kama-faq-section {
+
+    padding:90px 0;
+
+    background:#fff;
+
+}
+
+
+
+.kama-faq-section .container {
+
+    max-width:1200px;
+
+}
+
+
+
+
+.kama-faq-layout {
+
+    display:grid;
+
+    grid-template-columns:280px 1fr;
+
+    gap:50px;
+
+    align-items:start;
+
+}
+
+
+
+
+
+/* =====================================
+   CATEGORIES
+===================================== */
+
+
+.kama-faq-categories {
+
+    background:#faf8f6;
+
+    border-radius:20px;
+
+    padding:25px;
+
+    position:sticky;
+
+    top:30px;
+
+}
+
+
+
+.kama-faq-categories h3 {
+
+    font-size:20px;
+
+    font-weight:700;
+
+    margin-bottom:25px;
+
+    color:#222;
+
+}
+
+
+
+
+.faq-category {
+
+    width:100%;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:15px 18px;
+
+    margin-bottom:12px;
+
+    border:none;
+
+    background:#fff;
+
+    border-radius:12px;
+
+    color:#444;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    text-align:left;
+
+}
+
+
+
+.faq-category i {
+
+    font-size:20px;
+
+    color:#b30000;
+
+}
+
+
+
+.faq-category:hover {
+
+    transform:translateX(5px);
+
+    color:#b30000;
+
+}
+
+
+
+.faq-category.active {
+
+    background:#b30000;
+
+    color:#fff;
+
+}
+
+
+
+.faq-category.active i {
+
+    color:#fff;
+
+}
+
+
+
+
+
+/* =====================================
+   FAQ CONTENT
+===================================== */
+
+
+.kama-faq-content {
+
+    width:100%;
+
+}
+
+
+
+.faq-group {
+
+    display:none;
+
+}
+
+
+
+.faq-group.active {
+
+    display:block;
+
+}
+
+
+
+
+
+/* ACCORDION */
+
+.kama-faq-content .accordion-item {
+
+    border:none;
+
+    margin-bottom:18px;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.06);
+
+}
+
+
+
+.kama-faq-content .accordion-button {
+
+    padding:22px;
+
+    background:#fff;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    color:#222;
+
+}
+
+
+
+.kama-faq-content .accordion-button:not(.collapsed) {
+
+    background:#fff5f5;
+
+    color:#b30000;
+
+    box-shadow:none;
+
+}
+
+
+
+.kama-faq-content .accordion-button:focus {
+
+    box-shadow:none;
+
+}
+
+
+
+.kama-faq-content .accordion-body {
+
+    padding:22px;
+
+    color:#666;
+
+    line-height:1.7;
+
+    background:#fff;
+
+}
+
+
+
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+
+@media(max-width:991px){
+
+
+    .kama-faq-hero {
+
+        padding:60px 20px;
+
+    }
+
+
+    .kama-faq-hero h1 {
+
+        font-size:32px;
+
+    }
+
+
+
+    .kama-faq-section {
+
+        padding:50px 15px;
+
+    }
+
+
+
+    .kama-faq-layout {
+
+        grid-template-columns:1fr;
+
+        gap:30px;
+
+    }
+
+
+
+    .kama-faq-categories {
+
+        position:relative;
+
+        top:auto;
+
+        display:flex;
+
+        gap:12px;
+
+        padding:15px;
+
+        overflow-x:auto;
+
+    }
+
+
+
+    .kama-faq-categories h3 {
+
+        display:none;
+
+    }
+
+
+
+    .faq-category {
+
+        min-width:160px;
+
+        margin:0;
+
+        justify-content:center;
+
+        white-space:nowrap;
+
+    }
+
+
+}
+
+
+
+@media(max-width:576px){
+
+
+    .kama-faq-hero h1 {
+
+        font-size:26px;
+
+    }
+
+
+
+    .kama-faq-hero p {
+
+        font-size:15px;
+
+    }
+
+
+
+    .kama-faq-content .accordion-button {
+
+        font-size:15px;
+
+        padding:18px;
+
+    }
+
+
+
+    .kama-faq-content .accordion-body {
+
+        padding:18px;
+
+        font-size:14px;
+
+    }
+
+
+}
 
 
 

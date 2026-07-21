@@ -85,18 +85,6 @@ Footer START -->
                                 </a>
                             </li>
 
-                            <li>
-                                <a href="#">
-                                    Nouveautés
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="#">
-                                    Livres populaires
-                                </a>
-                            </li>
-
                         </ul>
 
                     </div>
@@ -115,32 +103,24 @@ Footer START -->
                         <ul>
 
                             <li>
-                                <a href="#">
+                                <a href="{{ route('register') }}">
                                     Devenir auteur
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#">
+                                <a href="{{ route('register') }}">
                                     Publier un livre
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#">
+                                <a href="{{ route('register') }}">
                                     Espace écrivain
                                 </a>
                             </li>
-
-
                         </ul>
-
-
                     </div>
-
-
-
-
 
                     <!-- ABOUT -->
                     <div class="col-6 col-md-3">
@@ -153,7 +133,7 @@ Footer START -->
                         <ul>
 
                             <li>
-                                <a href="#">
+                                <a href="{{ route('about') }}">
                                     À propos
                                 </a>
                             </li>
@@ -165,17 +145,10 @@ Footer START -->
                             </li>
 
                             <li>
-                                <a href="#">
+                                <a href="{{ route('faq') }}">
                                     FAQ
                                 </a>
                             </li>
-
-                            <li>
-                                <a href="#">
-                                    Blog
-                                </a>
-                            </li>
-
 
                         </ul>
 
