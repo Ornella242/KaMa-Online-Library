@@ -482,7 +482,7 @@ Steps START -->
 													<div class="row">
 														<div class="col-md-6">
 															<label class="form-label">
-																Première page
+																Première page *
 															</label>
 
 															<input
@@ -490,12 +490,13 @@ Steps START -->
 																name="preview_start_page"
 																id="previewStartPage"
 																min="1"
-																class="form-control">
+																class="form-control"
+																placeholder="Ex: 1">
 														</div>
 
 														<div class="col-md-6">
 															<label class="form-label">
-																Dernière page
+																Dernière page *
 															</label>
 
 															<input
@@ -503,7 +504,8 @@ Steps START -->
 																name="preview_end_page"
 																id="previewEndPage"
 																min="1"
-																class="form-control">
+																class="form-control"
+																placeholder="Ex: 5">
 														</div>
 													</div>
 
@@ -513,7 +515,6 @@ Steps START -->
 													<small class="text-danger d-none" id="pagesPreviewError">
 														L'écart entre la première et la dernière page ne doit pas dépasser 5 pages.
 													</small>
-
 												</div>
 												
 											</div>
@@ -1210,6 +1211,10 @@ Steps END -->
 		step3trigger.style.pointerEvents = '';
 		step3trigger.style.opacity = '';
 
+		if (typeof updateBookSummary === 'function') {
+			updateBookSummary();
+		}
+
 		document.querySelector('.next-btn').click();
 	});
 })();
@@ -1244,6 +1249,8 @@ const pagesPreviewError = document.getElementById('pagesPreviewError');
 const pagesPreviewHint = document.getElementById('pagesPreviewHint');
 
 function validatePreviewPages() {
+    if (!previewStartPage || !previewEndPage) return true;
+
     const start = parseInt(previewStartPage.value);
     const end = parseInt(previewEndPage.value);
 
@@ -1278,5 +1285,120 @@ if (previewStartPage && previewEndPage) {
 }
 
 
+</script>
+
+<script>
+(function () {
+    const setText = (id, value, fallback) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value || fallback;
+    };
+
+    window.updateFileSummary = function (file) {
+        if (!file) return;
+        setText('summary_file_name', file.name, 'Aucun fichier sélectionné');
+        setText('summary_file_type', (file.name.split('.').pop() || '').toUpperCase(), 'Format');
+        setText('summary_file_size', (file.size / 1024 / 1024).toFixed(2) + ' MB', 'Taille');
+        const status = document.getElementById('summary_file_status');
+        if (status) {
+            status.innerHTML = '<i class="bi bi-check-circle-fill"></i> Prêt';
+        }
+    };
+
+    window.updateBookSummary = function () {
+        const title = document.querySelector('[name="title"]')?.value;
+        setText('summary_title', title, 'Titre du livre');
+
+        const category = document.querySelector('[name="category_id"]');
+        if (category) {
+            setText(
+                'summary_category',
+                category.options[category.selectedIndex]?.text,
+                'Catégorie'
+            );
+        }
+
+        const subcategory = document.querySelector('[name="subcategory_id"]');
+        if (subcategory) {
+            setText(
+                'summary_subcategory',
+                subcategory.options[subcategory.selectedIndex]?.text,
+                'Sous-catégorie'
+            );
+        }
+
+        const language = document.querySelector('[name="language"]')?.value;
+        setText('summary_language', language, 'Langue');
+
+        const type = document.querySelector('[name="type"]:checked');
+        setText(
+            'summary_type',
+            type ? (type.value === 'ebook' ? 'Ebook' : 'Livre audio') : null,
+            'Type'
+        );
+
+        const price = document.querySelector('[name="price"]')?.value;
+        setText(
+            'summary_price',
+            price ? Number(price).toLocaleString('fr-FR') + ' FCFA' : null,
+            '0 FCFA'
+        );
+
+        const pagesInput = document.getElementById('pagesInput');
+        const durationInput = document.getElementById('durationInput');
+        const summaryPagesBox = document.getElementById('summary_pages_box');
+        const summaryDurationBox = document.getElementById('summary_duration_box');
+        const isAudio = type?.value === 'audio';
+
+        if (summaryPagesBox) summaryPagesBox.style.display = isAudio ? 'none' : 'block';
+        if (summaryDurationBox) summaryDurationBox.style.display = isAudio ? 'block' : 'none';
+        setText('summary_pages', pagesInput?.value, '0');
+        setText('summary_duration', durationInput?.value, '00:00:00');
+
+        const year = document.querySelector('[name="publication_year"]')?.value;
+        setText('summary_year', year, '----');
+
+        const description = document.querySelector('[name="short_description"]')?.value;
+        setText(
+            'summary_short_description',
+            description,
+            'Aucune description disponible.'
+        );
+
+        const cover = document.querySelector('[name="cover_image"]');
+        const summaryCover = document.getElementById('summary_cover');
+        if (cover?.files?.length && summaryCover) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                summaryCover.src = e.target.result;
+            };
+            reader.readAsDataURL(cover.files[0]);
+        }
+
+        const fileInput = document.getElementById('bookFileInput');
+        if (fileInput?.files?.length && typeof updateFileSummary === 'function') {
+            updateFileSummary(fileInput.files[0]);
+        }
+    };
+
+    document.addEventListener('input', (e) => {
+        if (e.target.matches(
+            '[name="title"], [name="price"], [name="pages"], [name="duration"], [name="publication_year"], [name="short_description"]'
+        )) {
+            updateBookSummary();
+        }
+    });
+
+    document.addEventListener('change', (e) => {
+        if (e.target.matches(
+            '[name="category_id"], [name="subcategory_id"], [name="language"], [name="type"], [name="cover_image"], [name="ebook_file"], [name="audio_file"]'
+        )) {
+            updateBookSummary();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', updateBookSummary);
+    updateBookSummary();
+})();
 </script>
 @endsection

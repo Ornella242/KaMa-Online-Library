@@ -132,23 +132,77 @@ document.addEventListener('DOMContentLoaded', () => {
             : 'Sélectionnez le fichier PDF de votre ebook.';
         if (format) format.textContent = audio ? 'MP3 uniquement' : 'PDF uniquement';
 
-        const previewContainer = document.getElementById('previewTypeContainer');
-        const previewType = document.getElementById('preview_type');
-        const textPreview = document.getElementById('textPreview');
-        const pagesPreview = document.getElementById('pagesPreview');
-        previewContainer?.classList.toggle('d-none', audio);
-        if (audio && previewType) previewType.value = 'text';
-        textPreview?.classList.toggle('d-none', !audio && previewType?.value === 'pages');
-        pagesPreview?.classList.toggle('d-none', audio || previewType?.value !== 'pages');
-
         const summaryPagesBox = document.getElementById('summary_pages_box');
         const summaryDurationBox = document.getElementById('summary_duration_box');
         if (summaryPagesBox) summaryPagesBox.style.display = audio ? 'none' : 'block';
         if (summaryDurationBox) summaryDurationBox.style.display = audio ? 'block' : 'none';
+
+        if (typeof window.updatePreviewFields === 'function') {
+            window.updatePreviewFields();
+        }
     };
     typeInputs.forEach((input) => input.addEventListener('change', updateBookType));
-    document.getElementById('preview_type')?.addEventListener('change', updateBookType);
     updateBookType();
+
+    // Type d'aperçu : même logique que le writer (texte vs pages)
+    (function initPreviewFields() {
+        const bookTypes = document.querySelectorAll('input[name="type"]');
+        const previewType = document.getElementById('preview_type');
+        const previewTypeContainer = document.getElementById('previewTypeContainer');
+        const textPreview = document.getElementById('textPreview');
+        const pagesPreview = document.getElementById('pagesPreview');
+        const previewStartPage = document.getElementById('previewStartPage');
+        const previewEndPage = document.getElementById('previewEndPage');
+
+        if (!previewType || !textPreview || !pagesPreview) return;
+
+        window.updatePreviewFields = function updatePreviewFields() {
+            const selectedType = document.querySelector('input[name="type"]:checked');
+            if (!selectedType) return;
+
+            if (selectedType.value === 'audio') {
+                previewTypeContainer?.classList.add('d-none');
+                textPreview.classList.remove('d-none');
+                pagesPreview.classList.add('d-none');
+                previewType.value = 'text';
+                if (previewStartPage) {
+                    previewStartPage.removeAttribute('required');
+                    previewStartPage.value = '';
+                }
+                if (previewEndPage) {
+                    previewEndPage.removeAttribute('required');
+                    previewEndPage.value = '';
+                }
+                return;
+            }
+
+            previewTypeContainer?.classList.remove('d-none');
+
+            if (previewType.value === 'pages') {
+                textPreview.classList.add('d-none');
+                pagesPreview.classList.remove('d-none');
+                previewStartPage?.setAttribute('required', 'required');
+                previewEndPage?.setAttribute('required', 'required');
+            } else {
+                textPreview.classList.remove('d-none');
+                pagesPreview.classList.add('d-none');
+                if (previewStartPage) {
+                    previewStartPage.removeAttribute('required');
+                    previewStartPage.value = '';
+                }
+                if (previewEndPage) {
+                    previewEndPage.removeAttribute('required');
+                    previewEndPage.value = '';
+                }
+            }
+        };
+
+        bookTypes.forEach((type) => {
+            type.addEventListener('change', window.updatePreviewFields);
+        });
+        previewType.addEventListener('change', window.updatePreviewFields);
+        window.updatePreviewFields();
+    })();
 
     const editor = document.querySelector('.quilleditor');
     if (editor && typeof Quill !== 'undefined') {
