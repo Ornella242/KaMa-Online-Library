@@ -37076,6 +37076,97 @@ html, body {
 
 }
 
+/* Avatar */
+.kama-avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    object-fit:cover;
+    cursor:pointer;
+    transition:.3s;
+    border:2px solid #fff;
+}
+
+.kama-avatar:hover{
+    transform:scale(1.05);
+}
+
+/* Bell */
+.kama-icon{
+    width:42px;
+    height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#f8f9fa;
+    color:#333;
+    position:relative;
+    text-decoration:none;
+    transition:.3s;
+}
+
+.kama-icon:hover{
+    background:#ef6c00;
+    color:#fff;
+}
+
+.notification-badge{
+    position:absolute;
+    top:2px;
+    right:2px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:red;
+    color:#fff;
+    font-size:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* Dropdown */
+.profile-dropdown,
+.notification-dropdown{
+    width:320px;
+    border-radius:15px;
+    padding:0;
+    overflow:hidden;
+}
+
+.profile-avatar{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.dropdown-header{
+    padding:20px;
+    background:#fafafa;
+}
+
+.notification-list{
+    max-height:350px;
+    overflow-y:auto;
+}
+
+.notification-item{
+    white-space:normal;
+    padding:15px;
+}
+
+.notification-item:hover{
+    background:#fff5ec;
+}
+
+/* Hover */
+.dropdown:hover>.dropdown-menu{
+    display:block;
+    margin-top:0;
+}
+
 /* Dashboard ecrivain  */
 .author-stat-card {
 

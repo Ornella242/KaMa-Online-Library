@@ -204,34 +204,60 @@ Advertisement END -->
             <!-- ACTIONS -->
             <div class="actions">
 
-
-                <a href="#full-description"
-                class="primary-btn">
-
+                <a href="#full-description" class="primary-btn">
                     <i class="bi bi-book"></i>
-
                     Lire un extrait
-
                 </a>
 
+                @if($alreadyOwned)
+                    <span class="cart-btn owned">
+                        <i class="bi bi-check2-circle"></i>
+                        Déjà acquis
+                    </span>
+                @elseif($isOwner)
+                    <span class="cart-btn owned">
+                        <i class="bi bi-info-circle"></i>
+                        Votre publication
+                    </span>
+                @elseif($inCart)
+                    <a href="{{ route('cart.index') }}" class="cart-btn">
+                        <i class="bi bi-cart-check"></i>
+                        Voir le panier
+                    </a>
+                @else
+                    <form method="POST" action="{{ route('cart.store', $book) }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="cart-btn">
+                            <i class="bi bi-cart"></i>
+                            Ajouter
+                        </button>
+                    </form>
+                @endif
 
-
-                <button class="cart-btn">
-
-                    <i class="bi bi-cart"></i>
-
-                    Ajouter
-
-                </button>
-
-
-
-                <button class="wishlist-btn">
-
-                    <i class="bi bi-heart"></i>
-
-                </button>
-
+                @auth
+                    @unless($isOwner)
+                        @if($inWishlist)
+                            <form method="POST" action="{{ route('wishlist.destroy', $book) }}" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="wishlist-btn active" title="Retirer de la wishlist">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('wishlist.store', $book) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="wishlist-btn" title="Ajouter à la wishlist">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                            </form>
+                        @endif
+                    @endunless
+                @else
+                    <a href="{{ route('login') }}" class="wishlist-btn" title="Connexion pour wishlist">
+                        <i class="bi bi-heart"></i>
+                    </a>
+                @endauth
 
             </div>
 
@@ -337,8 +363,8 @@ Advertisement END -->
                 <div class="col-12 text-center">
                     <span class="section-subtitle"> <i class="bi bi-person"></i>Du même auteur</span>
                     <h2 class="section-title">
-                        Autres livres <span>de  {{ $book->author->firstname }}
-                        {{ $book->author->lastname }}
+                        Autres livres <span>de {{ $book->author->firstname }}
+                        {{ $book->author->lastname }}</span>
                     </h2>
                 </div>
             </div>
@@ -359,88 +385,27 @@ Advertisement END -->
 
                     @foreach($sameAuthorBooks as $sameBook)
                     <!-- Slider item -->
-                        <div>
-                            <div class="same-card">
-                                <div class="same-image">
-                                    <img src="{{ asset('storage/'.$sameBook->cover_image) }}"
-                                        alt="{{ $sameBook->title }}">
-                                </div>
-                                <div class="same-info">
-                                    
-                                    <h4>
-                                        {{ $sameBook->title }}
-                                    </h4>
-                                    <a href="{{ route('books.show',$sameBook) }}"
-                                    class="see-more">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                @elseif($isOwner)
-                                    <span class="owned"><i class="bi bi-info-circle"></i> Votre publication</span>
-                                @elseif($inCart)
-                                    <a href="{{ route('cart.index') }}" class="btn-cart secondary">
-                                        <i class="bi bi-cart-check"></i> Voir le panier
-                                    </a>
-                                @else
-                                    <form method="POST" action="{{ route('cart.store', $book) }}">
-                                        @csrf
-                                        <button type="submit" class="btn-cart">
-                                            <i class="bi bi-cart-plus"></i> Ajouter au panier
-                                        </button>
-                                    </form>
-                                @endif
-
-                                @auth
-                                    @unless($isOwner)
-                                        @if($inWishlist)
-                                            <form method="POST" action="{{ route('wishlist.destroy', $book) }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn-wishlist active" title="Retirer de la wishlist">
-                                                    <i class="bi bi-heart-fill"></i>
-                                                </button>
-                                            </form>
-                                        @else
-                                            <form method="POST" action="{{ route('wishlist.store', $book) }}">
-                                                @csrf
-                                                <button type="submit" class="btn-wishlist" title="Ajouter à la wishlist">
-                                                    <i class="bi bi-heart"></i>
-                                                </button>
-                                            </form>
-                                        @endif
-                                    @endunless
-                                @else
-                                    <a href="{{ route('login') }}" class="btn-wishlist" title="Connexion pour wishlist">
-                                        <i class="bi bi-heart"></i>
-                                    </a>
-                                @endauth
+                    <div>
+                        <div class="same-card">
+                            <div class="same-image">
+                                <img src="{{ asset('storage/'.$sameBook->cover_image) }}"
+                                    alt="{{ $sameBook->title }}">
                             </div>
-                            @unless($alreadyOwned || $isOwner)
-                                <p class="buy-guest-hint">Achat possible sans créer de compte — paiement par carte via KKiaPay.</p>
-                            @endunless
+                            <div class="same-info">
+                                <h4>
+                                    {{ $sameBook->title }}
+                                </h4>
+                                <a href="{{ route('books.show',$sameBook) }}"
+                                  class="see-more">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
                         </div>
+                    </div>
                     @endforeach
                 </div>
             </div>
-
-
-            @if($sameAuthorBooks->isNotEmpty())
-                <section class="book-detail-section">
-                    <header>
-                        <h2>Du même auteur</h2>
-                        <p>Autres ouvrages de {{ $book->author?->firstname }} {{ $book->author?->lastname }}</p>
-                    </header>
-                    <div class="book-detail-related">
-                        @foreach($sameAuthorBooks as $sameBook)
-                            <a href="{{ route('books.show', $sameBook) }}" class="related-card">
-                                <img src="{{ asset('storage/' . $sameBook->cover_image) }}" alt="">
-                                <strong>{{ $sameBook->title }}</strong>
-                                <small>{{ number_format($sameBook->price, 0, ',', ' ') }} XOF</small>
-                            </a>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
+            <!-- Slider END -->
         </div>
 </section>
 
@@ -517,7 +482,7 @@ Advertisement END -->
             </p>
 
             @auth
-                <a href="#"
+                <a href="#avis-form"
                    class="review-btn">
                     Donner mon avis
                 </a>

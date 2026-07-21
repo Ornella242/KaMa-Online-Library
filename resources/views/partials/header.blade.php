@@ -74,20 +74,133 @@
 
 
 
-				<a href="#"
-				class="kama-icon">
+				<!-- Notifications -->
+<div class="dropdown">
+    <a href="#"
+        class="kama-icon"
+        id="notificationDropdown"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
 
-					<i class="bi bi-bell"></i>
+        <i class="bi bi-bell"></i>
 
-				</a>
+        @if(auth()->user()->unreadNotifications->count())
+            <span class="notification-badge">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+        @endif
+    </a>
+
+    <div class="dropdown-menu dropdown-menu-end notification-dropdown shadow border-0">
+
+        <div class="dropdown-header d-flex justify-content-between align-items-center">
+            <strong>Notifications</strong>
+            <small>{{ auth()->user()->unreadNotifications->count() }}</small>
+        </div>
+
+        <div class="notification-list">
+
+            @forelse(auth()->user()->notifications->take(5) as $notification)
+
+                <a href="{{ $notification->data['url'] ?? '#' }}"
+                    class="dropdown-item notification-item">
+
+                    <div class="fw-semibold">
+                        {{ $notification->data['title'] ?? 'Notification' }}
+                    </div>
+
+                    <small class="text-muted">
+                        {{ $notification->data['message'] ?? '' }}
+                    </small>
+
+                    <div class="small text-secondary mt-1">
+                        {{ $notification->created_at->diffForHumans() }}
+                    </div>
+
+                </a>
+
+            @empty
+
+                <div class="dropdown-item text-center text-muted py-3">
+                    Aucune notification
+                </div>
+
+            @endforelse
+
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <a href="{{ route('notifications.index') }}"
+            class="dropdown-item text-center fw-semibold">
+            Voir toutes les notifications
+        </a>
+
+    </div>
+</div>
 
 
+<!-- Avatar -->
+<div class="dropdown">
 
-				<img src="{{ Auth::user()->avatar 
-				? asset('storage/'.Auth::user()->avatar)
-				: asset('assets/images/avatar/01.jpg') }}"
-				class="kama-avatar">
+    <a href="#"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
 
+        <img src="{{ Auth::user()->avatar
+            ? asset('storage/'.Auth::user()->avatar)
+            : asset('assets/images/avatar/01.jpg') }}"
+            class="kama-avatar">
+    </a>
+
+    <div class="dropdown-menu dropdown-menu-end profile-dropdown shadow border-0">
+
+        <div class="dropdown-header text-center">
+
+            <img src="{{ Auth::user()->avatar
+                ? asset('storage/'.Auth::user()->avatar)
+                : asset('assets/images/avatar/01.jpg') }}"
+                class="profile-avatar">
+
+            <div class="fw-bold mt-2">
+                {{ Auth::user()->name }}
+            </div>
+
+            <small class="text-muted">
+                {{ Auth::user()->email }}
+            </small>
+
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+					<a class="dropdown-item"
+						href="">
+
+						<i class="bi bi-speedometer2 me-2"></i>
+
+						Tableau de bord
+
+					</a>
+
+					<form action="{{ route('logout') }}"
+						method="POST">
+
+						@csrf
+
+						<button class="dropdown-item text-danger">
+
+							<i class="bi bi-box-arrow-right me-2"></i>
+
+							Déconnexion
+
+						</button>
+
+					</form>
+
+				</div>
+
+			</div>
 
 				@endguest
 
