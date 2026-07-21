@@ -9,7 +9,7 @@
         <div>
             <span class="admin-books-eyebrow">Mon espace auteur</span>
             <h2>Mes livres</h2>
-            <p>Gérez vos ouvrages, réglez les frais de publication et suivez leur statut éditorial.</p>
+            <p>Gérez vos ouvrages, sponsorisez-les gratuitement et suivez leur visibilité.</p>
         </div>
         <a href="{{ route('admin.books.create') }}" class="admin-books-add">
             <i class="bi bi-plus-lg"></i>
@@ -186,8 +186,11 @@
                                     </a>
 
                                     @if($book->status === 'published')
-                                        <a href="{{ route('admin.books.boost', $book) }}" class="primary" title="Mettre en avant" aria-label="Mettre en avant">
-                                            <i class="bi bi-rocket-takeoff"></i>
+                                        <a href="{{ route('admin.books.boost', $book) }}" title="Booster" aria-label="Booster">
+                                            <i class="bi bi-share"></i>
+                                        </a>
+                                        <a href="{{ route('admin.books.sponsor', $book) }}" class="primary" title="Sponsoriser" aria-label="Sponsoriser">
+                                            <i class="bi bi-megaphone"></i>
                                         </a>
                                     @elseif($book->status === 'revision_required')
                                         <form action="{{ route('admin.books.resubmit', $book) }}" method="POST">

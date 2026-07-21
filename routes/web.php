@@ -375,8 +375,11 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
         Route::get('/books/{book}/boost',[AdminBooksController::class,'boost'])
            ->name('books.boost');
         
-        Route::post('/books/{book}/sponsor',[AdminBookSponsorshipController::class,'sponsor'])
+        Route::get('/books/{book}/sponsor',[AdminBookSponsorshipController::class,'create'])
           ->name('books.sponsor');
+
+        Route::post('/books/{book}/sponsor/{plan}',[AdminBookSponsorshipController::class,'sponsor'])
+          ->name('books.sponsor.store');
 
         Route::post('/books/{book}/boost/share',[AdminBooksController::class,'shareBook'])
            ->name('books.boost.share');

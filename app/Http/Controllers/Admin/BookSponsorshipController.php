@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\BookSponsorship;
+use App\Models\SponsorshipPlan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BookSponsorshipController extends Controller
 {
@@ -116,24 +119,56 @@ class BookSponsorshipController extends Controller
         );
     }
 
-    public function sponsor(Book $book)
+    /**
+     * Page de choix de formule (sponsoring gratuit pour l'admin auteur).
+     */
+    public function create(Book $book)
     {
+        abort_unless($book->user_id === Auth::id(), 403);
+        abort_unless($book->status === Book::STATUS_PUBLISHED, 403, 'Seuls les livres publiés peuvent être sponsorisés.');
+
+        $plans = SponsorshipPlan::query()
+            ->orderBy('duration_days')
+            ->get();
+
+        $activeSponsorship = $book->activeSponsorship()->first();
+
+        return view('admin.books.sponsor', compact(
+            'book',
+            'plans',
+            'activeSponsorship'
+        ));
+    }
+
+    /**
+     * Active immédiatement un sponsoring gratuit pour le livre de l'admin.
+     */
+    public function sponsor(Book $book, SponsorshipPlan $plan)
+    {
+        abort_unless($book->user_id === Auth::id(), 403);
+        abort_unless($book->status === Book::STATUS_PUBLISHED, 403, 'Seuls les livres publiés peuvent être sponsorisés.');
+        abort_if($book->activeSponsorship()->exists(), 409, 'Ce livre a déjà un sponsoring actif.');
+
+        $days = max((int) $plan->duration_days, 1);
+
         BookSponsorship::create([
             'book_id' => $book->id,
             'writer_id' => $book->user_id,
-            'sponsorship_plan_id' => null,
+            'sponsorship_plan_id' => $plan->id,
             'amount' => 0,
-            'transaction_reference' => 'ADMIN_SPONSOR',
+            'transaction_reference' => 'ADMIN-FREE-' . strtoupper(Str::random(8)),
             'status' => 'paid',
             'starts_at' => now(),
-            'ends_at' => now()->addDays(30),
+            'ends_at' => now()->addDays($days),
             'paid_at' => now(),
             'source' => 'admin',
         ]);
 
-        return back()->with(
-            'success',
-            'Le livre est maintenant mis en avant sur KaMa.'
-        );
+        return redirect()
+            ->route('admin.books.index')
+            ->with(
+                'success',
+                "Sponsoring activé gratuitement pour « {$book->title} » ({$days} jours)."
+            );
     }
 }

@@ -285,10 +285,33 @@ class BooksController extends Controller
 
     public function show(Book $book)
     {
+        $book->load(['author', 'category', 'subcategory']);
+
         $previewStart = $book->preview_start_page;
         $previewEnd = $book->preview_end_page;
-        return view('admin.books.show', compact('book','previewStart',
-        'previewEnd'));
+        $activeSponsorship = $book->activeSponsorship()->with('plan')->first();
+        $isOwnBook = $this->isOwnBook($book);
+
+        $pendingPublicationPayment = $book->payments()
+            ->where('type', 'publication')
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        $depositPaid = $book->payments()
+            ->where('type', 'publication')
+            ->where('status', 'success')
+            ->exists();
+
+        return view('admin.books.show', compact(
+            'book',
+            'previewStart',
+            'previewEnd',
+            'activeSponsorship',
+            'isOwnBook',
+            'pendingPublicationPayment',
+            'depositPaid'
+        ));
     }
 
     public function edit(Book $book)

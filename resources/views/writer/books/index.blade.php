@@ -385,7 +385,7 @@
                                             <i class="bi bi-eye"></i><span>Détails</span>
                                         </a>
 
-                                        @if($book->status === 'draft')
+                                        @if(in_array($book->status, ['draft', 'waiting_review', 'under_review'], true))
                                             <a href="{{ route('writer.books.edit', $book) }}">
                                                 <i class="bi bi-pencil"></i>
                                                 <span>Modifier</span>

@@ -321,10 +321,18 @@ class BooksController extends Controller
     {
         $this->authorize('view', $book);
 
+        $book->load(['author', 'category', 'subcategory']);
+
         $previewStart = $book->preview_start_page;
         $previewEnd = $book->preview_end_page;
-        return view('writer.books.show', compact('book','previewStart',
-        'previewEnd'));
+        $activeSponsorship = $book->activeSponsorship()->with('plan')->first();
+
+        return view('writer.books.show', compact(
+            'book',
+            'previewStart',
+            'previewEnd',
+            'activeSponsorship'
+        ));
     }
 
     public function edit(Book $book)
