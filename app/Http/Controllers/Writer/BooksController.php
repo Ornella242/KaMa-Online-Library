@@ -331,7 +331,7 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
         abort_unless(
-            in_array($book->status, ['draft', 'revision_required'], true),
+            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review'], true),
             409,
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
@@ -351,13 +351,25 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
         abort_unless(
-            in_array($book->status, ['draft', 'revision_required'], true),
+            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review'], true),
             409,
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
 
         if ($book->status === 'waiting_review' || $book->status === 'under_review') 
         {
+
+            if (
+                $request->hasFile('cover_image')
+                || $request->hasFile('ebook_file')
+                || $request->hasFile('audio_file')
+            ) {
+                return back()
+                    ->withErrors([
+                        'file' => 'La couverture et le fichier du livre ne peuvent pas être modifiés pendant la vérification éditoriale.',
+                    ])
+                    ->withInput();
+            }
 
             $request->validate([
 

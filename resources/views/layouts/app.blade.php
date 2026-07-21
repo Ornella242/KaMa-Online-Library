@@ -222,6 +222,7 @@
 
 		const placeholder = document.getElementById('coverPlaceholder');
 
+		if (coverInput) {
 		coverInput.addEventListener('change', function(e){
 			const file = e.target.files[0];
 			if(file){
@@ -242,6 +243,7 @@
 				reader.readAsDataURL(file);
 			}
 		});
+		}
 
 
 				const typeInputs = document.querySelectorAll('input[name="type"]');

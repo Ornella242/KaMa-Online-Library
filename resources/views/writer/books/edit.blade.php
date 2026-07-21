@@ -177,6 +177,12 @@ Steps START -->
                                                         </div>
 
 
+														@if($readOnlyReview)
+                                                        <div class="btn btn-outline-secondary w-100 mt-3 disabled" style="pointer-events:none;opacity:.65;">
+                                                            <i class="bi bi-lock me-2"></i>
+                                                            Couverture verrouillée
+                                                        </div>
+                                                        @else
 														<label class="btn btn-outline-danger w-100 mt-3">
 
                                                             <i class="bi bi-upload me-2"></i>
@@ -188,10 +194,10 @@ Steps START -->
                                                                 id="coverImageInput"
                                                                 name="cover_image"
                                                                 hidden
-                                                                accept="image/png,image/jpeg"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
+                                                                accept="image/png,image/jpeg">
 
                                                         </label>
+                                                        @endif
 
 
                                                         <small class="text-muted d-block mt-2">
@@ -739,17 +745,25 @@ Steps START -->
 																		</span>
 																	</button>
 
-																	<button type="button" class="upload-action-btn upload-action-change" id="changeFileBtn" {{ $readOnlyReview ? 'disabled' : '' }}>
+																	@if(!$readOnlyReview)
+																	<button type="button" class="upload-action-btn upload-action-change" id="changeFileBtn">
 																		<span class="upload-action-icon">
 																			<i class="bi bi-arrow-repeat"></i>
 																		</span>
 																		<span class="upload-action-label">Remplacer le fichier</span>
 																	</button>
+																	@endif
 																</div>
 															</div>
 														@endif
 
 														<div id="uploadInitialState" class="{{ $book->file_path ? 'd-none' : '' }}">
+															@if($readOnlyReview)
+																<div class="text-center text-muted py-4">
+																	<i class="bi bi-lock fs-3 d-block mb-2"></i>
+																	Le fichier du livre ne peut pas être modifié pendant la vérification éditoriale.
+																</div>
+															@else
 															<div class="upload-icon" id="uploadIcon">
 																@if($isAudioBook)
 																	<i class="bi bi-headphones"></i>
@@ -784,6 +798,7 @@ Steps START -->
 																	Taille maximale : 100 MB
 																</small>
 															</div>
+															@endif
 														</div>
 
 														<div id="uploadProgressState" class="d-none">
@@ -820,12 +835,14 @@ Steps START -->
 																		<span class="upload-action-label" id="previewNewActionLabel">Voir le livre</span>
 																	</button>
 
+																	@if(!$readOnlyReview)
 																	<button type="button" class="upload-action-btn upload-action-change" id="changeNewFileBtn">
 																		<span class="upload-action-icon">
 																			<i class="bi bi-arrow-repeat"></i>
 																		</span>
 																		<span class="upload-action-label">Changer</span>
 																	</button>
+																	@endif
 																</div>
 															</div>
 
@@ -1339,6 +1356,7 @@ Steps END -->
 
 <script>
 (function() {
+	const readOnlyReview = @json($readOnlyReview);
 	const bookFileInput = document.getElementById('bookFileInput');
 	const dropZone = document.getElementById('uploadDropZone');
 	const existingFilePanel = document.getElementById('existingFilePanel');
@@ -1365,7 +1383,7 @@ Steps END -->
 	const continueUploadBtn = document.getElementById('continueUploadBtn');
 	const authorDeclaration = document.getElementById('authorDeclaration');
 
-	if (!bookFileInput || !dropZone) return;
+	if (!dropZone) return;
 
 	const existingUrl = dropZone.dataset.existingUrl || null;
 	const existingName = dropZone.dataset.existingFile || '';
@@ -1383,7 +1401,8 @@ Steps END -->
 			return true;
 		}
 
-		return bookFileInput.files.length > 0
+		return bookFileInput
+			&& bookFileInput.files.length > 0
 			&& completeState
 			&& !completeState.classList.contains('d-none');
 	}
@@ -1408,6 +1427,7 @@ Steps END -->
 	}
 
 	function showReplaceMode() {
+		if (readOnlyReview) return;
 		pauseEmbeddedPlayers();
 		if (existingFilePanel) existingFilePanel.classList.add('d-none');
 		completeState.classList.add('d-none');
@@ -1416,7 +1436,7 @@ Steps END -->
 		dropZone.classList.remove('has-existing-file');
 		progressBar.style.width = '0%';
 		progressText.textContent = '0%';
-		bookFileInput.value = '';
+		if (bookFileInput) bookFileInput.value = '';
 		usingExistingFile = false;
 
 		if (objectUrlCreated && currentFileURL) {
@@ -1435,7 +1455,7 @@ Steps END -->
 			URL.revokeObjectURL(currentFileURL);
 		}
 
-		bookFileInput.value = '';
+		bookFileInput && (bookFileInput.value = '');
 		initialState.classList.add('d-none');
 		progressState.classList.add('d-none');
 		completeState.classList.add('d-none');
@@ -1506,7 +1526,11 @@ Steps END -->
 		document.body.style.overflow = '';
 	}
 
-	bookFileInput.addEventListener('change', function() {
+	bookFileInput?.addEventListener('change', function() {
+		if (readOnlyReview) {
+			this.value = '';
+			return;
+		}
 		const file = this.files[0];
 		if (!file) return;
 
@@ -1545,7 +1569,7 @@ Steps END -->
 
 	if (previewNewBookBtn) {
 		previewNewBookBtn.addEventListener('click', function() {
-			openPreview(currentFileURL, bookFileInput.files[0]?.name || uploadedFileName.textContent);
+			openPreview(currentFileURL, bookFileInput?.files[0]?.name || uploadedFileName.textContent);
 		});
 	}
 
@@ -1586,6 +1610,7 @@ Steps END -->
 
 	document.querySelectorAll('input[name="type"]').forEach((input) => {
 		input.addEventListener('change', function() {
+			if (readOnlyReview) return;
 			dropZone.dataset.bookType = this.value;
 			updateNewPreviewLabels();
 
