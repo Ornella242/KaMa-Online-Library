@@ -23,9 +23,7 @@
             <p>Suivez l’activité éditoriale, les membres et les revenus depuis un seul espace.</p>
         </div>
         <div class="admin-welcome-actions">
-            <a href="{{ route('admin.books.editorial.queue') }}" class="btn btn-light">
-                <i class="bi bi-clipboard2-check me-2"></i>Traiter la file éditoriale
-            </a>
+            
             <a href="{{ route('admin.books.create') }}" class="btn admin-btn-dark">
                 <i class="bi bi-plus-lg me-2"></i>Ajouter un livre
             </a>
