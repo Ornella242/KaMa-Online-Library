@@ -464,261 +464,7 @@ Meilleurs livres START-->
         </div>
 
         <div class="best-layout">
-            <!-- Featured Book -->
-            {{-- <div class="featured-book position-relative">
-
-                <div class="best-badge">
-                    BEST SELLER
-                </div>
-
-                <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Featured Book">
-
-                <div class="featured-content">
-
-                    <span class="featured-category">
-                        Développement personnel
-                    </span>
-
-                    <h3>Atomic Habits</h3>
-
-                    <p class="featured-author">
-                        Par James Clear
-                    </p>
-
-                    <p class="featured-description">
-                        Découvrez comment de petits changements quotidiens peuvent produire des résultats extraordinaires.
-                        Un guide incontournable pour créer de bonnes habitudes, éliminer les mauvaises et transformer durablement votre vie.
-                    </p>
-
-                    <div class="stars">
-
-                        ★★★★★
-
-                        <span>
-                            5
-                        </span>
-
-                    </div>
-
-                    <div class="featured-actions">
-
-                        <button class="cart-btn">
-                            <i class="bi bi-cart"></i>
-                            Ajouter au panier
-                        </button>
-
-                        <button class="read-btn">
-                            Lire un extrait
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div> --}}
-
-            <!-- Side Books -->
-            {{-- <div class="side-books">
-
-                    <div class="mini-book">
-                        <span class="book-category business">Business</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>Atomic Habits</h4>
-
-                            <p>Par James Clear</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.3
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-book">
-                        <span class="book-category psychology">Psychology</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>The 5 AM Club</h4>
-
-                            <p>Par Robin Sharma</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.5
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-book">
-                        <span class="book-category finance">Finance</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>The Psychology of Money</h4>
-
-                            <p>Par Morgan Housel</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.5
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-book">
-                        <span class="book-category history">History</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>Atomic Habits</h4>
-
-                            <p>Par James Clear</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.3
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-book">
-                        <span class="book-category children">Children</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>The 5 AM Club</h4>
-
-                            <p>Par Robin Sharma</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.5
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-book">
-                        <span class="book-category science">Science</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>The Psychology of Money</h4>
-
-                            <p>Par Morgan Housel</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.5
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-book">
-                        <span class="book-category science">Science</span>
-                        <div class="mini-cover">
-                            <img src="{{ asset('assets/images/category/une/4by3/book5.jpg') }}" alt="Mini Book Cover">
-                        </div>
-
-                        <div class="mini-content">
-
-                            <h4>The Psychology of Money</h4>
-
-                            <p>Par Morgan Housel</p>
-
-                            <div class="mini-meta">
-
-                                <span class="mini-rating">
-                                    ⭐ 4.5
-                                </span>
-
-                                <span class="mini-action">
-                                    Voir →
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-            </div> --}}
-
-
+        
             {{-- Code donnees reelles --}}
             @if($bestRatedBook)
 
@@ -761,6 +507,8 @@ Meilleurs livres START-->
                                 <i class="bi bi-cart"></i>
                                 Ajouter au panier
                             </a>
+
+                            
 
 
                             <button class="read-btn">
@@ -1047,193 +795,41 @@ Best Sellers START
     </div>
 
     <!-- BOOKS -->
+
     <div class="best-sellers-scroll">
-
-        <!-- Book 1 -->
-        <div class="seller-card">
-
-            <div class="seller-image">
-
-                <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}" alt="Atomic Habits">
-
-                <div class="sales-badge">
-                    12.5K ventes
-                </div>
-
-                <div class="rank">
-                    #1
-                </div>
-
-            </div>
-
-            <div class="seller-content">
-
-                <h3>Atomic Habits</h3>
-                <p>James Clear</p>
-
-                <button class="seller-btn">
-                    <i class="bi bi-cart3"></i>
-                    Acheter
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- Book 2 -->
-        <div class="seller-card">
-
-            <div class="seller-image">
-
-                <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}" alt="Deep Work">
-
-                <div class="sales-badge">
-                    10.2K ventes
-                </div>
-
-                <div class="rank">
-                    #2
-                </div>
-
-            </div>
-
-            <div class="seller-content">
-
-                <h3>Deep Work</h3>
-                <p>Cal Newport</p>
-
-                <button class="seller-btn">
-                    <i class="bi bi-cart3"></i>
-                    Acheter
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- Book 3 -->
-        <div class="seller-card">
-
-            <div class="seller-image">
-
-                <img src="{{ asset('assets/images/category/une/4by3/book6.jpg') }}" alt="The Psychology of Money">
-
-                <div class="sales-badge">
-                    9.8K ventes
-                </div>
-
-                <div class="rank">
-                    #3
-                </div>
-
-            </div>
-
-            <div class="seller-content">
-
-                <h3>The Psychology of Money</h3>
-                <p>Morgan Housel</p>
-
-                <button class="seller-btn">
-                    <i class="bi bi-cart3"></i>
-                    Acheter
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- Book 4 -->
-        <div class="seller-card">
-
-            <div class="seller-image">
-
-                <img src="{{ asset('assets/images/category/une/4by3/book4.jpg') }}" alt="The 5AM Club">
-
-                <div class="sales-badge">
-                    8.4K ventes
-                </div>
-
-                <div class="rank">
-                    #4
-                </div>
-
-            </div>
-
-            <div class="seller-content">
-
-                <h3>The 5AM Club</h3>
-                <p>Robin Sharma</p>
-
-                <button class="seller-btn">
-                    <i class="bi bi-cart3"></i>
-                    Acheter
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    {{-- Code donnees reelles --}}
-
-    {{-- <div class="best-sellers-scroll">
         @foreach($bestSellingBooks as $index => $book)
             <div class="seller-card">
-
-
                 <div class="seller-image">
-
-
                     <img src="{{ asset('storage/'.$book->cover_image) }}" 
                         alt="{{ $book->title }}">
 
-
-
                     <div class="sales-badge">
-
                         {{ number_format($book->sales_count) }} ventes
-
                     </div>
-
-
 
                     <div class="rank">
-
                         #{{ $index + 1 }}
-
                     </div>
-
-
                 </div>
 
-
-
                 <div class="seller-content">
-
-
                     <h3>
                         {{ $book->title }}
                     </h3>
-
-
-
                     <p>
-
                         {{ $book->author->firstname ?? '' }}
                         {{ $book->author->lastname ?? '' }}
-
                     </p>
 
 
 
-                    <button class="seller-btn">
-
-                        <i class="bi bi-cart3"></i>
-
-                        Acheter
-
-                    </button>
+                   <form method="POST" action="{{ route('cart.store', $book) }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="seller-btn">
+                            <i class="bi bi-cart"></i>
+                            Ajouter
+                        </button>
+                    </form>
 
 
                 </div>
@@ -1241,7 +837,7 @@ Best Sellers START
 
             </div>
         @endforeach
-    </div> --}}
+    </div>
 
 </section>
 <!-- =======================

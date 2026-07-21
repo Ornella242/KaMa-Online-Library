@@ -30892,9 +30892,17 @@ box-shadow:
 
 .book-card .card-header{
 
-background:white;
+background:#172033 !important;
+color: white;
 
 padding:20px 25px;
+
+}
+
+.book-card .card-header h4{
+
+color: white !important;
+
 
 }
 
@@ -37076,63 +37084,15 @@ html, body {
 
 }
 
-/* Avatar */
-.kama-avatar{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    object-fit:cover;
-    cursor:pointer;
-    transition:.3s;
-    border:2px solid #fff;
-}
 
-.kama-avatar:hover{
-    transform:scale(1.05);
-}
 
-/* Bell */
-.kama-icon{
-    width:42px;
-    height:42px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    background:#f8f9fa;
-    color:#333;
-    position:relative;
-    text-decoration:none;
-    transition:.3s;
-}
-
-.kama-icon:hover{
-    background:#ef6c00;
-    color:#fff;
-}
-
-.notification-badge{
-    position:absolute;
-    top:2px;
-    right:2px;
-    width:18px;
-    height:18px;
-    border-radius:50%;
-    background:red;
-    color:#fff;
-    font-size:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-/* Dropdown */
-.profile-dropdown,
-.notification-dropdown{
-    width:320px;
-    border-radius:15px;
+.profile-dropdown{
+    width:260px;
     padding:0;
+    border:none;
+    border-radius:15px;
     overflow:hidden;
+    box-shadow:0 15px 40px rgba(0,0,0,.12);
 }
 
 .profile-avatar{
@@ -37142,30 +37102,16 @@ html, body {
     object-fit:cover;
 }
 
-.dropdown-header{
+.profile-dropdown .dropdown-header{
     padding:20px;
     background:#fafafa;
 }
 
-.notification-list{
-    max-height:350px;
-    overflow-y:auto;
-}
-
-.notification-item{
-    white-space:normal;
-    padding:15px;
-}
-
-.notification-item:hover{
-    background:#fff5ec;
-}
-
-/* Hover */
 .dropdown:hover>.dropdown-menu{
     display:block;
     margin-top:0;
 }
+
 
 /* Dashboard ecrivain  */
 .author-stat-card {
@@ -49886,7 +49832,7 @@ font-size:13px;
     display: block;
     margin-bottom: 4px;
     color: var(--writer-red);
-    font-size: .65rem;
+    font-size: .96rem;
     font-weight: 800;
     letter-spacing: .09em;
     text-transform: uppercase;
@@ -49901,7 +49847,7 @@ font-size:13px;
 .writer-page-header p {
     margin: 5px 0 0;
     color: var(--writer-muted);
-    font-size: .76rem;
+    font-size: .96rem;
 }
 
 .writer-primary-action {
@@ -49984,7 +49930,7 @@ font-size:13px;
 
 .writer-metric small {
     color: #858990;
-    font-size: .63rem;
+    font-size: .83rem;
     font-weight: 700;
 }
 
@@ -49998,7 +49944,7 @@ font-size:13px;
 }
 
 .writer-metric > div > span {
-    font-size: .6rem;
+    font-size: .8rem;
 }
 
 .writer-metric .positive {
@@ -50034,7 +49980,7 @@ font-size:13px;
 .writer-panel-header span {
     display: block;
     color: var(--writer-red);
-    font-size: .6rem;
+    font-size: .8rem;
     font-weight: 800;
     letter-spacing: .07em;
     text-transform: uppercase;
@@ -50049,7 +49995,7 @@ font-size:13px;
 .writer-panel-header p {
     margin: 3px 0 0;
     color: #90949b;
-    font-size: .65rem;
+    font-size: .85rem;
 }
 
 .writer-panel-header > a {
@@ -50074,9 +50020,9 @@ font-size:13px;
 .writer-data-table thead th {
     padding: 10px 13px;
     border-color: #eceef0;
-    background: #fafafa;
-    color: #8f9299;
-    font-size: .59rem;
+    background: black;
+    color: white;
+    font-size: .79rem;
     font-weight: 800;
     letter-spacing: .05em;
     text-transform: uppercase;
@@ -50087,7 +50033,7 @@ font-size:13px;
     padding: 11px 13px;
     border-color: #eff0f2;
     color: #4f5258;
-    font-size: .67rem;
+    font-size: .97rem;
 }
 
 .writer-data-table tbody tr:hover {
@@ -50121,7 +50067,7 @@ font-size:13px;
     max-width: 210px;
     overflow: hidden;
     color: #313338;
-    font-size: .7rem;
+    font-size: .9rem;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -50130,12 +50076,12 @@ font-size:13px;
 .writer-table-person small {
     margin-top: 2px;
     color: #9699a0;
-    font-size: .58rem;
+    font-size: .88rem;
 }
 
 .writer-table-person strong {
     color: #3c3f44;
-    font-size: .66rem;
+    font-size: .86rem;
 }
 
 .writer-money-positive {
@@ -50384,18 +50330,18 @@ font-size:13px;
 }
 
 .writer-review-meta strong {
-    font-size: .7rem;
+    font-size: .9rem;
 }
 
 .writer-review-meta small {
     margin-top: 2px;
     color: #9a9da3;
-    font-size: .58rem;
+    font-size: .78rem;
 }
 
 .writer-review-meta > span {
     color: #d99a00;
-    font-size: .67rem;
+    font-size: .87rem;
     white-space: nowrap;
 }
 
@@ -50410,7 +50356,7 @@ font-size:13px;
 .writer-review-content p {
     margin: 7px 0 0;
     color: #656970;
-    font-size: .67rem;
+    font-size: .97rem;
     line-height: 1.65;
 }
 
@@ -50470,7 +50416,7 @@ font-size:13px;
 }
 
 .writer-activity-content strong {
-    font-size: .72rem;
+    font-size: .88rem;
 }
 
 .writer-activity-content small {
@@ -50482,7 +50428,7 @@ font-size:13px;
 .writer-activity-content p {
     margin: 4px 0 7px;
     color: #74787f;
-    font-size: .66rem;
+    font-size: .86rem;
 }
 
 .writer-activity-content a {
@@ -50518,7 +50464,7 @@ font-size:13px;
     border-radius: 9px;
     background: transparent;
     color: #6e7279;
-    font-size: .68rem;
+    font-size: .88rem;
     font-weight: 700;
     text-align: left;
 }
@@ -50568,7 +50514,7 @@ font-size:13px;
 .writer-form-panel > header p {
     margin: 3px 0 0;
     color: #8f9299;
-    font-size: .63rem;
+    font-size: .90rem;
 }
 
 .writer-form-panel > form {
@@ -50635,7 +50581,7 @@ font-size:13px;
     display: block;
     margin-bottom: 5px;
     color: #4b4e54;
-    font-size: .64rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
@@ -50649,7 +50595,7 @@ font-size:13px;
     border-radius: 9px;
     background: #fff;
     color: #34363b;
-    font-size: .68rem;
+    font-size: .88rem;
     outline: none;
 }
 

@@ -20,7 +20,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <section class="categories-panel">
+    <div class="categories-panel">
         <form method="GET" action="{{ route('admin.sponsorship-plans.index') }}" class="categories-toolbar">
             <div class="categories-search">
                 <i class="bi bi-search"></i>
@@ -86,7 +86,7 @@
                 {{ $plans->links() }}
             </footer>
         @endif
-    </section>
+    </div>
 
     {{-- Create --}}
     <div class="categories-overlay d-none" id="createPlanOverlay" role="dialog" aria-modal="true">

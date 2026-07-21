@@ -35,7 +35,7 @@
             </article>
         </section>
 
-        <section class="categories-panel">
+        <div class="categories-panel">
             <form method="GET" action="{{ route('admin.categories.index') }}" class="categories-toolbar">
                 <div class="categories-search">
                     <i class="bi bi-search"></i>
@@ -155,7 +155,7 @@
                     {{ $categories->onEachSide(1)->links() }}
                 </footer>
             @endif
-        </section>
+        </div>
 
         {{-- Overlay : nouvelle catégorie --}}
         <div class="categories-overlay d-none"

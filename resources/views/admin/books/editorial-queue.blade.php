@@ -35,7 +35,7 @@
             </article>
         </section>
 
-        <section class="editorial-panel">
+        <div class="editorial-panel">
             <header>
                 <div>
                     <strong>{{ number_format($books->total()) }} livre(s) à examiner</strong>
@@ -138,7 +138,7 @@
                     {{ $books->onEachSide(1)->links() }}
                 </footer>
             @endif
-        </section>
+        </div>
 
         @foreach($books as $book)
             @php

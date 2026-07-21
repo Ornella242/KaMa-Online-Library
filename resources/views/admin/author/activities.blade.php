@@ -22,7 +22,7 @@
         @endif
     </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <div class="admin-books-table-header">
             <div>
                 <strong>{{ number_format($notifications->total()) }} notification(s)</strong>
@@ -96,7 +96,7 @@
                 {{ $notifications->onEachSide(1)->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </div>
 @endsection
 

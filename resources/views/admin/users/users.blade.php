@@ -43,7 +43,7 @@
             </article>
         </section>
 
-        <section class="users-panel">
+        <div class="users-panel">
             <form method="GET" action="{{ route('admin.users') }}" class="users-toolbar">
                 <div class="users-search">
                     <i class="bi bi-search"></i>
@@ -173,7 +173,7 @@
                     </footer>
                 @endif
             @endif
-        </section>
+        </div>
 
         {{-- Overlay : créer --}}
         <div class="users-overlay d-none"

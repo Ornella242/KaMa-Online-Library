@@ -56,7 +56,7 @@
         </a>
     </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <form method="GET" action="{{ route('admin.books.index') }}" class="admin-books-toolbar">
             <div class="admin-books-search">
                 <i class="bi bi-search"></i>
@@ -234,7 +234,7 @@
                 {{ $books->onEachSide(1)->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </div>
 @endsection
 

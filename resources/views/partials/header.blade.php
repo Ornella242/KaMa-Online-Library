@@ -72,135 +72,82 @@
 
 				@else
 
+					<!-- Profil -->
+					<div class="dropdown">
 
+							<a href="#"
+							data-bs-toggle="dropdown"
+							aria-expanded="false">
 
-				<!-- Notifications -->
-<div class="dropdown">
-    <a href="#"
-        class="kama-icon"
-        id="notificationDropdown"
-        data-bs-toggle="dropdown"
-        aria-expanded="false">
+								<img src="{{ Auth::user()->avatar
+									? asset('storage/'.Auth::user()->avatar)
+									: asset('assets/images/avatar/01.jpg') }}"
+									class="kama-avatar">
 
-        <i class="bi bi-bell"></i>
+							</a>
 
-        @if(auth()->user()->unreadNotifications->count())
-            <span class="notification-badge">
-                {{ auth()->user()->unreadNotifications->count() }}
-            </span>
-        @endif
-    </a>
+							<div class="dropdown-menu dropdown-menu-end profile-dropdown">
 
-    <div class="dropdown-menu dropdown-menu-end notification-dropdown shadow border-0">
+								<div class="dropdown-header text-center">
 
-        <div class="dropdown-header d-flex justify-content-between align-items-center">
-            <strong>Notifications</strong>
-            <small>{{ auth()->user()->unreadNotifications->count() }}</small>
-        </div>
+									<img src="{{ Auth::user()->avatar
+										? asset('storage/'.Auth::user()->avatar)
+										: asset('assets/images/avatar/01.jpg') }}"
+										class="profile-avatar">
 
-        <div class="notification-list">
+									<div class="fw-bold mt-2">
+										{{ Auth::user()->name }}
+									</div>
 
-            @forelse(auth()->user()->notifications->take(5) as $notification)
+									<small class="text-muted">
+										{{ Auth::user()->email }}
+									</small>
 
-                <a href="{{ $notification->data['url'] ?? '#' }}"
-                    class="dropdown-item notification-item">
+								</div>
 
-                    <div class="fw-semibold">
-                        {{ $notification->data['title'] ?? 'Notification' }}
-                    </div>
+								<div class="dropdown-divider"></div>
 
-                    <small class="text-muted">
-                        {{ $notification->data['message'] ?? '' }}
-                    </small>
+								
 
-                    <div class="small text-secondary mt-1">
-                        {{ $notification->created_at->diffForHumans() }}
-                    </div>
+							@if(Auth::user()->role->name == 'admin')
+								<a href="{{ route('admin.dashboard') }}" class="dropdown-item">
+									<i class="bi bi-speedometer2 me-2"></i>
+									Tableau de bord
+								</a>
 
-                </a>
+							@elseif(Auth::user()->role->name == 'writer')
+								<a href="{{ route('writer.dashboard') }}" class="dropdown-item">
+									<i class="bi bi-speedometer2 me-2"></i>
+									Tableau de bord
+								</a>
 
-            @empty
+							@elseif(Auth::user()->role->name == 'reader')
+								<a href="#" class="dropdown-item">
+									<i class="bi bi-speedometer2 me-2"></i>
+									Tableau de bord
+								</a>
+							@endif
 
-                <div class="dropdown-item text-center text-muted py-3">
-                    Aucune notification
-                </div>
+								<form method="POST"
+									action="{{ route('logout') }}">
 
-            @endforelse
+									@csrf
 
-        </div>
+									<button type="submit"
+											class="dropdown-item text-danger">
 
-        <div class="dropdown-divider"></div>
+										<i class="bi bi-box-arrow-right me-2"></i>
 
-        <a href="{{ route('notifications.index') }}"
-            class="dropdown-item text-center fw-semibold">
-            Voir toutes les notifications
-        </a>
+										Déconnexion
 
-    </div>
-</div>
+									</button>
 
+								</form>
 
-<!-- Avatar -->
-<div class="dropdown">
+							</div>
 
-    <a href="#"
-        data-bs-toggle="dropdown"
-        aria-expanded="false">
+					</div>
 
-        <img src="{{ Auth::user()->avatar
-            ? asset('storage/'.Auth::user()->avatar)
-            : asset('assets/images/avatar/01.jpg') }}"
-            class="kama-avatar">
-    </a>
-
-    <div class="dropdown-menu dropdown-menu-end profile-dropdown shadow border-0">
-
-        <div class="dropdown-header text-center">
-
-            <img src="{{ Auth::user()->avatar
-                ? asset('storage/'.Auth::user()->avatar)
-                : asset('assets/images/avatar/01.jpg') }}"
-                class="profile-avatar">
-
-            <div class="fw-bold mt-2">
-                {{ Auth::user()->name }}
-            </div>
-
-            <small class="text-muted">
-                {{ Auth::user()->email }}
-            </small>
-
-        </div>
-
-        <div class="dropdown-divider"></div>
-
-					<a class="dropdown-item"
-						href="">
-
-						<i class="bi bi-speedometer2 me-2"></i>
-
-						Tableau de bord
-
-					</a>
-
-					<form action="{{ route('logout') }}"
-						method="POST">
-
-						@csrf
-
-						<button class="dropdown-item text-danger">
-
-							<i class="bi bi-box-arrow-right me-2"></i>
-
-							Déconnexion
-
-						</button>
-
-					</form>
-
-				</div>
-
-			</div>
 
 				@endguest
 

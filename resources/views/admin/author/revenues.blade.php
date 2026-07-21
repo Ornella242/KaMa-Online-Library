@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <div class="admin-books-table-header">
             <div>
                 <strong>Historique des ventes</strong>
@@ -107,9 +107,9 @@
                 {{ $purchasePayments->onEachSide(1)->links() }}
             </div>
         @endif
-    </section>
+    </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <div class="admin-books-table-header">
             <div>
                 <strong>Frais de publication</strong>
@@ -187,7 +187,7 @@
                 {{ $publicationPayments->onEachSide(1)->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </div>
 @endsection
 

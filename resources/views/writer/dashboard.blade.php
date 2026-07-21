@@ -14,7 +14,7 @@
             </a>
         </header>
 
-        <section class="writer-metric-grid">
+        <div class="writer-metric-grid">
             <article class="writer-metric">
                 <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
                 <div>
@@ -59,9 +59,9 @@
                     <span class="neutral">{{ number_format($totalReviews) }} avis reçus</span>
                 </div>
             </article>
-        </section>
+        </div>
 
-        <section class="writer-panel">
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Performance</span>
@@ -127,7 +127,7 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
     </div>
 </main>
 @endsection

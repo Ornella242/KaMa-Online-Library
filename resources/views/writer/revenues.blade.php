@@ -11,7 +11,7 @@
             </div>
         </header>
 
-        <section class="writer-metric-grid">
+        <div class="writer-metric-grid">
             <article class="writer-metric">
                 <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
                 <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Achats confirmés</span></div>
@@ -28,9 +28,9 @@
                 <span class="writer-metric-icon amber"><i class="bi bi-people"></i></span>
                 <div><small>Lecteurs</small><strong>{{ number_format($totalReaders) }}</strong><span class="neutral">Acheteurs uniques</span></div>
             </article>
-        </section>
+        </div>
 
-        <section class="writer-finance-summary">
+        <div class="writer-finance-summary">
             <div>
                 <span><i class="bi bi-wallet2"></i></span>
                 <div><small>Solde disponible estimé</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }} $</strong></div>
@@ -47,9 +47,9 @@
                 <span><i class="bi bi-clock-history"></i></span>
                 <div><small>Ventes en attente</small><strong>{{ number_format($pendingAmount, 2, ',', ' ') }} $</strong></div>
             </div>
-        </section>
+        </div>
 
-        <section class="writer-panel">
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Transactions</span>
@@ -92,9 +92,9 @@
             @if($purchasePayments->hasPages())
                 <footer class="writer-panel-footer">{{ $purchasePayments->links() }}</footer>
             @endif
-        </section>
+        </div>
 
-        <section class="writer-panel">
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Publications</span>
@@ -139,7 +139,7 @@
             @if($publicationPayments->hasPages())
                 <footer class="writer-panel-footer">{{ $publicationPayments->links() }}</footer>
             @endif
-        </section>
+        </div>
     </div>
 </main>
 @endsection

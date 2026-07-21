@@ -1,7 +1,7 @@
 <aside class="kama-admin-sidebar" id="adminSidebar">
     <div class="kama-admin-brand">
         <a href="{{ route('admin.dashboard') }}" aria-label="Tableau de bord KaMa">
-            <img src="{{ asset('assets/images/logo-light.svg') }}" alt="KaMa">
+            <img src="{{ asset('assets/images/KaMa2.png') }}" class="h-100" alt="KaMa">
         </a>
         <button type="button"
                 class="kama-admin-sidebar-close d-xl-none"
