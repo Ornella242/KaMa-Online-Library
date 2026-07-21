@@ -77,7 +77,7 @@
 						</a>
 					</li>
 					@auth
-					<!-- Notification -->
+					 <!-- Notification -->
 						@php
 							$notifications = auth()->user()
 								->unreadNotifications()
