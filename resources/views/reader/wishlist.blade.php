@@ -1,146 +1,87 @@
 @extends('layouts.reader')
 
 @section('reader-content')
-
-<!-- Wishlist START -->
-<div class="card border bg-transparent">
-
-    <!-- Header -->
-    <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-        <h4 class="card-header-title mb-0">Ma Wishlist</h4>
-
-        <button class="btn btn-sm btn-danger">
-            <i class="bi bi-trash me-2"></i>
-            Tout supprimer
+<div class="reader-workspace">
+    <div class="d-grid mb-3 d-lg-none">
+        <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar">
+            <i class="bi bi-list"></i> Menu
         </button>
     </div>
 
-    <!-- Body -->
-    <div class="card-body p-0">
-
-        <div class="table-responsive">
-
-            <table class="table table-hover align-middle mb-0">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>Livre</th>
-                        <th>Auteur</th>
-                        <th>Prix</th>
-                        <th>Note</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    <!-- Livre 1 -->
-                    <tr>
-
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-
-                                <img src="{{ asset('assets/images/category/une/4by3/book2.jpg') }}"
-                                     width="65"
-                                     class="rounded"
-                                     alt="">
-
-                                <div>
-                                    <h6 class="mb-1">Atomic Habits</h6>
-                                    <small class="text-muted">
-                                        Développement personnel
-                                    </small>
-                                </div>
-
-                            </div>
-                        </td>
-
-                        <td>James Clear</td>
-
-                        <td>
-                            <strong>22 $</strong>
-                        </td>
-
-                        <td>
-                            ⭐ 4.9
-                        </td>
-
-                        <td class="text-end">
-
-                            <a href="#" class="btn btn-sm btn-light">
-                                <i class="bi bi-eye"></i>
-                            </a>
-
-                            <a href="#" class="btn btn-sm btn-success">
-                                <i class="bi bi-cart-plus"></i>
-                            </a>
-
-                            <a href="#" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                    <!-- Livre 2 -->
-                    <tr>
-
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-
-                                <img src="{{ asset('assets/images/category/une/4by3/book3.jpg') }}"
-                                     width="65"
-                                     class="rounded"
-                                     alt="">
-
-                                <div>
-                                    <h6 class="mb-1">Deep Work</h6>
-                                    <small class="text-muted">
-                                        Productivité
-                                    </small>
-                                </div>
-
-                            </div>
-                        </td>
-
-                        <td>Cal Newport</td>
-
-                        <td>
-                            <strong>18 $</strong>
-                        </td>
-
-                        <td>
-                            ⭐ 4.8
-                        </td>
-
-                        <td class="text-end">
-
-                            <a href="#" class="btn btn-sm btn-light">
-                                <i class="bi bi-eye"></i>
-                            </a>
-
-                            <a href="#" class="btn btn-sm btn-success">
-                                <i class="bi bi-cart-plus"></i>
-                            </a>
-
-                            <a href="#" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                </tbody>
-
-            </table>
-
+    <header class="reader-page-hero">
+        <div>
+            <span class="eyebrow">Envies</span>
+            <h1>Ma liste de souhaits</h1>
+            <p>{{ $items->count() }} livre(s) sauvegardé(s) pour plus tard.</p>
         </div>
+        @if($items->isNotEmpty())
+            <form method="POST" action="{{ route('reader.wishlist.clear') }}" onsubmit="return confirm('Vider toute la liste ?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Tout supprimer
+                </button>
+            </form>
+        @endif
+    </header>
 
-    </div>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
+    @if($items->isEmpty())
+        <div class="reader-empty">
+            <span><i class="bi bi-heart"></i></span>
+            <h2>Votre wishlist est vide</h2>
+            <p>Ajoutez des livres depuis le catalogue ou la fiche d’un ouvrage avec l’icône cœur.</p>
+            <a href="{{ route('catalogue') }}" class="btn btn-danger">Parcourir le catalogue</a>
+        </div>
+    @else
+        <div class="reader-wishlist-list">
+            @foreach($items as $item)
+                @php
+                    $book = $item->book;
+                    $avg = $book->reviews->avg('rating');
+                @endphp
+                <article class="reader-wishlist-item">
+                    <a href="{{ route('books.show', $book) }}" class="cover">
+                        <img src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : asset('assets/images/book/01.jpg') }}" alt="">
+                    </a>
+                    <div class="body">
+                        <span class="type">{{ $book->type === 'audio' ? 'Livre audio' : 'Ebook' }}</span>
+                        <h3><a href="{{ route('books.show', $book) }}">{{ $book->title }}</a></h3>
+                        <p>
+                            {{ trim(($book->author?->firstname ?? '').' '.($book->author?->lastname ?? '')) ?: 'Auteur inconnu' }}
+                            @if($book->category) · {{ $book->category->name }} @endif
+                        </p>
+                        <div class="meta">
+                            <strong>{{ number_format($book->price, 0, ',', ' ') }} XOF</strong>
+                            @if($avg)
+                                <span><i class="bi bi-star-fill"></i> {{ number_format($avg, 1) }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-light" title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <form method="POST" action="{{ route('reader.wishlist.cart', $book) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-danger" title="Ajouter au panier">
+                                <i class="bi bi-cart-plus"></i>
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('reader.wishlist.destroy', $book) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Retirer">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    @endif
 </div>
-<!-- Wishlist END -->
-
 @endsection

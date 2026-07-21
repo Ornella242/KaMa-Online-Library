@@ -377,17 +377,13 @@ Livres à la une START-->
                                 </div>
 
                                 <div class="book-rating mt-2 mt-sm-0">
-                                    {{-- Pour l'instant pas de note dans ta table --}}
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star"></i>
-
+                                    @php $rating = round((float) ($book->reviews_avg_rating ?? 0)); @endphp
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="bi {{ $i <= $rating ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                    @endfor
                                     <span class="ms-1">
-                                        4.0
+                                        {{ number_format((float) ($book->reviews_avg_rating ?? 0), 1) }}
                                     </span>
-
                                 </div>
 
                                 <div class="mt-2 mt-sm-0">

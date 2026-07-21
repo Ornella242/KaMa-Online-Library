@@ -22,6 +22,8 @@ class HomeController extends Controller
         })->get();
 
         $books = Book::published()->with(['author', 'category'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->latest()
             ->take(6)
             ->get();

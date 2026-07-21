@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\BookSponsorship;
 use App\Models\User;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 class CatalogueController extends Controller
 {
@@ -127,10 +128,20 @@ class CatalogueController extends Controller
             ->whereNotNull('country_id')
             ->distinct('country_id')
             ->count('country_id');
+
+        $wishlistIds = auth()->check()
+            ? \App\Models\Wishlist::query()
+                ->where('user_id', Auth::id())
+                ->pluck('book_id')
+                ->all()
+            : [];
+
         return view('books.catalogue', compact(
             'books',
             'categories',
-            'authors','sponsoredBooks','representedCountries'
+            'authors',
+            'sponsoredBooks',
+            'wishlistIds','representedCountries'
         ));
     }
 

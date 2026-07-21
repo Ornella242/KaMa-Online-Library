@@ -9,6 +9,22 @@ use App\Models\Category;
 
 class Book extends Model
 {
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_WAITING_REVIEW = 'waiting_review';
+    public const STATUS_UNDER_REVIEW = 'under_review';
+    public const STATUS_PUBLISHED = 'published';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_REVISION_REQUIRED = 'revision_required';
+
+    public const STATUSES = [
+        self::STATUS_DRAFT,
+        self::STATUS_WAITING_REVIEW,
+        self::STATUS_UNDER_REVIEW,
+        self::STATUS_PUBLISHED,
+        self::STATUS_REJECTED,
+        self::STATUS_REVISION_REQUIRED,
+    ];
+
         protected $fillable = [
         'user_id',
         'category_id',
@@ -56,9 +72,16 @@ class Book extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function publicationPayment()
+    {
+        return $this->hasOne(Payment::class)
+            ->where('type', 'publication')
+            ->latestOfMany();
+    }
+
     public function scopePublished(\Illuminate\Database\Eloquent\Builder $query)
     {
-        return $query->where('status', 'published');
+        return $query->where('status', self::STATUS_PUBLISHED);
     }
 
     public function reviews()

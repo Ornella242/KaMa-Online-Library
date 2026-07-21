@@ -55,7 +55,7 @@ class BookResubmittedNotification extends Notification
 
 
             'url' => route(
-                'admin.books.review',
+                'admin.books.show',
                 $this->book
             ),
 
@@ -93,9 +93,9 @@ class BookResubmittedNotification extends Notification
                 .$this->book->author->lastname
             )
             ->action(
-                'Vérifier le livre',
+                'Voir le livre',
                 route(
-                    'admin.books.review',
+                    'admin.books.show',
                     $this->book
                 )
             )

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 use App\Models\Role;
 use App\Models\Country;
+use App\Services\PurchaseClaimService;
 
 use Illuminate\Http\Request;
 
@@ -52,6 +53,8 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        app(PurchaseClaimService::class)->claimFor($user);
+
         event(new Registered($user));
 
         return redirect()->route('verification.notice')
@@ -74,6 +77,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+            app(PurchaseClaimService::class)->claimFor($user);
 
             if ($user->role->name === 'admin') {
                 return redirect('/admin/dashboard');
@@ -83,7 +87,7 @@ class AuthController extends Controller
                 return redirect('/writer/dashboard');
             }
 
-            return redirect('/reader/account');
+            return redirect()->route('reader.account');
         }
 
         return back()->withErrors([

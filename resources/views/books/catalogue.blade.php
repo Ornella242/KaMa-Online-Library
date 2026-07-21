@@ -455,22 +455,28 @@ Book list START -->
 					</span>
 
 
-					<button class="favorite-btn">
-						<i class="bi bi-heart"></i>
-					</button>
-
-				</div>
-
-
-				<!-- CONTENT -->
-				<div class="book-card-body">
-
-
-					<div class="book-rating">
-
-						<i class="bi bi-star-fill"></i>
-
-						{{ number_format($book->reviews_avg_rating ?? 0,1) }}
+								@auth
+									@if(in_array($book->id, $wishlistIds ?? [], true))
+										<form method="POST" action="{{ route('wishlist.destroy', $book) }}" class="d-inline">
+											@csrf
+											@method('DELETE')
+											<button type="submit" class="h6 mb-0 btn btn-link p-0 text-danger" title="Retirer de la wishlist">
+												<i class="bi bi-heart-fill"></i>
+											</button>
+										</form>
+									@else
+										<form method="POST" action="{{ route('wishlist.store', $book) }}" class="d-inline">
+											@csrf
+											<button type="submit" class="h6 mb-0 btn btn-link p-0 text-body" title="Ajouter à la wishlist">
+												<i class="bi bi-heart"></i>
+											</button>
+										</form>
+									@endif
+								@else
+									<a class="h6 mb-0" href="{{ route('login') }}" title="Connectez-vous pour sauvegarder">
+										<i class="bi bi-heart"></i>
+									</a>
+								@endauth
 
 					</div>
 

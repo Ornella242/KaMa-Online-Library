@@ -69,6 +69,47 @@
 
                     @csrf
 
+                    <!-- Account type -->
+                    <div class="register-role-picker">
+                        <div class="register-role-picker-head">
+                            <label>Type de compte</label>
+                            <p>Qui êtes-vous ? Choisissez le type de compte à créer.</p>
+                        </div>
+
+                        <div class="register-role-options" role="radiogroup" aria-label="Type de compte">
+                            @foreach($roles as $role)
+                                @if($role->name !== 'admin')
+                                    @php
+                                        $isReader = $role->name === 'reader';
+                                        $isChecked = (string) old('role_id', '') === (string) $role->id;
+                                    @endphp
+                                    <label class="register-role-card {{ $isReader ? 'is-reader' : 'is-writer' }}">
+                                        <input
+                                            type="radio"
+                                            name="role_id"
+                                            value="{{ $role->id }}"
+                                            required
+                                            @checked($isChecked)>
+                                        <span class="register-role-icon">
+                                            <i class="bi {{ $isReader ? 'bi-book' : 'bi-pen' }}"></i>
+                                        </span>
+                                        <span class="register-role-body">
+                                            <strong>{{ $isReader ? 'Lecteur' : 'Écrivain' }}</strong>
+                                            <small>
+                                                {{ $isReader
+                                                    ? 'Achetez, lisez et retrouvez vos livres dans votre bibliothèque.'
+                                                    : 'Publiez vos ouvrages et suivez vos revenus sur KaMa.' }}
+                                            </small>
+                                        </span>
+                                        <span class="register-role-check">
+                                            <i class="bi bi-check-lg"></i>
+                                        </span>
+                                    </label>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+
                     <div class="register-fields-row">
 
                         <!-- Firstname -->
@@ -84,6 +125,7 @@
                                     type="text"
                                     name="firstname"
                                     placeholder="Votre prénom"
+                                    value="{{ old('firstname') }}"
                                     required>
 
                             </div>
@@ -103,6 +145,7 @@
                                     type="text"
                                     name="lastname"
                                     placeholder="Votre nom"
+                                    value="{{ old('lastname') }}"
                                     required>
                             </div>
 
@@ -123,6 +166,7 @@
                                 type="email"
                                 name="email"
                                 placeholder="votre@email.com"
+                                value="{{ old('email') }}"
                                 required>
 
                         </div>
@@ -135,7 +179,7 @@
                             <label>Pays</label>
                             <div class="input-icon-group">
                                 <i class="bi bi-geo-alt input-icon"></i>
-                                <select 
+                                <select
                                     name="country_id"
                                     class="form-select"
                                     required>
@@ -146,7 +190,7 @@
 
                                     @foreach($countries as $country)
 
-                                        <option value="{{ $country->id }}">
+                                        <option value="{{ $country->id }}" @selected((string) old('country_id') === (string) $country->id)>
 
                                             {{ $country->flag }} {{ $country->name }}
 
@@ -168,39 +212,12 @@
                                     type="text"
                                     name="city"
                                     placeholder="Votre ville ex: Accra"
+                                    value="{{ old('city') }}"
                                     required>
 
                             </div>
                         </div>
 
-                    </div>
-                    
-
-                     <!-- User Type -->
-                    <div class="register-field">
-
-                        <label>Type d'utilisateur</label>
-
-                        <div class="input-icon-group">
-
-                            <i class="bi bi-shield input-icon"></i>
-
-                            <select name="role_id" required>
-                                <option value="">Choisir un rôle</option>
-
-                                @foreach($roles as $role)
-
-                                    @if($role->name !== 'admin')
-
-                                        <option value="{{ $role->id }}">
-                                            {{ $role->name === 'reader' ? 'Lecteur' : 'Écrivain' }}
-                                        </option>
-
-                                    @endif
-
-                                @endforeach
-                            </select>
-                        </div>
                     </div>
 
                     <!-- Password -->

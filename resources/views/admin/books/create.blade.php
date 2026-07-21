@@ -1,32 +1,13 @@
 @extends('layouts.admin')
 
+@section('title', 'Ajouter un livre')
+@section('page-title', 'Ajouter un livre')
+
 @section('admin-content')
-<!-- =======================
-Page Banner START -->
-<section class="book-create-hero">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <!-- LEFT -->
-            <div class="col-lg-12">
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
-                    <i class="bi bi-book me-2"></i>
-                    Publication d'un nouveau livre
-                </span>
-                <h3 class="h3 fw-bold">
-                    Ajoutez votre  
-                    <span class="text-red">
-                        nouveau livre
-                    </span>
-                </h3>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- =======================
-Page Banner END -->
 
 <!-- =======================
 Steps START -->
+<section>
 	<div class="container">
 		<div id="stepper" class="bs-stepper stepper-outline">
 			<!-- Step Buttons START -->
@@ -45,7 +26,7 @@ Steps START -->
 				<!-- Step 2 -->
 				<div class="step" data-target="#step-2">
 					<div class="text-center">
-						<button type="button" class="btn btn-link step-trigger mb-0" role="tab" id="steppertrigger2" aria-controls="step-2">
+						<button type="button" class="btn btn-link step-trigger mb-0" role="tab" id="steppertrigger2" aria-controls="step-2" disabled style="pointer-events:none; opacity:0.5;">
 							<span class="bs-stepper-circle">2</span>
 						</button>
 						<h6 class="bs-stepper-label d-none d-md-block">Contenu et fichiers</h6>
@@ -56,7 +37,7 @@ Steps START -->
 				<!-- Step 3 -->
 				<div class="step" data-target="#step-3">
 					<div class="text-center">
-						<button type="button" class="btn btn-link step-trigger mb-0" role="tab" id="steppertrigger3" aria-controls="step-3">
+						<button type="button" class="btn btn-link step-trigger mb-0" role="tab" id="steppertrigger3" aria-controls="step-3" disabled style="pointer-events:none; opacity:0.5;">
 							<span class="bs-stepper-circle">3</span>
 						</button>
 						<h6 class="bs-stepper-label d-none d-md-block">Récapitulatif</h6>
@@ -109,7 +90,7 @@ Steps START -->
 									<div class="card book-card">
 										<div class="card-header border-bottom">
 											<h4 class="mb-0">
-												<i class="bi bi-book me-2"></i>
+												<i class="bi bi-book me-2 text-danger"></i>
 												Détails du livre
 											</h4>
 										</div>
@@ -137,7 +118,7 @@ Steps START -->
 
 														</div>
 
-														<label class="btn btn-outline-primary w-100 mt-3">
+														<label class="btn btn-outline-danger w-100 mt-3">
 
 															<i class="bi bi-upload me-2"></i>
 															Ajouter la couverture
@@ -310,10 +291,14 @@ Steps START -->
 																name="duration"
 																id="durationInput"
 																class="form-control book-input"
-																placeholder="Ex: 02:35:00">
+																placeholder="Ex: 02:35:00"
+																inputmode="numeric"
+																maxlength="9"
+																pattern="[0-9]{1,3}:[0-5][0-9]:[0-5][0-9]"
+																title="Utilisez le format heures:minutes:secondes, par exemple 02:35:00">
 
 															<small class="text-muted">
-																Format recommandé : heures:minutes:secondes
+																Format obligatoire : heures:minutes:secondes (ex. 02:35:00)
 															</small>
 
 														</div>
@@ -345,11 +330,14 @@ Steps START -->
 																Année de publication *
 															</label>
 
-															<input
-																type="number"
+															<select
 																name="publication_year"
-																class="form-control book-input"
-																placeholder="2026">
+																class="form-select book-input">
+																<option value="">Choisir une année</option>
+																@for($y = date('Y'); $y >= 1900; $y--)
+																	<option value="{{ $y }}">{{ $y }}</option>
+																@endfor
+															</select>
 														</div>
 
 														<div class="col-md-4">
@@ -375,10 +363,12 @@ Steps START -->
 
 									<!-- Next -->
 
-									<div class="text-end">
+									<div class="text-end wizard-actions wizard-actions-end">
 										<button 
 											type="button"
-											class="btn btn-primary next-btn px-5">
+											id="step1NextBtn"
+											class="btn btn-danger next-btn wizard-action-btn wizard-action-primary"
+											disabled>
 											Continuer
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
@@ -492,33 +482,39 @@ Steps START -->
 													<div class="row">
 														<div class="col-md-6">
 															<label class="form-label">
-																Première page
+																Première page *
 															</label>
 
 															<input
 																type="number"
 																name="preview_start_page"
+																id="previewStartPage"
 																min="1"
-																class="form-control">
+																class="form-control"
+																placeholder="Ex: 1">
 														</div>
 
 														<div class="col-md-6">
 															<label class="form-label">
-																Dernière page
+																Dernière page *
 															</label>
 
 															<input
 																type="number"
 																name="preview_end_page"
+																id="previewEndPage"
 																min="1"
-																class="form-control">
+																class="form-control"
+																placeholder="Ex: 5">
 														</div>
 													</div>
 
-													<small class="text-black">
+													<small class="text-black" id="pagesPreviewHint">
 														Vous pouvez sélectionner au maximum 5 pages consécutives.
 													</small>
-
+													<small class="text-danger d-none" id="pagesPreviewError">
+														L'écart entre la première et la dernière page ne doit pas dépasser 5 pages.
+													</small>
 												</div>
 												
 											</div>
@@ -545,50 +541,85 @@ Steps START -->
 														Fichier du livre <span class="text-danger">*</span>
 													</label>
 
-													<div class="upload-box book-upload">
+													<div class="upload-box book-upload" id="uploadDropZone">
 
-														<div class="upload-icon" id="uploadIcon">
+														<div id="uploadInitialState">
+															<div class="upload-icon" id="uploadIcon">
+																<i class="bi bi-file-earmark-pdf-fill"></i>
+															</div>
 
-															<i class="bi bi-file-earmark-pdf-fill"></i>
+															<h5 id="uploadTitle">
+																Téléverser votre ebook
+															</h5>
 
+															<p id="uploadDescription">
+																Sélectionnez le fichier PDF de votre ebook.
+															</p>
+
+															<input
+																type="file"
+																id="bookFileInput"
+																name="ebook_file"
+																class="form-control mt-3"
+																accept=".pdf">
+
+															<div class="upload-info mt-3">
+																<span id="acceptedFormat" class="badge bg-danger">
+																	PDF uniquement
+																</span>
+																<small class="text-muted d-block mt-2">
+																	Taille maximale : 100 MB
+																</small>
+															</div>
 														</div>
 
-														<h5 id="uploadTitle">
+														<div id="uploadProgressState" class="d-none">
+															<div class="upload-icon">
+																<i class="bi bi-cloud-arrow-up text-danger"></i>
+															</div>
+															<h5 class="mb-2">Téléversement en cours...</h5>
+															<p class="text-muted mb-3" id="uploadFileName"></p>
 
-															Téléverser votre ebook
+															<div class="upload-progress-wrapper">
+																<div class="upload-progress-bar-bg">
+																	<div class="upload-progress-bar" id="uploadProgressBar" style="width: 0%"></div>
+																</div>
+																<span class="upload-progress-text" id="uploadProgressText">0%</span>
+															</div>
+														</div>
 
-														</h5>
+														<div id="uploadCompleteState" class="d-none">
 
-														<p id="uploadDescription">
+															<div class="upload-success-card">
+																<div class="upload-success-icon">
+																	<i class="bi bi-check-lg"></i>
+																</div>
 
-															Sélectionnez le fichier PDF de votre ebook.
+																<h5 class="upload-success-title">Fichier chargé avec succès</h5>
 
-														</p>
+																<div class="upload-file-info" id="uploadedFileName"></div>
 
-														<input
-															type="file"
-															id="bookFileInput"
-															name="ebook_file"
-															class="form-control mt-3"
-															accept=".pdf">
+																<div class="upload-actions">
+																	<button type="button" class="upload-action-btn upload-action-preview" id="previewBookBtn">
+																		<span class="upload-action-icon">
+																			<i class="bi bi-eye-fill" id="previewActionIcon"></i>
+																		</span>
+																		<span class="upload-action-label" id="previewActionLabel">Voir le livre</span>
+																	</button>
 
-														<div class="upload-info mt-3">
-
-															<span id="acceptedFormat" class="badge bg-danger">
-
-																PDF uniquement
-
-															</span>
-
-															<small class="text-muted d-block mt-2">
-
-																Taille maximale : 100 MB
-
-															</small>
+																	<button type="button" class="upload-action-btn upload-action-change" id="changeFileBtn">
+																		<span class="upload-action-icon">
+																			<i class="bi bi-arrow-repeat"></i>
+																		</span>
+																		<span class="upload-action-label">Changer</span>
+																	</button>
+																</div>
+															</div>
 
 														</div>
 
 													</div>
+
 
 												</div>
 
@@ -676,10 +707,10 @@ Steps START -->
 									<!-- COPYRIGHT DECLARATION END -->
 
 									<!-- BUTTONS -->
-									<div class="hstack gap-2 justify-content-between">
+									<div class="hstack gap-2 justify-content-between wizard-actions">
 										<button
 											type="button"
-											class="btn btn-secondary prev-btn">
+											class="btn btn-secondary prev-btn wizard-action-btn wizard-action-secondary">
 											<i class="bi bi-arrow-left me-2"></i>
 											Retour
 										</button>
@@ -687,7 +718,7 @@ Steps START -->
 										<button
 											type="button"
 											id="continueUploadBtn"
-											class="btn btn-danger next-btn px-4" disabled>
+											class="btn btn-danger next-btn wizard-action-btn wizard-action-primary" disabled>
 											Continuer
 											<i class="bi bi-arrow-right ms-2"></i>
 										</button>
@@ -736,9 +767,9 @@ Steps START -->
 											<!-- INFORMATION -->
 
 											<div class="preview-info">
-												<h4 id="summary_title">
+												<h2 id="summary_title">
 													Titre du livre
-												</h4>
+												</h2>
 												<div class="preview-author">
 													<i class="bi bi-person-fill"></i>
 													<span>
@@ -893,42 +924,35 @@ Steps START -->
 
 									<!-- BOOK PREVIEW END -->
 
-									<!-- STATUS START -->
-
-									<div class="status-card">
-										<div class="status-icon">
-											<i class="bi bi-check-circle-fill"></i>
+									<!-- STATUS ADMIN START -->
+									<div class="status-card" style="background: linear-gradient(135deg,#e8f5e9,#f1f8e9); border:1px solid #c8e6c9; border-radius:16px; padding:24px; display:flex; gap:20px; align-items:flex-start;">
+										<div class="status-icon" style="background:#2e7d32; color:#fff; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+											<i class="bi bi-patch-check-fill fs-4"></i>
 										</div>
-
 										<div>
-											<h5>
-												Statut : Publié
-											</h5>
-
-											<p>
-												Votre livre sera enregistré et publié automatiquement sur KaMa.
-											</p>
+											<h5 class="mb-1">Statut : Publication immédiate</h5>
+											<p class="mb-0 text-muted">En tant qu'administrateur, votre livre sera publié instantanément sur la plateforme. Aucun frais de dépôt ni délai de vérification ne sont requis.</p>
 										</div>
-
-
 									</div>
-
-									<!-- STATUS END -->
+									<!-- STATUS ADMIN END -->
 
 
 									<!-- BUTTONS -->
-									<div class="d-flex justify-content-between">
+									<div class="d-flex justify-content-between wizard-actions">
 
 
 										<button
 											type="button"
-											class="btn btn-light prev-btn">
-											<i class="bi bi-chevron-left me-2"></i>
+											class="btn btn-secondary prev-btn wizard-action-btn wizard-action-secondary">
+
+											<i class="bi bi-arrow-left me-2"></i>
+
+											Retour
 										</button>
 
 										<button
 											type="submit"
-											class="btn btn-danger btn-lg px-5">
+											class="btn btn-danger wizard-action-btn wizard-action-primary">
 											<i class="bi bi-cloud-check me-2"></i>
 											Enregistrer mon livre
 										</button>
@@ -947,90 +971,253 @@ Steps START -->
 			<!-- Step content END -->
 		</div>
 	</div>
-
+</section>
 <!-- =======================
 Steps END -->
 
+<div id="bookPreviewOverlay" class="book-preview-overlay d-none">
+	<div class="book-preview-container">
+		<div class="book-preview-header">
+			<h5>
+				<i class="bi bi-book me-2" id="previewHeaderIcon"></i>
+				<span id="previewHeaderTitle">Aperçu du livre</span>
+			</h5>
+			<button type="button" class="book-preview-close" id="closePreviewOverlay">
+				<i class="bi bi-x-lg"></i>
+			</button>
+		</div>
+		<div class="book-preview-body">
+			<iframe id="bookPreviewFrame" class="book-preview-frame d-none"></iframe>
+
+			<div id="audioPreviewPanel" class="d-none text-center p-4">
+				<i class="bi bi-headphones text-danger display-3"></i>
+				<h4 class="mt-3 mb-2">Écouter le livre audio</h4>
+				<p class="text-muted mb-4" id="audioPreviewFileName"></p>
+				<audio id="bookAudioPreview" class="w-100" controls preload="metadata">
+					Votre navigateur ne prend pas en charge la lecture audio.
+				</audio>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
-	document.getElementById('continueUploadBtn').addEventListener('click', function () {
+(function() {
+	const step1Btn = document.getElementById('step1NextBtn');
+	const durationInput = document.getElementById('durationInput');
 
-		const fileInput = document.getElementById('bookFileInput');
+	durationInput.addEventListener('beforeinput', function(event) {
+		if (event.data && !/^[0-9:]+$/.test(event.data)) {
+			event.preventDefault();
+		}
+	});
 
-		if (!fileInput.files.length) {
+	durationInput.addEventListener('input', function() {
+		const parts = this.value
+			.replace(/[^0-9:]/g, '')
+			.split(':')
+			.slice(0, 3);
 
+		this.value = parts
+			.map((part, index) => part.slice(0, index === 0 ? 3 : 2))
+			.join(':');
+	});
+
+	function checkStep1() {
+		const title = document.querySelector('[name="title"]');
+		const category = document.querySelector('[name="category_id"]');
+		const subcategory = document.querySelector('[name="subcategory_id"]');
+		const language = document.querySelector('[name="language"]');
+		const year = document.querySelector('[name="publication_year"]');
+		const price = document.querySelector('[name="price"]');
+		const type = document.querySelector('[name="type"]:checked');
+
+		let valid = title && title.value.trim()
+			&& category && category.value.trim()
+			&& subcategory && subcategory.value.trim()
+			&& language && language.value.trim()
+			&& year && year.value.trim()
+			&& price && price.value.trim();
+
+		if (valid && type) {
+			if (type.value === 'ebook') {
+				const pages = document.getElementById('pagesInput');
+				valid = pages && pages.value.trim();
+			} else if (type.value === 'audio') {
+				const duration = document.getElementById('durationInput');
+				valid = duration && duration.value.trim() && duration.checkValidity();
+			}
+		}
+
+		step1Btn.disabled = !valid;
+
+		if (valid) {
+			const step2trigger = document.getElementById('steppertrigger2');
+			step2trigger.disabled = false;
+			step2trigger.style.pointerEvents = '';
+			step2trigger.style.opacity = '';
+		}
+	}
+
+	document.getElementById('step-1').addEventListener('input', checkStep1);
+	document.getElementById('step-1').addEventListener('change', checkStep1);
+})();
+</script>
+
+<script>
+(function() {
+	const bookFileInput = document.getElementById('bookFileInput');
+	const initialState = document.getElementById('uploadInitialState');
+	const progressState = document.getElementById('uploadProgressState');
+	const completeState = document.getElementById('uploadCompleteState');
+	const progressBar = document.getElementById('uploadProgressBar');
+	const progressText = document.getElementById('uploadProgressText');
+	const uploadFileName = document.getElementById('uploadFileName');
+	const uploadedFileName = document.getElementById('uploadedFileName');
+	const previewBookBtn = document.getElementById('previewBookBtn');
+	const previewActionIcon = document.getElementById('previewActionIcon');
+	const previewActionLabel = document.getElementById('previewActionLabel');
+	const previewHeaderIcon = document.getElementById('previewHeaderIcon');
+	const previewHeaderTitle = document.getElementById('previewHeaderTitle');
+	const bookPreviewFrame = document.getElementById('bookPreviewFrame');
+	const audioPreviewPanel = document.getElementById('audioPreviewPanel');
+	const bookAudioPreview = document.getElementById('bookAudioPreview');
+	const audioPreviewFileName = document.getElementById('audioPreviewFileName');
+	const changeFileBtn = document.getElementById('changeFileBtn');
+	const continueUploadBtn = document.getElementById('continueUploadBtn');
+
+	let currentFileURL = null;
+
+	bookFileInput.addEventListener('change', function() {
+		const file = this.files[0];
+		if (!file) return;
+
+		initialState.classList.add('d-none');
+		progressState.classList.remove('d-none');
+		completeState.classList.add('d-none');
+		uploadFileName.textContent = file.name;
+
+		let progress = 0;
+		const fileSize = file.size;
+		const speed = Math.max(2, Math.min(8, fileSize / (1024 * 1024)));
+		const interval = setInterval(() => {
+			progress += speed;
+			if (progress >= 100) {
+				progress = 100;
+				clearInterval(interval);
+				setTimeout(() => showCompleteState(file), 300);
+			}
+			progressBar.style.width = progress + '%';
+			progressText.textContent = Math.round(progress) + '%';
+		}, 50);
+	});
+
+	function showCompleteState(file) {
+		progressState.classList.add('d-none');
+		completeState.classList.remove('d-none');
+		uploadedFileName.textContent = file.name;
+
+		if (currentFileURL) URL.revokeObjectURL(currentFileURL);
+		currentFileURL = URL.createObjectURL(file);
+
+		const isAudio = document.querySelector('[name="type"]:checked')?.value === 'audio';
+		previewActionIcon.className = isAudio ? 'bi bi-play-circle-fill' : 'bi bi-eye-fill';
+		previewActionLabel.textContent = isAudio ? 'Écouter le livre audio' : 'Voir le livre';
+
+		updateContinueBtn();
+		updateFileSummary(file);
+	}
+
+	function updateContinueBtn() {
+		const checkbox = document.getElementById('authorDeclaration');
+		const fileLoaded = bookFileInput.files.length > 0 && completeState && !completeState.classList.contains('d-none');
+		continueUploadBtn.disabled = !(fileLoaded && checkbox && checkbox.checked);
+	}
+
+	previewBookBtn.addEventListener('click', function() {
+		if (!currentFileURL) return;
+		const overlay = document.getElementById('bookPreviewOverlay');
+		const isAudio = document.querySelector('[name="type"]:checked')?.value === 'audio';
+
+		if (isAudio) {
+			bookPreviewFrame.classList.add('d-none');
+			bookPreviewFrame.src = '';
+			audioPreviewPanel.classList.remove('d-none');
+			audioPreviewFileName.textContent = bookFileInput.files[0]?.name ?? '';
+			previewHeaderIcon.className = 'bi bi-headphones me-2';
+			previewHeaderTitle.textContent = 'Aperçu du livre audio';
+			bookAudioPreview.src = currentFileURL;
+			bookAudioPreview.load();
+		} else {
+			bookAudioPreview.pause();
+			bookAudioPreview.removeAttribute('src');
+			audioPreviewPanel.classList.add('d-none');
+			bookPreviewFrame.classList.remove('d-none');
+			bookPreviewFrame.src = currentFileURL;
+			previewHeaderIcon.className = 'bi bi-book me-2';
+			previewHeaderTitle.textContent = 'Aperçu du livre';
+		}
+
+		overlay.classList.remove('d-none');
+		document.body.style.overflow = 'hidden';
+	});
+
+	document.getElementById('closePreviewOverlay').addEventListener('click', function() {
+		const overlay = document.getElementById('bookPreviewOverlay');
+		overlay.classList.add('d-none');
+		bookPreviewFrame.src = '';
+		bookAudioPreview.pause();
+		bookAudioPreview.currentTime = 0;
+		bookAudioPreview.removeAttribute('src');
+		bookAudioPreview.load();
+		document.body.style.overflow = '';
+	});
+
+	document.getElementById('bookPreviewOverlay').addEventListener('click', function(e) {
+		if (e.target === this) {
+			document.getElementById('closePreviewOverlay').click();
+		}
+	});
+
+	changeFileBtn.addEventListener('click', function() {
+		if (!document.getElementById('bookPreviewOverlay').classList.contains('d-none')) {
+			document.getElementById('closePreviewOverlay').click();
+		}
+
+		bookFileInput.value = '';
+		completeState.classList.add('d-none');
+		initialState.classList.remove('d-none');
+		progressBar.style.width = '0%';
+		progressText.textContent = '0%';
+		if (currentFileURL) {
+			URL.revokeObjectURL(currentFileURL);
+			currentFileURL = null;
+		}
+	});
+
+	continueUploadBtn.addEventListener('click', function() {
+		if (!bookFileInput.files.length) {
 			Swal.fire({
 				icon: 'warning',
 				title: 'Fichier manquant',
-				text: 'Veuillez sélectionner le fichier PDF de votre livre avant de continuer.',
+				text: 'Veuillez sélectionner le fichier de votre livre avant de continuer.',
 				confirmButtonColor: '#dc3545'
 			});
-
 			return;
 		}
 
+		const step3trigger = document.getElementById('steppertrigger3');
+		step3trigger.disabled = false;
+		step3trigger.style.pointerEvents = '';
+		step3trigger.style.opacity = '';
 
-		const fileName = fileInput.files[0].name;
+		if (typeof updateBookSummary === 'function') {
+			updateBookSummary();
+		}
 
-
-		Swal.fire({
-
-			title: 'Êtes-vous sûr ?',
-
-			html: `
-				<div class="text-start">
-
-					<p>
-						Vous êtes sur le point de téléverser :
-					</p>
-
-					<div class="alert alert-light border">
-						<i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>
-						<strong>${fileName}</strong>
-					</div>
-
-
-					<p class="text-danger mb-0">
-						<i class="bi bi-exclamation-triangle-fill me-1"></i>
-						Cette action est irréversible après paiement du dépôt de votre livre.
-					</p>
-
-				</div>
-			`,
-
-			icon: 'warning',
-
-			showCancelButton: true,
-
-			confirmButtonText: `
-				<i class="bi bi-cloud-arrow-up me-2"></i>
-				Oui, téléverser
-			`,
-
-			cancelButtonText: `
-				Annuler
-			`,
-
-			confirmButtonColor: '#dc3545',
-
-			cancelButtonColor: '#6c757d',
-
-			reverseButtons: true
-
-		}).then((result)=>{
-
-
-			if(result.isConfirmed){
-
-				// Passage à l'étape suivante de ton wizard
-				document.querySelector('.next-btn').click();
-
-			}
-
-
-		});
-
-
+		document.querySelector('.next-btn').click();
 	});
+})();
 </script>
 
 <script>
@@ -1047,22 +1234,171 @@ const continueUploadBtn = document.getElementById(
 authorDeclaration.addEventListener(
     'change',
     function(){
+        const fileInput = document.getElementById('bookFileInput');
+        const completeState = document.getElementById('uploadCompleteState');
+        const fileLoaded = fileInput.files.length > 0 && completeState && !completeState.classList.contains('d-none');
 
-        if(this.checked){
-
-            continueUploadBtn.disabled = false;
-
-        } else {
-
-            continueUploadBtn.disabled = true;
-
-        }
-
+        continueUploadBtn.disabled = !(this.checked && fileLoaded);
     }
 );
 
 
+const previewStartPage = document.getElementById('previewStartPage');
+const previewEndPage = document.getElementById('previewEndPage');
+const pagesPreviewError = document.getElementById('pagesPreviewError');
+const pagesPreviewHint = document.getElementById('pagesPreviewHint');
+
+function validatePreviewPages() {
+    if (!previewStartPage || !previewEndPage) return true;
+
+    const start = parseInt(previewStartPage.value);
+    const end = parseInt(previewEndPage.value);
+
+    if (!isNaN(start) && !isNaN(end)) {
+        if (end < start) {
+            pagesPreviewError.textContent = 'La dernière page doit être supérieure ou égale à la première.';
+            pagesPreviewError.classList.remove('d-none');
+            pagesPreviewHint.classList.add('d-none');
+            previewEndPage.classList.add('is-invalid');
+            return false;
+        }
+        if (end - start + 1 > 5) {
+            pagesPreviewError.textContent = "L'écart entre la première et la dernière page ne doit pas dépasser 5 pages.";
+            pagesPreviewError.classList.remove('d-none');
+            pagesPreviewHint.classList.add('d-none');
+            previewEndPage.classList.add('is-invalid');
+            previewEndPage.value = start + 4;
+            return false;
+        }
+    }
+
+    pagesPreviewError.classList.add('d-none');
+    pagesPreviewHint.classList.remove('d-none');
+    previewEndPage.classList.remove('is-invalid');
+    previewStartPage.classList.remove('is-invalid');
+    return true;
+}
+
+if (previewStartPage && previewEndPage) {
+    previewStartPage.addEventListener('input', validatePreviewPages);
+    previewEndPage.addEventListener('input', validatePreviewPages);
+}
+
+
 </script>
 
+<script>
+(function () {
+    const setText = (id, value, fallback) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value || fallback;
+    };
 
+    window.updateFileSummary = function (file) {
+        if (!file) return;
+        setText('summary_file_name', file.name, 'Aucun fichier sélectionné');
+        setText('summary_file_type', (file.name.split('.').pop() || '').toUpperCase(), 'Format');
+        setText('summary_file_size', (file.size / 1024 / 1024).toFixed(2) + ' MB', 'Taille');
+        const status = document.getElementById('summary_file_status');
+        if (status) {
+            status.innerHTML = '<i class="bi bi-check-circle-fill"></i> Prêt';
+        }
+    };
+
+    window.updateBookSummary = function () {
+        const title = document.querySelector('[name="title"]')?.value;
+        setText('summary_title', title, 'Titre du livre');
+
+        const category = document.querySelector('[name="category_id"]');
+        if (category) {
+            setText(
+                'summary_category',
+                category.options[category.selectedIndex]?.text,
+                'Catégorie'
+            );
+        }
+
+        const subcategory = document.querySelector('[name="subcategory_id"]');
+        if (subcategory) {
+            setText(
+                'summary_subcategory',
+                subcategory.options[subcategory.selectedIndex]?.text,
+                'Sous-catégorie'
+            );
+        }
+
+        const language = document.querySelector('[name="language"]')?.value;
+        setText('summary_language', language, 'Langue');
+
+        const type = document.querySelector('[name="type"]:checked');
+        setText(
+            'summary_type',
+            type ? (type.value === 'ebook' ? 'Ebook' : 'Livre audio') : null,
+            'Type'
+        );
+
+        const price = document.querySelector('[name="price"]')?.value;
+        setText(
+            'summary_price',
+            price ? Number(price).toLocaleString('fr-FR') + ' FCFA' : null,
+            '0 FCFA'
+        );
+
+        const pagesInput = document.getElementById('pagesInput');
+        const durationInput = document.getElementById('durationInput');
+        const summaryPagesBox = document.getElementById('summary_pages_box');
+        const summaryDurationBox = document.getElementById('summary_duration_box');
+        const isAudio = type?.value === 'audio';
+
+        if (summaryPagesBox) summaryPagesBox.style.display = isAudio ? 'none' : 'block';
+        if (summaryDurationBox) summaryDurationBox.style.display = isAudio ? 'block' : 'none';
+        setText('summary_pages', pagesInput?.value, '0');
+        setText('summary_duration', durationInput?.value, '00:00:00');
+
+        const year = document.querySelector('[name="publication_year"]')?.value;
+        setText('summary_year', year, '----');
+
+        const description = document.querySelector('[name="short_description"]')?.value;
+        setText(
+            'summary_short_description',
+            description,
+            'Aucune description disponible.'
+        );
+
+        const cover = document.querySelector('[name="cover_image"]');
+        const summaryCover = document.getElementById('summary_cover');
+        if (cover?.files?.length && summaryCover) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                summaryCover.src = e.target.result;
+            };
+            reader.readAsDataURL(cover.files[0]);
+        }
+
+        const fileInput = document.getElementById('bookFileInput');
+        if (fileInput?.files?.length && typeof updateFileSummary === 'function') {
+            updateFileSummary(fileInput.files[0]);
+        }
+    };
+
+    document.addEventListener('input', (e) => {
+        if (e.target.matches(
+            '[name="title"], [name="price"], [name="pages"], [name="duration"], [name="publication_year"], [name="short_description"]'
+        )) {
+            updateBookSummary();
+        }
+    });
+
+    document.addEventListener('change', (e) => {
+        if (e.target.matches(
+            '[name="category_id"], [name="subcategory_id"], [name="language"], [name="type"], [name="cover_image"], [name="ebook_file"], [name="audio_file"]'
+        )) {
+            updateBookSummary();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', updateBookSummary);
+    updateBookSummary();
+})();
+</script>
 @endsection

@@ -1,472 +1,142 @@
 @extends('layouts.writer')
 
 @section('writer-content')
+<main class="writer-page">
+    <div class="container">
+        <header class="writer-page-header">
+            <div>
+                <span class="writer-page-eyebrow">Préférences</span>
+                <h1>Paramètres</h1>
+                <p>Gérez votre profil d’auteur, vos notifications et la sécurité du compte.</p>
+            </div>
+        </header>
 
-<section class="pt-4">
-	<div class="container-fluid vstack gap-4">
-		<!-- Title START -->
-		<div class="row">
-			<div class="col-12">
-				<h1 class="fs-4 mb-0"><i class="bi bi-gear fa-fw me-1"></i>Paramètres</h1>
-			</div>
-		</div>
-		<!-- Title END -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        @endif
 
-		<!-- Tabs START -->
-		<div class="row g-4">
-			<div class="col-12">
-				<div class="bg-light pb-0 px-2 px-lg-0 rounded-top">
-					<ul class="nav nav-tabs nav-bottom-line nav-responsive border-0 nav-justified" role="tablist">
-						<li class="nav-item"> <a class="nav-link mb-0 active" data-bs-toggle="tab" href="#tab-1"><i class="fas fa-cog fa-fw me-2"></i>Modifier votre profile</a> </li>
-						<li class="nav-item"> <a class="nav-link mb-0" data-bs-toggle="tab" href="#tab-2"><i class="fas fa-bell fa-fw me-2"></i>Paramètres de notification </a> </li>
-						<li class="nav-item"> <a class="nav-link mb-0" data-bs-toggle="tab" href="#tab-3"><i class="fas fa-user-circle fa-fw me-2"></i>Paramètres du compte</a> </li>
-					</ul>
-				</div>
-			</div>
-		</div>	
-		<!-- Tabs END -->
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <strong>Veuillez corriger les informations suivantes :</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                </ul>
+            </div>
+        @endif
 
-        <div class="row g-4">
-			<div class="col-12">
-				<div class="tab-content">
-					<!-- Tab content 1 START -->
-					<div class="tab-pane show active" id="tab-1">
-						<div class="row g-4">
-							<!-- Edit profile START -->
-							<div class="col-12">
-								<div class="card border">
-									<div class="card-header border-bottom bg-table-red">
-										<h5 class="card-header-title">Modifier votre Profile</h5>
-									</div>
-										<div class="card-body">
-                                            @if(session('success'))
-                                                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                                                    <i class="bi bi-check-circle-fill me-2"></i>
-                                                    {{ session('success') }}
+        <div class="writer-settings-layout">
+            <nav class="writer-settings-nav" role="tablist" aria-label="Sections des paramètres">
+                <button class="active" data-bs-toggle="tab" data-bs-target="#writer-profile" type="button">
+                    <i class="bi bi-person"></i><span>Profil</span>
+                </button>
+                <button data-bs-toggle="tab" data-bs-target="#writer-notifications" type="button">
+                    <i class="bi bi-bell"></i><span>Notifications</span>
+                </button>
+                <button data-bs-toggle="tab" data-bs-target="#writer-security" type="button">
+                    <i class="bi bi-shield-lock"></i><span>Sécurité</span>
+                </button>
+                <button data-bs-toggle="tab" data-bs-target="#writer-social" type="button">
+                    <i class="bi bi-share"></i><span>Réseaux sociaux</span>
+                </button>
+            </nav>
 
-                                                            <button type="button"
-                                                                    class="btn-close"
-                                                                    data-bs-dismiss="alert"
-                                                                    aria-label="Close">
-                                                            </button>
-                                                        </div>
-                                            @endif
-                                            @if($errors->any())
-                                                <div class="alert alert-danger mb-4">
-                                                    <strong>Veuillez corriger les erreurs suivantes :</strong>
+            <div class="tab-content writer-settings-content">
+                <section class="tab-pane fade show active writer-form-panel" id="writer-profile">
+                    <header><span><i class="bi bi-person"></i></span><div><h2>Profil d’auteur</h2><p>Ces informations peuvent être visibles par vos lecteurs.</p></div></header>
+                    <form method="POST" action="{{ route('writer.account.update') }}" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
 
-                                                    <ul class="mb-0 mt-2">
-                                                        @foreach($errors->all() as $error)
-                                                            <li>{{ $error }}</li>
-                                                        @endforeach
-                                                    </ul>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <form class="row g-3" method="POST" action="{{ route('writer.account.update') }}" enctype="multipart/form-data">
-                                            @csrf
-                                            @method('PUT')
+                        <div class="writer-profile-editor">
+                            <label for="writer-avatar" class="writer-avatar-upload">
+                                <img src="{{ auth()->user()->avatar
+                                    ? asset('storage/'.auth()->user()->avatar)
+                                    : asset('assets/images/avatar/01.jpg') }}" alt="">
+                                <span><i class="bi bi-camera"></i></span>
+                                <input id="writer-avatar" type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp">
+                                <small>JPG, PNG ou WebP · 2 Mo maximum</small>
+                            </label>
+                            <div class="writer-field">
+                                <label for="writer-bio">Biographie</label>
+                                <textarea id="writer-bio" name="bio" rows="5" maxlength="255" placeholder="Présentez-vous en quelques lignes…">{{ old('bio', auth()->user()->bio) }}</textarea>
+                                <small>Une présentation courte de votre parcours et de vos œuvres.</small>
+                            </div>
+                        </div>
 
-                                            <div class="row">
-                                                <div class="mb-3 ">
-                                                    <!-- Avatar upload START -->
-                                                   <div class="row mb-4 align-items-center">
-
-                                                        <div class="col-lg-3 text-center">
-
-                                                            <label for="uploadfile-1" class="position-relative">
-
-                                                                <img
-                                                                    src="{{ Auth::user()->avatar
-                                                                    ? asset('storage/'.Auth::user()->avatar)
-                                                                    : asset('assets/images/avatar/01.jpg') }}"
-                                                                    class="rounded-circle shadow border border-3"
-                                                                    style="width:120px;height:120px;object-fit:cover;cursor:pointer;">
-
-                                                                <input
-                                                                    id="uploadfile-1"
-                                                                    type="file"
-                                                                    name="avatar"
-                                                                    class="d-none">
-
-                                                            </label>
-
-                                                            <p class="medium fw-semibold text-black mt-2 mb-0">
-                                                                Cliquez sur la photo pour la modifier
-                                                            </p>
-
-                                                        </div>
-
-                                                        <div class="col-lg-9">
-
-                                                            <label class="form-label fw-semibold text-black">
-                                                                Biographie
-                                                            </label>
-
-                                                            <textarea
-                                                                name="bio"
-                                                                rows="5"
-                                                                class="form-control rounded-3"
-                                                                placeholder="Présentez-vous en quelques lignes...">{{ old('bio', Auth::user()->bio) }}</textarea>
-
-                                                            <small class="text-blck">
-                                                                Cette biographie sera visible sur votre profil d'auteur.
-                                                            </small>
-
-                                                        </div>
-
-                                                    </div>
-                                                    <!-- Avatar upload END -->
-                                                </div>                                            
-                                           
-                                                <div class='row mb-3'>
-                                                    <div class="col-md-6 mb-4">
-
-                                                        <label class="form-label fw-semibold text-black">
-                                                            <i class="bi bi-person me-2 text-danger"></i>
-                                                            Prénom
-                                                        </label>
-
-                                                        <input
-                                                            type="text"
-                                                            name="firstname"
-                                                            class="form-control rounded-3 shadow-sm"
-                                                            value="{{ Auth::user()->firstname }}">
-
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label fw-semibold text-black"><i class="bi bi-person me-2 icon-red"></i>Nom</label>
-                                                        <input type="text" class="form-control rounded-3 shadow-sm" name="lastname" value="{{ Auth::user()->lastname }}" placeholder="Nom de famille">
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-semibold text-black"><i class="bi bi-flag me-2 icon-red"></i>Pays<span class="text-danger">*</span></label>
-                                                              
-                                                             <select 
-                                                            name="country_id"
-                                                            class="form-select rounded-3 shadow-sm"
-                                                            required>
-
-                                                            <option value="">
-                                                                Sélectionnez votre pays
-                                                            </option>
-
-                                                            @foreach($countries as $country)
-
-                                                                <option 
-                                                                    value="{{ $country->id }}"
-                                                                    {{ old('country_id', Auth::user()->country_id) == $country->id ? 'selected' : '' }}>
-
-                                                                    {{ $country->flag }} {{ $country->name }}
-
-                                                                </option>
-
-                                                            @endforeach
-
-                                                        </select>
-
-                                                    </div>                
-                                                    
-
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-semibold text-black"><i class="bi bi-flag me-2 icon-red"></i>Ville<span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control rounded-3 shadow-sm" name="city" value="{{ Auth::user()->city }}" placeholder="Enter votre ville">
-                                                    </div>
-
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-semibold text-black">Selectionnez votre genre<span class="text-danger">*</span></label>
-
-                                                    <div class="btn-group w-100" role="group">
-
-                                                            <input type="radio"
-                                                                class="btn-check"
-                                                                name="gender"
-                                                                id="male"
-                                                                value="male"
-                                                                {{ Auth::user()->gender=='male'?'checked':'' }}>
-
-                                                            <label class="btn btn-outline-danger rounded-start"
-                                                                for="male">
-                                                                Homme
-                                                            </label>
-
-                                                            <input type="radio"
-                                                                class="btn-check"
-                                                                name="gender"
-                                                                id="female"
-                                                                value="female"
-                                                                {{ Auth::user()->gender=='female'?'checked':'' }}>
-
-                                                            <label class="btn btn-outline-danger"
-                                                                for="female">
-                                                                Femme
-                                                            </label>
-
-                                                            <input type="radio"
-                                                                class="btn-check"
-                                                                name="gender"
-                                                                id="other"
-                                                                value="other"
-                                                                {{ Auth::user()->gender=='other'?'checked':'' }}>
-
-                                                            <label class="btn btn-outline-danger rounded-end"
-                                                                for="other">
-                                                                Autre
-                                                            </label>
-
-                                                        </div>
-                                                        </div>
-
-                                                    </div>
-                                                
-                                                    <div class="row">
-                                                        <!-- Email id -->
-                                                        <div class="col-md-6 MB-3">
-                                                            <label class="form-label fw-semibold text-black"><i class="bi bi-envelope-at me-2 icon-red"></i>Adresse email</label>
-                                                            <input type="email" name="email" class="form-control rounded-3 shadow-sm" value="{{ Auth::user()->email }}" placeholder="Entrez votre adresse mail">
-                                                        </div>
-                                                        <!-- Mobile number -->
-                                                        <div class="col-md-6 mb-3">
-                                                            <label class="form-label fw-semibold text-black"><i class="bi bi-phone me-2 icon-red"></i>Numéro de téléphone</label>
-                                                            <input type="text" class="form-control rounded-3 shadow-sm" name="phone" value="{{ Auth::user()->phone }}" placeholder="Entrez votre numéro (ex: +233 0500000000)">
-                                                        </div>
-                                                    </div>
-                                            
-                                                
-                                                <!-- Save button -->
-    
-                                                <div class="d-flex justify-content-center mt-4">
-                                                <button type="submit" class="btn btn-submit mb-2">
-                                                        Sauvegarder
-                                                </button>
-										</div>
-                                           
-                                        </form>
-									</div>
-								</div>
-							</div>
-							<!-- Edit profile END -->
-
-
-							<!-- Update Password START -->
-							<div class="col-md-6">
-								<div class="card border">
-									<div class="card-header border-bottom bg-table-red">
-										<h5 class="card-header-title">Changez votre mot de passe </h5>
-									</div>
-									<!-- Card body START -->
-                                    <form class="card-body" method="POST" action="{{ route('writer.password.update') }}">
-                                        @csrf
-                                        @method('PUT')
-                                        <!-- Current password -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Mot de passe actuel</label>
-
-                                            <div class="input-group">
-                                                <input
-                                                    type="password"
-                                                    name="current_password"
-                                                    id="current_password"
-                                                    class="form-control"
-                                                    placeholder="Entrez votre mot de passe actuel"
-                                                    required>
-
-                                                <span class="input-group-text bg-transparent">
-                                                    <i class="fas fa-eye-slash cursor-pointer toggle-password"
-                                                    data-target="current_password"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <!-- New password -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Nouveau mot de passe</label>
-
-                                            <div class="input-group">
-                                                <input
-                                                    type="password"
-                                                    name="password"
-                                                    id="password"
-                                                    class="form-control"
-                                                    placeholder="Entrez votre nouveau mot de passe"
-                                                    required>
-
-                                                <span class="input-group-text bg-transparent">
-                                                    <i class="fas fa-eye-slash cursor-pointer toggle-password"
-                                                    data-target="password"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Confirm password -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Confirmer le nouveau mot de passe</label>
-
-                                            <div class="input-group">
-                                                <input
-                                                    type="password"
-                                                    name="password_confirmation"
-                                                    id="password_confirmation"
-                                                    class="form-control"
-                                                    placeholder="Confirmer le nouveau mot de passe"
-                                                    required>
-
-                                                <span class="input-group-text bg-transparent">
-                                                    <i class="fas fa-eye-slash cursor-pointer toggle-password"
-                                                    data-target="password_confirmation"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-end">
-                                                <button type="submit" class="btn btn-submit">
-                                                    Modifier le mot de passe
-                                                </button>
-                                            </div>
-                                    </form>
-                                    <!-- Card body END -->
-								</div>
-							</div>
-							<!-- Update Password END -->
-						</div>
-					</div>
-					<!-- Tab content 1 END -->
-
-					<!-- Tab content 2 START -->
-					<div class="tab-pane" id="tab-2">
-						<div class="card border mb-4">
-							<!-- Card header -->
-							<div class="card-header bg-transparent border-bottom">
-								<h5 class="card-header-title">Paramètres de notification</h5>
-								<p class="mb-0">Déterminez les sujets pour lesquels vous souhaitez recevoir des notifications, et désabonnez-vous de ceux qui ne vous intéressent pas.</p>
-							</div>
-		
-							<!-- Form START -->
-							<form class="card-body"
-                                method="POST"
-                                action="{{ route('writer.notifications.update') }}">
-                                @csrf
-								<!-- Switch -->
-								<div class="form-check form-switch d-flex justify-content-between mb-4">
-                                    <label class="form-check-label">
-                                        Être notifié quand un lecteur achète mon livre
-                                    </label>
-
-                                   <input class="form-check-input"
-                                        type="checkbox"
-                                        name="book_sold"
-                                        @checked(data_get($settings->settings, 'book_sold'))
-                                    >
+                        <div class="writer-form-grid">
+                            <div class="writer-field"><label for="writer-firstname">Prénom</label><input id="writer-firstname" name="firstname" value="{{ old('firstname', auth()->user()->firstname) }}" required></div>
+                            <div class="writer-field"><label for="writer-lastname">Nom</label><input id="writer-lastname" name="lastname" value="{{ old('lastname', auth()->user()->lastname) }}" required></div>
+                            <div class="writer-field">
+                                <label for="writer-country">Pays</label>
+                                <select id="writer-country" name="country_id" required>
+                                    <option value="">Sélectionnez un pays</option>
+                                    @foreach($countries as $country)
+                                        <option value="{{ $country->id }}" @selected(old('country_id', auth()->user()->country_id) == $country->id)>
+                                            {{ $country->flag }} {{ $country->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="writer-field"><label for="writer-city">Ville</label><input id="writer-city" name="city" value="{{ old('city', auth()->user()->city) }}" required></div>
+                            <div class="writer-field"><label for="writer-email">Adresse email</label><input id="writer-email" type="email" name="email" value="{{ old('email', auth()->user()->email) }}" required></div>
+                            <div class="writer-field"><label for="writer-phone">Téléphone</label><input id="writer-phone" name="phone" value="{{ old('phone', auth()->user()->phone) }}" placeholder="+233…"></div>
+                            <div class="writer-field writer-field-full">
+                                <label>Genre</label>
+                                <div class="writer-gender-options">
+                                    @foreach(['male' => 'Homme', 'female' => 'Femme', 'other' => 'Autre'] as $value => $label)
+                                        <label><input type="radio" name="gender" value="{{ $value }}" @checked(old('gender', auth()->user()->gender) === $value)><span>{{ $label }}</span></label>
+                                    @endforeach
                                 </div>
-		
-								<!-- Switch -->
-								<div class="form-check form-switch d-flex justify-content-between mb-4">
-                                    <label class="form-check-label">
-                                        Être notifié quand une publicité de mon livre est validée
-                                    </label>
+                            </div>
+                        </div>
 
-                                    <input class="form-check-input"
-                                        type="checkbox"
-                                        name="ad_approved"
-                                        {{ !empty($settings->settings['ad_approved']) ? 'checked' : '' }}>
-                                </div>
-		
-								<!-- Switch -->
-								<div class="form-check form-switch d-flex justify-content-between mb-4">
-                                    <label class="form-check-label">
-                                        Être notifié des avis sur mes livres
-                                    </label>
+                        <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer le profil</button></footer>
+                    </form>
+                </section>
 
-                                    <input class="form-check-input"
-                                        type="checkbox"
-                                        name="book_review"
-                                        {{ !empty($settings->settings['book_review']) ? 'checked' : '' }}>
-                                </div>
-		
-								<!-- Button -->
-								<div class="d-sm-flex justify-content-end">
-									<button type="submit" class="btn btn-sm btn-primary me-2 mb-0">Enregistrer</button>
-									<a href="#" class="btn btn-sm btn-outline-secondary mb-0">Annuler</a>
-								</div>
-							</form>
-							<!-- Form END -->
-						</div>
-					</div>
-					<!-- Tab content 2 END -->
+                <section class="tab-pane fade writer-form-panel" id="writer-notifications">
+                    <header><span><i class="bi bi-bell"></i></span><div><h2>Notifications</h2><p>Choisissez les événements pour lesquels vous souhaitez être averti.</p></div></header>
+                    <form method="POST" action="{{ route('writer.notifications.update') }}">
+                        @csrf
+                        <div class="writer-preference-list">
+                            <label><div><strong>Vente d’un livre</strong><small>Lorsqu’un lecteur achète l’un de vos ouvrages.</small></div><input type="checkbox" name="book_sold" @checked(data_get($settings->settings, 'book_sold'))></label>
+                            <label><div><strong>Publicité validée</strong><small>Lorsqu’une campagne de promotion est approuvée.</small></div><input type="checkbox" name="ad_approved" @checked(data_get($settings->settings, 'ad_approved'))></label>
+                            <label><div><strong>Nouvel avis</strong><small>Lorsqu’un lecteur publie un avis sur votre livre.</small></div><input type="checkbox" name="book_review" @checked(data_get($settings->settings, 'book_review'))></label>
+                        </div>
+                        <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer les préférences</button></footer>
+                    </form>
+                </section>
 
-					<!-- Tab content 3 START -->
-					<div class="tab-pane" id="tab-3">
-						<div class="row g-4">
+                <section class="tab-pane fade writer-form-panel" id="writer-security">
+                    <header><span><i class="bi bi-shield-lock"></i></span><div><h2>Sécurité du compte</h2><p>Utilisez un mot de passe unique et difficile à deviner.</p></div></header>
+                    <form method="POST" action="{{ route('writer.password.update') }}" class="writer-security-form">
+                        @csrf
+                        @method('PUT')
+                        <div class="writer-field"><label for="current_password">Mot de passe actuel</label><input type="password" id="current_password" name="current_password" required autocomplete="current-password"></div>
+                        <div class="writer-field"><label for="password">Nouveau mot de passe</label><input type="password" id="password" name="password" required autocomplete="new-password"></div>
+                        <div class="writer-field"><label for="password_confirmation">Confirmer le mot de passe</label><input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password"></div>
+                        <footer><button type="submit" class="writer-primary-action"><i class="bi bi-shield-check"></i> Modifier le mot de passe</button></footer>
+                    </form>
+                </section>
 
-							<!-- Social account END -->
-							<div class="col-lg-12">
-								<div class="card border rounded-3 ">
-									<!-- Card header -->
-									<div class="card-header border-bottom bg-table-black">
-										<h5 class="card-header-title">Profil sur les réseaux sociaux</h5>
-									</div>
-									<!-- Card body START -->
-									<div class="card-body">
-                                        <form action="{{ route('social.profile.save') }}" method="POST">
-                                            @csrf
-                                                <div class="row">
-                                                
-                                                    <!-- Facebook username -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"><i class="fab fa-facebook text-facebook me-2"></i>Lien Facebook</label>
-                                                        <input class="form-control" name="facebook_url" value=" " placeholder="https://facebook.com/.....">
-                                                    </div>
-                                                    
-                                                    <!-- Twitter username -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"><i class="bi bi-twitter text-twitter me-2"></i>Lien X</label>
-                                                        <input class="form-control" type="text" name="x-url" value=" " placeholder="https://x.com/.....">
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="row">
-                                                        <!-- Instagram username -->
-                                                        <div class="col-md-6 mb-3">
-                                                            <label class="form-label"><i class="fab fa-instagram text-instagram-gradient me-2"></i> Lien Instagram</label>
-                                                            <input class="form-control" type="text" name="instagram_url" value=" " placeholder="https://instagram.com/.....">
-                                                        </div>
-
-                                                        <div class="col-md-6 mb-3">
-                                                            <label class="form-label"><i class="fab fa-linkedin text-instagram-gradient me-2"></i>Lien LinkedIn</label>
-                                                            <input class="form-control" type="text" name="linkedin_url" value="{{ optional($social)->linkedin_url }}" placeholder="https://linkedin.com/.....">
-                                                        </div>
-                                                </div>
-
-                                                 <div class="row">
-                                                        <!-- whatsapp username -->
-                                                        <div class="col-md-6 mb-3">
-                                                            <label class="form-label"><i class="fab fa-instagram text-instagram-gradient me-2"></i> Lien Whatsapp</label>
-                                                            <input class="form-control" type="text" name="whatsApp_url" value=" " placeholder="https://whatsapp.com/.....">
-                                                        </div>
-
-                                                </div>
-                                                <!-- Button -->
-                                                <div class="d-flex justify-content-end mt-4">
-                                                    <button type="submit" class="btn btn-submit mb-0">Enregistrer mes comptes</button>
-                                                </div>
-                                        </form>
-										
-									</div>
-									<!-- Card body END -->
-								</div>
-							</div>
-							<!-- Social account END -->
-						</div>
-					</div>
-					<!-- Tab content 3 END -->
-				</div>
-			</div>
-		</div>
-		
-	</div>	
-</section>
-    
+                <section class="tab-pane fade writer-form-panel" id="writer-social">
+                    <header><span><i class="bi bi-share"></i></span><div><h2>Réseaux sociaux</h2><p>Ajoutez uniquement les profils que vous souhaitez rendre publics.</p></div></header>
+                    <form method="POST" action="{{ route('social.profile.save') }}">
+                        @csrf
+                        <div class="writer-form-grid">
+                            <div class="writer-field"><label for="facebook_url"><i class="bi bi-facebook"></i> Facebook</label><input type="url" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $social->facebook_url) }}" placeholder="https://facebook.com/…"></div>
+                            <div class="writer-field"><label for="x_url">𝕏 X</label><input type="url" id="x_url" name="x_url" value="{{ old('x_url', $social->x_url) }}" placeholder="https://x.com/…"></div>
+                            <div class="writer-field"><label for="instagram_url"><i class="bi bi-instagram"></i> Instagram</label><input type="url" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $social->instagram_url) }}" placeholder="https://instagram.com/…"></div>
+                            <div class="writer-field"><label for="linkedin_url"><i class="bi bi-linkedin"></i> LinkedIn</label><input type="url" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url', $social->linkedin_url) }}" placeholder="https://linkedin.com/in/…"></div>
+                        </div>
+                        <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer les liens</button></footer>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
 @endsection

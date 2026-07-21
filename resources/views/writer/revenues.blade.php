@@ -1,720 +1,145 @@
 @extends('layouts.writer')
 
 @section('writer-content')
-    <div class="container-fluid">
-        <!-- PAGE HEADER START -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="mt-4">
-                 <div class="row">
-                <div class="col-12">
-                    <h1 class="fs-4 mb-0"><i class="bi bi-wallet2 fa-fw me-1"></i>Revenus</h1>
-                </div>
-            </div>	
+<main class="writer-page">
+    <div class="container">
+        <header class="writer-page-header">
+            <div>
+                <span class="writer-page-eyebrow">Finances</span>
+                <h1>Revenus</h1>
+                <p>Suivez les ventes de vos ouvrages et vos frais de publication.</p>
             </div>
-        </div>
-        <!-- PAGE HEADER END -->
+        </header>
 
+        <section class="writer-metric-grid">
+            <article class="writer-metric">
+                <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
+                <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Achats confirmés</span></div>
+            </article>
+            <article class="writer-metric">
+                <span class="writer-metric-icon black"><i class="bi bi-calendar3"></i></span>
+                <div><small>Ce mois</small><strong>{{ number_format($monthlyRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Revenus mensuels</span></div>
+            </article>
+            <article class="writer-metric">
+                <span class="writer-metric-icon blue"><i class="bi bi-bag-check"></i></span>
+                <div><small>Ventes</small><strong>{{ number_format($totalSales) }}</strong><span class="neutral">Transactions réussies</span></div>
+            </article>
+            <article class="writer-metric">
+                <span class="writer-metric-icon amber"><i class="bi bi-people"></i></span>
+                <div><small>Lecteurs</small><strong>{{ number_format($totalReaders) }}</strong><span class="neutral">Acheteurs uniques</span></div>
+            </article>
+        </section>
 
-        <!-- STATISTICS START -->
-        <div class="row g-4 mb-4">
-            <!-- TOTAL REVENUE -->
-            <div class="col-sm-6 col-xl-3">
-                <div class="revenue-card">
-                    <div class="revenue-icon bg-success-soft">
-                        <i class="bi bi-currency-dollar"></i>
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            ${{ number_format($totalRevenue,2) }}
-                        </h3>
-
-
-                        <p>
-                            Revenus totaux
-                        </p>
-
-                        <span class="text-success small">
-                            <i class="bi bi-arrow-up"></i>
-                            Revenus générés
-                        </span>
-                    </div>
-                </div>
+        <section class="writer-finance-summary">
+            <div>
+                <span><i class="bi bi-wallet2"></i></span>
+                <div><small>Solde disponible estimé</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }} $</strong></div>
             </div>
-
-            <!-- MONTH REVENUE -->
-            <div class="col-sm-6 col-xl-3">
-                <div class="revenue-card">
-                    <div class="revenue-icon bg-primary-soft">
-                        <i class="bi bi-calendar-check"></i>
-                    </div>
-                    <div>
-                        <h3>
-                            ${{ number_format($monthlyRevenue,2) }}
-                        </h3>
-                        <p>
-                            Ce mois
-                        </p>
-                        <span class="text-primary small">
-                            <i class="bi bi-graph-up"></i>
-                            Performance 
-                        </span>
-                    </div>
-                </div>
+            <div>
+                <span><i class="bi bi-arrow-up-right"></i></span>
+                <div><small>Retraits approuvés</small><strong>{{ number_format($totalWithdrawn, 2, ',', ' ') }} $</strong></div>
             </div>
-
-            <!-- SALES -->
-            <div class="col-sm-6 col-xl-3">
-                <div class="revenue-card">
-                    <div class="revenue-icon bg-warning-soft">
-                        <i class="bi bi-book"></i>
-                    </div>
-
-                    <div>
-                        <h3>
-                            {{ $totalSales }}
-                        </h3>
-                        <p>
-                            Livres vendus
-                        </p>
-                        <span class="text-warning small">
-                            <i class="bi bi-cart-check"></i>
-                            Achats confirmés
-                        </span>
-                    </div>
-                </div>
+            <div>
+                <span><i class="bi bi-hourglass-split"></i></span>
+                <div><small>Retraits en attente</small><strong>{{ number_format($pendingWithdrawals, 2, ',', ' ') }} $</strong></div>
             </div>
+            <div>
+                <span><i class="bi bi-clock-history"></i></span>
+                <div><small>Ventes en attente</small><strong>{{ number_format($pendingAmount, 2, ',', ' ') }} $</strong></div>
+            </div>
+        </section>
 
-            <!-- READERS -->
-            <div class="col-sm-6 col-xl-3">
-                <div class="revenue-card">
-                    <div class="revenue-icon bg-danger-soft">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div>
-                        <h3>
-                            {{ $totalReaders }}
-                        </h3>
-                        <p>
-                            Lecteurs
-                        </p>
-                        <span class="text-danger small">
-                            <i class="bi bi-person-check"></i>
-                            Clients uniques
-                        </span>
-                    </div>
+        <section class="writer-panel">
+            <header class="writer-panel-header">
+                <div>
+                    <span>Transactions</span>
+                    <h2>Historique des ventes</h2>
+                    <p>Achats confirmés effectués par vos lecteurs.</p>
                 </div>
+                <strong class="writer-panel-count">{{ $purchasePayments->total() }} vente(s)</strong>
+            </header>
 
+            <div class="table-responsive">
+                <table class="table writer-data-table align-middle">
+                    <thead><tr><th>Livre</th><th>Lecteur</th><th>Montant</th><th>Méthode</th><th>Statut</th><th>Date</th></tr></thead>
+                    <tbody>
+                        @forelse($purchasePayments as $payment)
+                            <tr>
+                                <td>
+                                    <div class="writer-table-book">
+                                        <img src="{{ $payment->book?->cover_image ? asset('storage/'.$payment->book->cover_image) : asset('assets/images/book/01.jpg') }}" alt="">
+                                        <div><strong>{{ $payment->book?->title ?? 'Livre indisponible' }}</strong><small>{{ $payment->book?->type === 'audio' ? 'Livre audio' : 'Ebook' }}</small></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="writer-table-person">
+                                        <strong>{{ trim(($payment->user?->firstname ?? '').' '.($payment->user?->lastname ?? '')) ?: 'Lecteur' }}</strong>
+                                        <small>{{ $payment->user?->email }}</small>
+                                    </div>
+                                </td>
+                                <td><strong class="writer-money-positive">{{ number_format($payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</strong></td>
+                                <td>{{ $payment->payment_method ? ucfirst($payment->payment_method) : '—' }}</td>
+                                <td><span class="writer-status success"><i class="bi bi-check-circle-fill"></i> Payé</span></td>
+                                <td>{{ $payment->created_at->format('d/m/Y') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6"><div class="writer-empty-state"><span><i class="bi bi-cart-x"></i></span><h3>Aucune vente</h3><p>Vos ventes apparaîtront ici.</p></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Available balance -->
-            <div class="col-md-6">
-                <div class="balance-card">
-                    <div class="revenue-icon bg-danger-soft">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-                    <div>
-                        <h3>
-                             {{ number_format($availableBalance, 2) }} $
-                        </h3>
-                        <p>
-                            Balance disponible
-                        </p>
-                        <span class="text-success small">
-                            <i class="bi bi-check-circle"></i>
-                            Disponible pour retrait
-                        </span>
-                    </div>
-                </div>
+            @if($purchasePayments->hasPages())
+                <footer class="writer-panel-footer">{{ $purchasePayments->links() }}</footer>
+            @endif
+        </section>
 
+        <section class="writer-panel">
+            <header class="writer-panel-header">
+                <div>
+                    <span>Publications</span>
+                    <h2>Frais de publication</h2>
+                    <p>Historique des paiements liés au dépôt de vos livres.</p>
+                </div>
+                <strong class="writer-panel-count">{{ $publicationPayments->total() }} dépôt(s)</strong>
+            </header>
+
+            <div class="table-responsive">
+                <table class="table writer-data-table align-middle">
+                    <thead><tr><th>Livre</th><th>Montant</th><th>Référence</th><th>Méthode</th><th>Statut</th><th>Date</th></tr></thead>
+                    <tbody>
+                        @forelse($publicationPayments as $payment)
+                            @php
+                                [$paymentLabel, $paymentClass, $paymentIcon] = match($payment->status) {
+                                    'success' => ['Payé', 'success', 'bi-check-circle-fill'],
+                                    'pending' => ['En attente', 'pending', 'bi-hourglass-split'],
+                                    default => ['Échec', 'danger', 'bi-x-circle-fill'],
+                                };
+                            @endphp
+                            <tr>
+                                <td>
+                                    <div class="writer-table-book">
+                                        <img src="{{ $payment->book?->cover_image ? asset('storage/'.$payment->book->cover_image) : asset('assets/images/book/01.jpg') }}" alt="">
+                                        <div><strong>{{ $payment->book?->title ?? 'Livre indisponible' }}</strong><small>Dépôt de publication</small></div>
+                                    </div>
+                                </td>
+                                <td><strong>{{ number_format($payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</strong></td>
+                                <td><code class="writer-reference">{{ $payment->reference }}</code></td>
+                                <td>{{ $payment->payment_method ? ucfirst($payment->payment_method) : '—' }}</td>
+                                <td><span class="writer-status {{ $paymentClass }}"><i class="bi {{ $paymentIcon }}"></i> {{ $paymentLabel }}</span></td>
+                                <td>{{ $payment->created_at->format('d/m/Y') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6"><div class="writer-empty-state"><span><i class="bi bi-cloud-upload"></i></span><h3>Aucun paiement</h3><p>Vos frais de publication apparaîtront ici.</p></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Amount withdrawn -->
-            <div class="col-md-6">
-                <div class="withdrawn-card">
-                    <div class="revenue-icon bg-warning-soft">
-                        <i class="bi bi-currency-dollar"></i>
-                    </div>
-                    <div>
-                        <h3>
-                            {{ number_format($totalWithdrawn, 2) }} $
-                        </h3>
-                        <p>
-                            Montant retiré
-                        </p>
-                        <span class="text-warning small">
-                            <i class="bi bi-clock-history"></i>
-                            Retraits effectués
-                        </span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- STATISTICS END -->
-
-        <!-- SALES HISTORY START -->
-            <div class="card border-0 shadow-sm rounded-4">
-                <!-- HEADER -->
-                <div class="card-header sales-header">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div class="sales-header-content">
-
-                            <h5 class="fw-bold mb-1">
-                                <span class="sales-icon">
-                                    <i class="bi bi-receipt-cutoff"></i>
-                                </span>
-
-                                Historique des ventes
-                            </h5>
-
-                            <p class="mb-0">
-                                Retrouvez tous les achats effectués par vos lecteurs.
-                            </p>
-
-                        </div>
-
-
-                        <span class="sales-count">
-                            {{ $purchasePayments->total() }} ventes
-                        </span>
-
-
-                    </div>
-
-                </div>
-                <!-- BODY -->
-
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>
-                                        Livre
-                                    </th>
-
-                                    <th>
-                                        Lecteur
-                                    </th>
-
-                                    <th>
-                                        Montant
-                                    </th>
-                                    <th>
-                                       Méthode de  Paiement
-                                    </th>
-
-                                    <th>
-                                        Statut
-                                    </th>
-
-                                    <th>
-                                        Date
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                            @forelse($purchasePayments as $payment)
-                                <tr>
-                                    <!-- BOOK -->
-                                    <td>
-                                        <div class="d-flex align-items-center">
-
-
-                                            <img 
-                                            src="{{ asset('storage/'.$payment->book->cover_image) }}"
-                                            width="45"
-                                            height="60"
-                                            class="rounded-3 me-3"
-                                            style="object-fit:cover;">
-
-
-
-                                            <div>
-
-
-                                                <h6 class="mb-1 fw-bold">
-
-                                                    {{ $payment->book->title }}
-
-                                                </h6>
-
-
-                                                <small class="text-muted">
-
-                                                    {{ ucfirst($payment->book->type) }}
-
-                                                </small>
-
-
-                                            </div>
-
-
-                                        </div>
-                                    </td>
-
-                                    <!-- READER -->
-
-                                    <td>
-                                        <div>
-                                            <strong>
-                                                {{ $payment->user->firstname }}
-                                                {{ $payment->user->lastname }}
-                                            </strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ $payment->user->email }}
-                                            </small>
-                                        </div>
-                                    </td>
-
-                                    <!-- AMOUNT -->
-                                    <td>
-                                        <span class="fw-bold text-success">
-                                            {{ $payment->currency }}
-                                            {{ number_format($payment->amount,2) }}
-                                        </span>
-                                    </td>
-
-                                    <!-- METHOD -->
-
-                                    <td>
-                                        @if($purchasePayments->payment_method)
-                                            <span class="payment-method">
-                                                <i class="bi bi-credit-card me-1"></i>
-                                                {{ ucfirst($payment->payment_method) }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted">
-                                                -
-                                            </span>
-
-
-                                        @endif
-
-
-                                    </td>
-
-                                    <!-- STATUS -->
-                                    <td>
-                                        @if($payment->status == 'success')
-                                            <span class="status-success">
-                                                <i class="bi bi-check-circle-fill"></i>
-                                                Payé
-                                            </span>
-                                        @elseif($payment->status == 'pending')
-                                            <span class="status-pending">
-                                                <i class="bi bi-hourglass-split"></i>
-                                                En attente
-                                            </span>
-                                        @else
-                                            <span class="status-failed">
-                                                <i class="bi bi-x-circle-fill"></i>
-                                                Échec
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <!-- DATE -->
-
-                                    <td>
-                                        {{ $payment->created_at->format('d M Y') }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-5">
-                                        <i class="bi bi-cart-x fs-1 icon-red"></i>
-                                        <h6 class="mt-3">
-                                            Aucune vente enregistrée
-                                        </h6>
-                                        <p class="text-muted">
-                                            Vos ventes apparaîtront ici.
-                                        </p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- PAGINATION -->
-
-                            <div class="card-footer bg-white border-top">
-                                {{ $purchasePayments->links() }}
-                            </div>
-                        </div>
-                    <!-- SALES HISTORY END -->
-            </div>
-       <!-- SALES HISTORY END -->
-
-
-        <!-- PUBLICATION HISTORY START -->
-            <div class="card border-0 shadow-sm rounded-4 mt-4">
-
-
-                <!-- HEADER -->
-
-                <div class="card-header publication-header">
-
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-
-                        <div class="publication-header-content">
-
-
-                            <h5 class="fw-bold mb-1">
-
-                                <span class="publication-icon">
-
-                                    <i class="bi bi-cloud-upload"></i>
-
-                                </span>
-
-
-                                Historique des publications
-
-                            </h5>
-
-
-                            <p class="mb-0">
-
-                                Suivez les frais de dépôt liés à vos ouvrages.
-
-                            </p>
-
-
-                        </div>
-
-
-
-                        <div class="publication-count">
-
-                            <strong>
-                                {{ $publicationPayments->total() }}
-                            </strong>
-
-                            <span>
-                                dépôts
-                            </span>
-
-                        </div>
-
-
-
-                    </div>
-
-
-                </div>
-
-
-
-
-                <!-- BODY -->
-
-
-                <div class="card-body p-0">
-
-
-                    <div class="table-responsive">
-
-
-                        <table class="table align-middle mb-0">
-
-
-                            <thead class="table-light">
-
-
-                                <tr>
-
-                                    <th>
-                                        Livre
-                                    </th>
-
-
-                                    <th>
-                                        Type
-                                    </th>
-
-
-                                    <th>
-                                        Montant
-                                    </th>
-
-
-                                    <th>
-                                        Référence
-                                    </th>
-
-
-                                    <th>
-                                        Statut
-                                    </th>
-
-
-                                    <th>
-                                        Date
-                                    </th>
-
-
-                                </tr>
-
-
-                            </thead>
-
-
-
-                            <tbody>
-
-
-                            @forelse($publicationPayments as $payment)
-
-
-                                <tr>
-
-
-                                    <!-- BOOK -->
-
-                                    <td>
-
-
-                                        <div class="d-flex align-items-center">
-
-
-                                            <img
-                                            src="{{ asset('storage/'.$payment->book->cover_image) }}"
-                                            width="45"
-                                            height="60"
-                                            class="rounded-3 me-3"
-                                            style="object-fit:cover;">
-
-
-
-                                            <div>
-
-
-                                                <h6 class="mb-1 fw-bold">
-
-                                                    {{ $payment->book->title }}
-
-                                                </h6>
-
-
-                                                <small class="text-muted">
-
-                                                    {{ ucfirst($payment->book->type) }}
-
-                                                </small>
-
-
-                                            </div>
-
-
-                                        </div>
-
-
-                                    </td>
-
-
-
-
-                                    <!-- TYPE -->
-
-                                    <td>
-
-
-                                        <span class="publication-type">
-
-
-                                            <i class="bi bi-journal-text me-1"></i>
-
-
-                                            Dépôt publication
-
-
-                                        </span>
-
-
-                                    </td>
-
-
-
-
-                                    <!-- AMOUNT -->
-
-
-                                    <td>
-
-
-                                        <strong class="text-danger">
-
-
-                                            {{ $payment->currency }}
-
-                                            {{ number_format($payment->amount,2) }}
-
-
-                                        </strong>
-
-
-                                    </td>
-
-
-
-
-                                    <!-- REFERENCE -->
-
-
-                                    <td>
-
-
-                                        <span class="reference-code">
-
-
-                                            {{ $payment->reference }}
-
-
-                                        </span>
-
-
-                                    </td>
-
-
-
-
-
-                                    <!-- STATUS -->
-
-
-                                    <td>
-
-
-                                        @if($payment->status == 'success')
-
-
-                                            <span class="status-success">
-
-                                                <i class="bi bi-check-circle-fill"></i>
-
-                                                Payé
-
-                                            </span>
-
-
-                                        @elseif($payment->status == 'pending')
-
-
-                                            <span class="status-pending">
-
-                                                <i class="bi bi-hourglass-split"></i>
-
-                                                En attente
-
-                                            </span>
-
-
-                                        @else
-
-
-                                            <span class="status-failed">
-
-                                                <i class="bi bi-x-circle-fill"></i>
-
-                                                Échec
-
-                                            </span>
-
-
-                                        @endif
-
-
-                                    </td>
-
-
-
-
-
-                                    <!-- DATE -->
-
-                                    <td>
-
-
-                                        {{ $payment->created_at->format('d M Y') }}
-
-
-                                    </td>
-
-
-
-                                </tr>
-
-
-
-                            @empty
-
-
-                                <tr>
-
-                                    <td colspan="6" class="text-center py-5">
-
-
-                                        <i class="bi bi-cloud-upload fs-1 text-muted"></i>
-
-
-                                        <h6 class="mt-3">
-
-                                            Aucun dépôt effectué
-
-                                        </h6>
-
-
-                                        <p class="text-muted">
-
-                                            Vos paiements de publication apparaîtront ici.
-
-                                        </p>
-
-
-                                    </td>
-
-
-                                </tr>
-
-
-                            @endforelse
-
-
-                            </tbody>
-
-
-                        </table>
-
-
-                    </div>
-
-
-                </div>
-
-
-
-
-                <!-- FOOTER -->
-
-
-                <div class="card-footer bg-white border-top">
-
-
-                    {{ $publicationPayments->links() }}
-
-
-                </div>
-
-
-            </div>
-        <!-- PUBLICATION HISTORY END -->
+            @if($publicationPayments->hasPages())
+                <footer class="writer-panel-footer">{{ $publicationPayments->links() }}</footer>
+            @endif
+        </section>
     </div>
+</main>
 @endsection
