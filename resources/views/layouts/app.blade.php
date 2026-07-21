@@ -613,6 +613,15 @@
 
 		}
 
+		// Synchroniser le nombre de pages / la durée dans le récapitulatif
+		if (summaryPages) {
+			summaryPages.innerText = pagesInput?.value || "0";
+		}
+
+		if (summaryDuration) {
+			summaryDuration.innerText = durationInput?.value || "00:00:00";
+		}
+
 
 
 		// =========================

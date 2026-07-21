@@ -1231,8 +1231,8 @@ class BooksController extends Controller
             'status'=>'under_review'
         ]);
 
-
-        $book->author->notify(
+        $this->notifyAuthorSafely(
+            $book,
             new BookUnderReviewNotification($book)
         );
 
@@ -1323,14 +1323,14 @@ class BooksController extends Controller
             'status'=>'published'
         ]);
 
-        // Notification auteur
-        $book->author->notify(
+        $this->notifyAuthorSafely(
+            $book,
             new BookPublishedNotification($book)
         );
 
         return back()->with(
             'success',
-            'Le livre a été publié avec succès et mail envoyé avec succès a l\'écrivain.'
+            'Le livre a été publié avec succès.'
         );
     }
 
@@ -1356,7 +1356,8 @@ class BooksController extends Controller
             'rejection_reason'=>$request->reason
         ]);
 
-        $book->author->notify(
+        $this->notifyAuthorSafely(
+            $book,
             new BookRevisionRequiredNotification($book)
         );
 
@@ -1369,5 +1370,18 @@ class BooksController extends Controller
     private function isOwnBook(Book $book): bool
     {
         return (int) $book->user_id === (int) Auth::id();
+    }
+
+    private function notifyAuthorSafely(Book $book, object $notification): void
+    {
+        if (! $book->author) {
+            return;
+        }
+
+        try {
+            $book->author->notify($notification);
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
     }
 }

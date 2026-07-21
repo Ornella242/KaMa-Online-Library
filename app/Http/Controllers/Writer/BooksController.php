@@ -441,6 +441,18 @@ class BooksController extends Controller
 
             ]);
 
+            if (
+                $book->type === 'ebook'
+                && $request->preview_type === 'pages'
+                && ((int) $request->preview_end_page - (int) $request->preview_start_page + 1) > 5
+            ) {
+                return back()
+                    ->withErrors([
+                        'preview_end_page' => 'Vous pouvez sélectionner au maximum 5 pages consécutives.',
+                    ])
+                    ->withInput();
+            }
+
 
             /*
             |--------------------------------------------------------------------------
@@ -464,8 +476,8 @@ class BooksController extends Controller
 
             $previewChanged =
                 $oldPreviewType !== $request->preview_type ||
-                $oldStartPage != $request->preview_start_page ||
-                $oldEndPage != $request->preview_end_page;
+                (int) $oldStartPage !== (int) $request->preview_start_page ||
+                (int) $oldEndPage !== (int) $request->preview_end_page;
 
 
 
@@ -539,11 +551,20 @@ class BooksController extends Controller
 
             if (
                 $previewChanged &&
-                $book->preview_type === 'pages'
+                $book->fresh()->preview_type === 'pages'
             ) {
+                try {
+                    $this->generatePreviewPages($book->fresh());
+                } catch (\Throwable $exception) {
+                    report($exception);
 
-                $this->generatePreviewPages($book);
-
+                    return redirect()
+                        ->route('writer.books.edit', $book)
+                        ->with(
+                            'error',
+                            'Les informations ont été enregistrées, mais l’extrait PDF n’a pas pu être régénéré : '.$exception->getMessage()
+                        );
+                }
             }
 
 
@@ -557,7 +578,7 @@ class BooksController extends Controller
         }
 
         
-        // Code book status draft
+        // Code book status draft / revision_required
         $request->validate([
 
             'title' => [
@@ -610,10 +631,31 @@ class BooksController extends Controller
                 'required'
             ],
 
-            'long_description' => [
-                'required'
+            'preview_type' => [
+                'required_if:type,ebook',
+                'nullable',
+                'in:text,pages'
             ],
 
+            'long_description' => [
+                'required_if:preview_type,text',
+                'nullable',
+                'string'
+            ],
+
+            'preview_start_page' => [
+                'required_if:preview_type,pages',
+                'nullable',
+                'integer',
+                'min:1'
+            ],
+
+            'preview_end_page' => [
+                'required_if:preview_type,pages',
+                'nullable',
+                'integer',
+                'gte:preview_start_page'
+            ],
 
             // Couverture
             'cover_image' => [
@@ -641,6 +683,18 @@ class BooksController extends Controller
 
         ]);
 
+        if (
+            $request->type === 'ebook'
+            && $request->preview_type === 'pages'
+            && ((int) $request->preview_end_page - (int) $request->preview_start_page + 1) > 5
+        ) {
+            return back()
+                ->withErrors([
+                    'preview_end_page' => 'Vous pouvez sélectionner au maximum 5 pages consécutives.',
+                ])
+                ->withInput();
+        }
+
         /*Vérification changement de type*/
 
         if(
@@ -656,6 +710,14 @@ class BooksController extends Controller
                 ->withInput();
 
         }
+
+        $oldPreviewType = $book->preview_type;
+        $oldStartPage = $book->preview_start_page;
+        $oldEndPage = $book->preview_end_page;
+
+        $previewType = $request->type === 'audio'
+            ? 'text'
+            : ($request->preview_type ?: 'text');
 
         /* Données du livre*/
 
@@ -675,15 +737,32 @@ class BooksController extends Controller
 
             'price' => $request->price,
 
-            'pages' => $request->pages,
+            'pages' => $request->type === 'ebook' ? $request->pages : null,
 
-            'duration' => $request->duration,
+            'duration' => $request->type === 'audio' ? $request->duration : null,
 
             'short_description' => $request->short_description,
 
-            'long_description' => $request->long_description,
+            'preview_type' => $previewType,
+
+            'long_description' => $previewType === 'text'
+                ? $request->long_description
+                : null,
+
+            'preview_start_page' => $request->type === 'ebook' && $previewType === 'pages'
+                ? $request->preview_start_page
+                : null,
+
+            'preview_end_page' => $request->type === 'ebook' && $previewType === 'pages'
+                ? $request->preview_end_page
+                : null,
 
         ];
+
+        $previewChanged =
+            $oldPreviewType !== $data['preview_type']
+            || (int) $oldStartPage !== (int) ($data['preview_start_page'] ?? 0)
+            || (int) $oldEndPage !== (int) ($data['preview_end_page'] ?? 0);
 
         /* Mise à jour couverture */
 
@@ -730,10 +809,10 @@ class BooksController extends Controller
             // Suppression ancien fichier
             if(
                 $book->file_path &&
-                Storage::disk('public')->exists($book->file_path)
+                Storage::disk('local')->exists($book->file_path)
             ){
 
-                Storage::disk('public')
+                Storage::disk('local')
                     ->delete($book->file_path);
 
             }
@@ -759,9 +838,9 @@ class BooksController extends Controller
 
 
                 $filePath = $file->storeAs(
-                    'books/files/ebooks',
+                    'ebooks',
                     $fileName,
-                    'public'
+                    'local'
                 );
 
 
@@ -769,9 +848,9 @@ class BooksController extends Controller
 
 
                 $filePath = $file->storeAs(
-                    'books/files/audios',
+                    'audios',
                     $fileName,
-                    'public'
+                    'local'
                 );
 
 
@@ -781,9 +860,13 @@ class BooksController extends Controller
 
             $data['file_path'] = $filePath;
 
-            $data['file_type'] = $fileType;
+            $data['original_file_name'] = $file->getClientOriginalName();
+
+            $data['file_type'] = $file->getClientOriginalExtension();
 
             $data['file_size'] = $file->getSize();
+
+            $previewChanged = $previewChanged || ($previewType === 'pages');
 
 
         }
@@ -792,6 +875,25 @@ class BooksController extends Controller
         $wasRevisionRequired = $book->status === 'revision_required';
 
         $book->update($data);
+
+        if ($previewChanged && $oldPreviewType === 'pages') {
+            Storage::disk('local')->deleteDirectory('books/previews/'.$book->id);
+        }
+
+        if ($previewChanged && $book->fresh()->preview_type === 'pages') {
+            try {
+                $this->generatePreviewPages($book->fresh());
+            } catch (\Throwable $exception) {
+                report($exception);
+
+                return redirect()
+                    ->route('writer.books.edit', $book)
+                    ->with(
+                        'error',
+                        'Les informations ont été enregistrées, mais l’extrait PDF n’a pas pu être régénéré : '.$exception->getMessage()
+                    );
+            }
+        }
 
         if ($wasRevisionRequired) {
             return $this->sendBackForReview($book);
@@ -959,43 +1061,59 @@ class BooksController extends Controller
 
     public function generatePreviewPages(Book $book)
     {
-
-        $pdfPath = storage_path(
-            'app/private/'.$book->file_path
-        );
-
-
-        $folder = storage_path(
-            'app/private/books/previews/'.$book->id
-        );
-
-
-        if(!file_exists($folder)){
-            mkdir($folder,0755,true);
+        if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
+            return;
         }
 
+        if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
+            throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
+        }
 
-        $start = $book->preview_start_page;
-        $end = $book->preview_end_page;
+        $pdfPath = Storage::disk('local')->path($book->file_path);
+        $folder = storage_path('app/private/books/previews/'.$book->id);
 
+        if (! file_exists($folder)) {
+            mkdir($folder, 0755, true);
+        }
 
-        for($pageNumber = $start; $pageNumber <= $end; $pageNumber++){
+        $start = (int) $book->preview_start_page;
+        $end = (int) $book->preview_end_page;
 
+        if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
+            throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
+        }
 
+        $pageCount = $this->getPdfPageCount($pdfPath);
+        if ($pageCount !== null && $end > $pageCount) {
+            throw new \RuntimeException(
+                "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
+            );
+        }
+
+        $pdftoppm = $this->resolvePdftoppmBinary();
+
+        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
             $tmpPrefix = $folder.'/tmp-'.$pageNumber;
             $command = sprintf(
-                'pdftoppm -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
+                '%s -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
+                escapeshellarg($pdftoppm),
                 $pageNumber,
                 $pageNumber,
                 escapeshellarg($pdfPath),
                 escapeshellarg($tmpPrefix)
             );
 
+            $output = [];
+            $exitCode = 0;
             exec($command, $output, $exitCode);
             $source = $tmpPrefix.'.png';
 
-            if ($exitCode !== 0 || !file_exists($source)) {
-                throw new \RuntimeException('Impossible de générer l’extrait PDF.');
+            if ($exitCode !== 0 || ! file_exists($source)) {
+                $details = trim(implode("\n", $output));
+                throw new \RuntimeException(
+                    'Impossible de générer l’extrait PDF'
+                    .($details !== '' ? ' : '.$details : '.')
+                );
             }
 
             $image = imagecreatefrompng($source);
@@ -1007,12 +1125,59 @@ class BooksController extends Controller
             imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
             imagedestroy($image);
             unlink($source);
-
         }
 
+        return 'Preview généré';
+    }
 
-            return "Preview généré";
+    private function resolvePdftoppmBinary(): string
+    {
+        foreach (['/usr/local/bin/pdftoppm', '/opt/homebrew/bin/pdftoppm'] as $candidate) {
+            if (is_executable($candidate)) {
+                return $candidate;
+            }
+        }
 
+        $output = [];
+        $exitCode = 0;
+        exec('command -v pdftoppm 2>/dev/null', $output, $exitCode);
+        if ($exitCode === 0 && ! empty($output[0]) && is_executable($output[0])) {
+            return $output[0];
+        }
+
+        throw new \RuntimeException(
+            'L’outil pdftoppm (Poppler) n’est pas installé ou inaccessible pour PHP.'
+        );
+    }
+
+    private function getPdfPageCount(string $pdfPath): ?int
+    {
+        foreach (['/usr/local/bin/pdfinfo', '/opt/homebrew/bin/pdfinfo', 'pdfinfo'] as $binary) {
+            $command = $binary === 'pdfinfo'
+                ? 'pdfinfo '.escapeshellarg($pdfPath).' 2>/dev/null'
+                : (is_executable($binary)
+                    ? escapeshellarg($binary).' '.escapeshellarg($pdfPath).' 2>/dev/null'
+                    : null);
+
+            if ($command === null) {
+                continue;
+            }
+
+            $output = [];
+            $exitCode = 0;
+            exec($command, $output, $exitCode);
+            if ($exitCode !== 0) {
+                continue;
+            }
+
+            foreach ($output as $line) {
+                if (preg_match('/^Pages:\s+(\d+)/i', $line, $matches)) {
+                    return (int) $matches[1];
+                }
+            }
+        }
+
+        return null;
     }
 
     public function previewPage(Book $book, $page)

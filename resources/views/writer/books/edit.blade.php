@@ -97,11 +97,12 @@ Steps START -->
 			@endif
 
 			@if($readOnlyReview)
-				<div class="alert alert-warning">
+				<div class="alert alert-warning mt-3">
 					<i class="bi bi-hourglass-split me-2"></i>
 					Ce livre est actuellement en cours de vérification.
-					Vous pouvez uniquement modifier la catégorie, la sous-catégorie, la langue,
-					l'année de publication, le prix et le résumé, et le type d'affichage (Extrait ou pages du livre).
+					Vous pouvez modifier la catégorie, la sous-catégorie, la langue,
+					l'année de publication, le prix, le résumé, le type d'aperçu
+					et les pages d'extrait. Le titre, la couverture, le type et le fichier restent verrouillés.
 				</div>
 			@endif
 
@@ -215,13 +216,20 @@ Steps START -->
 															<label class="form-label">
 																Titre du livre *
 															</label>
-															<input 
-																type="text"
-																name="title"
-																class="form-control book-input"
-																value="{{ old('title',$book->title) }}"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
-
+															@if($readOnlyReview)
+																<input type="hidden" name="title" value="{{ $book->title }}">
+																<input 
+																	type="text"
+																	class="form-control book-input"
+																	value="{{ old('title',$book->title) }}"
+																	disabled>
+															@else
+																<input 
+																	type="text"
+																	name="title"
+																	class="form-control book-input"
+																	value="{{ old('title',$book->title) }}">
+															@endif
 														</div>
 
 														<!-- Author -->
@@ -244,6 +252,10 @@ Steps START -->
 															<label class="form-label">
 																Type de publication *
 															</label>
+
+															@if($readOnlyReview)
+																<input type="hidden" name="type" value="{{ $book->type }}">
+															@endif
 
 															<div class="book-type-selector">
 																<label class="type-card">
@@ -353,42 +365,66 @@ Steps START -->
 															</select>
 														</div>
 
-														<div class="col-md-4" id="pagesField" style="display:none;">
+														<div class="col-md-4" id="pagesField" @if($book->type !== 'ebook') style="display:none;" @endif>
 
 															<label class="form-label">
 																Nombre de pages *
 															</label>
 
-															<input 
-																type="number"
-																name="pages"
-																id="pagesInput"
-                                                                value="{{ old('pages', $book->pages) }}"
-																class="form-control book-input"
-																placeholder="Ex: 120"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
+															@if($readOnlyReview)
+																<input type="hidden" name="pages" value="{{ old('pages', $book->pages) }}">
+																<input 
+																	type="number"
+																	id="pagesInput"
+																	value="{{ old('pages', $book->pages) }}"
+																	class="form-control book-input"
+																	placeholder="Ex: 120"
+																	disabled>
+															@else
+																<input 
+																	type="number"
+																	name="pages"
+																	id="pagesInput"
+																	value="{{ old('pages', $book->pages) }}"
+																	class="form-control book-input"
+																	placeholder="Ex: 120">
+															@endif
 
 														</div>
 
 
-														<div class="col-md-4" id="durationField" style="display:none;">
+														<div class="col-md-4" id="durationField" @if($book->type !== 'audio') style="display:none;" @endif>
 
 															<label class="form-label">
 																Durée du livre audio *
 															</label>
 
-															<input 
-																type="text"
-																name="duration"
-																id="durationInput"
-                                                                value="{{ old('duration', $book->duration) }}"
-																class="form-control book-input"
-																placeholder="Ex: 02:35:00"
-																inputmode="numeric"
-																maxlength="9"
-																pattern="[0-9]{1,3}:[0-5][0-9]:[0-5][0-9]"
-																title="Utilisez le format heures:minutes:secondes, par exemple 02:35:00"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
+															@if($readOnlyReview)
+																<input type="hidden" name="duration" value="{{ old('duration', $book->duration) }}">
+																<input 
+																	type="text"
+																	id="durationInput"
+																	value="{{ old('duration', $book->duration) }}"
+																	class="form-control book-input"
+																	placeholder="Ex: 02:35:00"
+																	inputmode="numeric"
+																	maxlength="9"
+																	pattern="[0-9]{1,3}:[0-5][0-9]:[0-5][0-9]"
+																	title="Utilisez le format heures:minutes:secondes, par exemple 02:35:00"
+																	disabled>
+															@else
+																<input 
+																	type="text"
+																	name="duration"
+																	id="durationInput"
+																	value="{{ old('duration', $book->duration) }}"
+																	class="form-control book-input"
+																	placeholder="Ex: 02:35:00"
+																	inputmode="numeric"
+																	maxlength="9"
+																	pattern="[0-9]{1,3}:[0-5][0-9]:[0-5][0-9]"
+																	title="Utilisez le format heures:minutes:secondes, par exemple 02:35:00">
+															@endif
 
 															<small class="text-muted">
 																Format obligatoire : heures:minutes:secondes (ex. 02:35:00)
@@ -425,8 +461,7 @@ Steps START -->
 
 															<select
 																name="publication_year"
-																class="form-select book-input"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
+																class="form-select book-input">
 																<option value="">Choisir une année</option>
 																@for($y = date('Y'); $y >= 1900; $y--)
 																	<option value="{{ $y }}" @selected((string) old('publication_year', $book->publication_year) === (string) $y)>
@@ -536,12 +571,12 @@ Steps START -->
 															class="form-select">
 
 															<option value="text"
-																{{ $book->preview_type == 'text' ? 'selected' : '' }}>
+																{{ old('preview_type', $book->preview_type) == 'text' ? 'selected' : '' }}>
 																Extrait texte
 															</option>
 
 															<option value="pages"
-																{{ $book->preview_type == 'pages' ? 'selected' : '' }}>
+																{{ old('preview_type', $book->preview_type) == 'pages' ? 'selected' : '' }}>
 																Pages du livre
 															</option>
 
@@ -607,8 +642,7 @@ Steps START -->
 																id="previewStartPage"
 																min="1"
 																class="form-control"
-																value="{{ old('preview_start_page', $book->preview_start_page) }}"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
+																value="{{ old('preview_start_page', $book->preview_start_page) }}">
 
 														</div>
 
@@ -625,8 +659,7 @@ Steps START -->
 																id="previewEndPage"
 																min="1"
 																class="form-control"
-																value="{{ old('preview_end_page', $book->preview_end_page) }}"
-																{{ $readOnlyReview ? 'disabled' : '' }}>
+																value="{{ old('preview_end_page', $book->preview_end_page) }}">
 
 														</div>
 
@@ -1058,27 +1091,27 @@ Steps START -->
 													</div>
 
 													<!-- Pages Ebook -->
-													<div id="summary_pages_box">
+													<div id="summary_pages_box" @if($book->type === 'audio') style="display:none;" @endif>
 
 														<small>
 															Pages
 														</small>
 
 														<strong id="summary_pages">
-															0
+															{{ $book->pages ?? 0 }}
 														</strong>
 
 													</div>
 
 
-													<div id="summary_duration_box" style="display:none;">
+													<div id="summary_duration_box" @if($book->type !== 'audio') style="display:none;" @endif>
 
 														<small>
 															Durée
 														</small>
 
 														<strong id="summary_duration">
-															00:00
+															{{ $book->duration ?? '00:00' }}
 														</strong>
 
 													</div>
@@ -1157,7 +1190,7 @@ Steps START -->
 
 									<!-- BOOK PREVIEW END -->
 
-									@if (!in_array($book->status, ['under_review', 'revision_required']))
+									@if ($book->status === 'draft')
 										<!-- STATUS START -->
 
 										<div class="status-card">
@@ -1262,6 +1295,41 @@ Steps START -->
 										</div>
 
 										<!-- DEPOSIT END -->
+									@elseif ($book->status === 'waiting_review')
+										<div class="status-card">
+											<div class="status-icon">
+												<i class="bi bi-hourglass-split"></i>
+											</div>
+
+											<div>
+												<h5>
+													Statut : En attente de vérification
+												</h5>
+
+												<p>
+													Les frais de dépôt ont été réglés.
+													Votre livre est en file d’attente pour la validation éditoriale.
+													Vous pouvez encore ajuster certaines informations en attendant.
+												</p>
+											</div>
+										</div>
+									@elseif ($book->status === 'under_review')
+										<div class="status-card">
+											<div class="status-icon">
+												<i class="bi bi-search"></i>
+											</div>
+
+											<div>
+												<h5>
+													Statut : En cours de vérification
+												</h5>
+
+												<p>
+													L’équipe éditoriale examine actuellement votre livre.
+													Vous pouvez encore ajuster certaines informations autorisées.
+												</p>
+											</div>
+										</div>
 									@endif
 
 									<!-- BUTTONS -->
@@ -1766,24 +1834,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         // Charger l'ancienne description
-        quill.root.innerHTML = `{!! addslashes($book->long_description ?? '') !!}`;
-
-
+        quill.root.innerHTML = `{!! addslashes(old('long_description', $book->long_description) ?? '') !!}`;
+        hiddenDescription.value = quill.root.innerHTML;
 
         // Synchroniser Quill avec le formulaire
-
         quill.on('text-change', function () {
-
-
             hiddenDescription.value = quill.root.innerHTML;
-
-
         });
 
-
+        const bookForm = editor.closest('form');
+        if (bookForm) {
+            bookForm.addEventListener('submit', function () {
+                hiddenDescription.value = quill.root.innerHTML;
+            });
+        }
     }
-
-
 
 });
 
