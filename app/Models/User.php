@@ -4,7 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +14,6 @@ use App\Models\Book;
 use App\Models\Country;
 use App\Models\Wallet;
 
-#[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -33,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'gender',
         'role_id',
+        'is_writer',
         'avatar',
         'bio',
         'password',
@@ -74,6 +73,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role?->name === 'admin';
+    }
+
+    /**
+     * Accès à l’espace auteur (écrivain ou admin publiant ses propres livres).
+     */
+    public function canAccessWriterSpace(): bool
+    {
+        return $this->isWriter() || $this->isAdmin();
     }
 
     public function sendEmailVerificationNotification()
@@ -132,6 +139,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function wishlistBooks()
+    {
+        return $this->belongsToMany(Book::class, 'wishlists')->withTimestamps();
     }
 
 }

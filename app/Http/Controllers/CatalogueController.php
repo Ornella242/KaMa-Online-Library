@@ -127,10 +127,20 @@ class CatalogueController extends Controller
             ->whereNotNull('country_id')
             ->distinct('country_id')
             ->count('country_id');
+       
+        $wishlistIds = auth()->check()
+            ? \App\Models\Wishlist::query()
+                ->where('user_id', auth()->id())
+                ->pluck('book_id')
+                ->all()
+            : [];
+
         return view('books.catalogue', compact(
             'books',
             'categories',
-            'authors','sponsoredBooks','representedCountries'
+            'authors',
+            'sponsoredBooks',
+            'wishlistIds','representedCountries'
         ));
     }
 

@@ -3,31 +3,31 @@
 namespace App\Http\Controllers\Writer;
 
 use App\Http\Controllers\Controller;
-use App\Models\Activity;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Auth;
 
 class ActivityController extends Controller
 {
-     public function index()
+    public function index()
     {
-        $activities = Activity::query()->where('user_id', Auth::id())
-            ->with('book')
-            ->latest()
-            ->paginate(10);
-        return view('writer.activities', compact('activities'));
+        $user = Auth::user();
 
+        $notifications = $user->notifications()
+            ->latest()
+            ->paginate(15);
+
+        $user->unreadNotifications->markAsRead();
+
+        return view('writer.activities', compact('notifications'));
     }
 
-    public function destroy(Activity $activity)
+    public function destroy(DatabaseNotification $notification)
     {
-        if($activity->user_id != Auth::id()){
-            abort(403);
-        }
-        $activity->forceDelete();
+        abort_unless($notification->notifiable_id === Auth::id(), 403);
 
-        return back()
-            ->with('success','Activité supprimée avec succès.');
+        $notification->delete();
 
+        return back()->with('success', 'Notification supprimée.');
     }
 }

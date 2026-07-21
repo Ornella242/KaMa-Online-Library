@@ -14,14 +14,17 @@ class SettingsController extends Controller
 {
     public function index()
     {
-       $social = SocialProfile::firstOrCreate([
-        'user_id' => Auth::id(),
-    ]);
+       $social = SocialProfile::firstOrNew([
+            'user_id' => Auth::id(),
+        ]);
 
-    $settings = NotificationSetting::firstOrCreate([
-        'user_id' => Auth::id(),
-        'role' => Auth::user()->role->name,
-    ]);
+    $settings = NotificationSetting::firstOrNew(
+        ['user_id' => Auth::id()],
+        [
+            'role' => Auth::user()->role->name,
+            'settings' => [],
+        ]
+    );
     $countries = Country::orderBy('name')->get();
 
 

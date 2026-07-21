@@ -8,20 +8,21 @@ use Illuminate\Auth\Access\Response;
 
 class BookPolicy
 {
-
-    public function viewFile(User $user, Book $book)
+    private function isAdmin(User $user): bool
     {
-        return 
-        $user->id === $book->user_id
-        ||
-        $user->role->name === 'admin';
+        return $user->role?->name === 'admin';
+    }
+
+    public function viewFile(User $user, Book $book): bool
+    {
+        return $user->id === $book->user_id || $this->isAdmin($user);
     }
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $this->isAdmin($user) || $user->role?->name === 'writer';
     }
 
     /**
@@ -29,7 +30,7 @@ class BookPolicy
      */
     public function view(User $user, Book $book): bool
     {
-        return false;
+        return $user->id === $book->user_id || $this->isAdmin($user);
     }
 
     /**
@@ -37,7 +38,7 @@ class BookPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $this->isAdmin($user) || $user->role?->name === 'writer';
     }
 
     /**
@@ -45,7 +46,7 @@ class BookPolicy
      */
     public function update(User $user, Book $book): bool
     {
-        return false;
+        return $user->id === $book->user_id || $this->isAdmin($user);
     }
 
     /**
@@ -53,7 +54,7 @@ class BookPolicy
      */
     public function delete(User $user, Book $book): bool
     {
-        return false;
+        return $user->id === $book->user_id || $this->isAdmin($user);
     }
 
     /**

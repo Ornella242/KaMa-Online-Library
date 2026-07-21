@@ -1,106 +1,74 @@
 @extends('layouts.reader')
 
 @section('reader-content')
+<div class="reader-workspace">
+    <div class="d-grid mb-3 d-lg-none">
+        <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar">
+            <i class="bi bi-list"></i> Menu
+        </button>
+    </div>
 
-<!-- Offcanvas menu button -->
-<div class="d-grid mb-0 d-lg-none w-100">
-	<button class="btn btn-primary mb-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
-		<i class="fas fa-sliders-h"></i> Menu
-	</button>
+    <header class="reader-page-hero">
+        <div>
+            <span class="eyebrow">Préférences</span>
+            <h1>Paramètres</h1>
+            <p>Choisissez les notifications que vous souhaitez recevoir.</p>
+        </div>
+    </header>
+
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    <section class="reader-panel">
+        <header>
+            <h2>Notifications</h2>
+            <p>Activez uniquement ce qui vous est utile.</p>
+        </header>
+
+        <form method="POST" action="{{ route('reader.notifications.update') }}" class="reader-form">
+            @csrf
+
+            <div class="reader-switch">
+                <div>
+                    <strong>Nouveautés d’auteurs suivis</strong>
+                    <small>Quand un auteur que vous aimez publie un livre</small>
+                </div>
+                <input class="form-check-input" type="checkbox" name="favorite_author_books"
+                       @checked(data_get($settings->settings, 'favorite_author_books'))>
+            </div>
+
+            <div class="reader-switch">
+                <div>
+                    <strong>Rappels de lecture</strong>
+                    <small>Pour reprendre une lecture en cours</small>
+                </div>
+                <input class="form-check-input" type="checkbox" name="reading_reminders"
+                       @checked(data_get($settings->settings, 'reading_reminders'))>
+            </div>
+
+            <div class="reader-switch">
+                <div>
+                    <strong>Recommandations</strong>
+                    <small>Suggestions selon vos goûts</small>
+                </div>
+                <input class="form-check-input" type="checkbox" name="recommendations"
+                       @checked(data_get($settings->settings, 'recommendations'))>
+            </div>
+
+            <div class="reader-switch">
+                <div>
+                    <strong>Confirmation d’achat</strong>
+                    <small>Notification quand un paiement est confirmé</small>
+                </div>
+                <input class="form-check-input" type="checkbox" name="purchase_confirmation"
+                       @checked(data_get($settings->settings, 'purchase_confirmation'))>
+            </div>
+
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-danger">Enregistrer</button>
+            </div>
+        </form>
+    </section>
 </div>
-
-<div class="vstack gap-4">
-	<!-- Notifications START -->
-	<div class="card border">
-		<!-- Card header -->
-		<div class="card-header border-bottom bg-table-yellow">
-			<h4 class="card-header-title">Notification Settings</h4>
-		</div>
-
-			@if(session('success'))
-				<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-					<i class="bi bi-check-circle-fill me-2"></i>
-					{{ session('success') }}
-
-							<button type="button"
-									class="btn-close"
-									data-bs-dismiss="alert"
-									aria-label="Close">
-							</button>
-						</div>
-			@endif
-			@if($errors->any())
-				<div class="alert alert-danger mb-4">
-					<strong>Veuillez corriger les erreurs suivantes :</strong>
-
-					<ul class="mb-0 mt-2">
-						@foreach($errors->all() as $error)
-							<li>{{ $error }}</li>
-						@endforeach
-					</ul>
-				</div>
-			@endif
-		<!-- Form START -->
-		<form class="card-body"
-			method="POST"
-			action="{{ route('reader.notifications.update') }}">
-			@csrf
-			<!-- Switch -->
-			<div class="form-check form-switch d-flex justify-content-between mb-4">
-				<label class="form-check-label">
-					Être informé lorsqu'un auteur que je suis publie un nouveau livre
-				</label>
-
-				<input class="form-check-input"
-					type="checkbox"
-					name="favorite_author_books"
-					@checked(data_get($settings->settings, 'favorite_author_books'))>
-			</div>
-
-			<!-- Switch -->
-			<div class="form-check form-switch d-flex justify-content-between mb-4">
-				<label class="form-check-label">
-					Recevoir des rappels pour reprendre mes lectures en cours
-				</label>
-
-				<input class="form-check-input"
-					type="checkbox"
-					name="reading_reminders"
-					@checked(data_get($settings->settings, 'reading_reminders'))>
-			</div>
-
-			<!-- Switch -->
-			<div class="form-check form-switch d-flex justify-content-between mb-4">
-				<label class="form-check-label">
-					Recevoir des recommandations de livres selon mes préférences
-				</label>
-
-				<input class="form-check-input"
-					type="checkbox"
-					name="recommendations"
-					@checked(data_get($settings->settings, 'recommendations'))>
-			</div>
-
-				<!-- Switch -->
-			<div class="form-check form-switch d-flex justify-content-between mb-4">
-				<label class="form-check-label">
-					Recevoir une notification lorsque l'achat d'un livre est confirmé.
-				</label>
-
-				<input class="form-check-input"
-					type="checkbox"
-					name="purchase_confirmation"
-					@checked(data_get($settings->settings, 'purchase_confirmation'))>
-			</div>
-
-			<!-- Button -->
-			<div class="d-sm-flex justify-content-end">
-				<button type="submit" class="btn btn-sm btn-submit me-2 mb-0">Enregistrer</button>
-			</div>
-		</form>
-		<!-- Form END -->
-	</div>
-	<!-- Notifications END -->
-</div>
-
 @endsection

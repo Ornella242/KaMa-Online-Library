@@ -1,153 +1,117 @@
 @extends('layouts.writer')
 
 @section('writer-content')
+<main class="writer-page">
+    <div class="container">
+        <header class="writer-page-header">
+            <div>
+                <span class="writer-page-eyebrow">Suivi</span>
+                <h1>Notifications & activités</h1>
+                <p>Retrouvez ici toutes les alertes liées à vos livres et à votre compte auteur.</p>
+            </div>
+            @if($notifications->total() > 0)
+                <form method="POST" action="{{ route('notifications.clear') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash3"></i> Tout effacer
+                    </button>
+                </form>
+            @endif
+        </header>
 
-    <div class="container-fluid pt-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-4">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        @endif
 
-                    <div class="card-header activity-header">
-
-                        <div>
-
-                        <h5 class="mb-1 texte-white"> <i class="bi bi-bell-fill me-2"></i> Activités récentes </h5>
-                                <p class="mb-0">
-                                Suivez toutes les actions liées à vos livres.
-                                </p>
-                        </div>
-
-                    </div>
-
-                    <div class="card-body p-4">
-                        <div class="timeline">
-                            @php
-                            $activities = collect([
-
-                                (object)[
-                                    'title' => 'Votre livre a été publié',
-                                    'description' => 'Votre ouvrage est maintenant disponible pour les lecteurs sur KaMa.',
-                                    'icon' => 'bi bi-check-circle-fill',
-                                    'color' => 'success',
-                                    'book' => (object)[
-                                        'title' => 'Le pouvoir des habitudes'
-                                    ],
-                                    'created_at' => now()->subHours(2)
-                                ],
-
-
-                                (object)[
-                                    'title' => 'Nouveau lecteur',
-                                    'description' => 'Un lecteur vient d’acheter votre livre.',
-                                    'icon' => 'bi bi-cart-check-fill',
-                                    'color' => 'primary',
-                                    'book' => (object)[
-                                        'title' => 'Les chemins de la réussite'
-                                    ],
-                                    'created_at' => now()->subDay()
-                                ],
-
-
-                                (object)[
-                                    'title' => 'Nouveau commentaire reçu',
-                                    'description' => 'Marie Dupont a laissé un avis 5 étoiles sur votre ouvrage.',
-                                    'icon' => 'bi bi-star-fill',
-                                    'color' => 'warning',
-                                    'book' => (object)[
-                                        'title' => 'L’art de créer'
-                                    ],
-                                    'created_at' => now()->subDays(3)
-                                ],
-
-
-                                (object)[
-                                    'title' => 'Paiement du dépôt effectué',
-                                    'description' => 'Le paiement du dépôt de publication a été confirmé.',
-                                    'icon' => 'bi bi-credit-card-fill',
-                                    'color' => 'danger',
-                                    'book' => (object)[
-                                        'title' => 'Développer sa confiance'
-                                    ],
-                                    'created_at' => now()->subWeek()
-                                ],
-
-
-                                (object)[
-                                    'title' => 'Livre modifié',
-                                    'description' => 'Vous avez mis à jour les informations de votre livre.',
-                                    'icon' => 'bi bi-pencil-square',
-                                    'color' => 'info',
-                                    'book' => (object)[
-                                        'title' => 'Réussir ses objectifs'
-                                    ],
-                                    'created_at' => now()->subWeeks(2)
-                                ]
-
-                            ]);
-                            @endphp
-
-                            @forelse($activities as $activity)
-                               <div class="activity-item">
-
-                                <div class="activity-left">
-
-                                    <div class="activity-icon bg-{{ $activity->color }}">
-                                        <i class="{{ $activity->icon }}"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <h6>
-                                            {{ $activity->title }}
-                                        </h6>
-                                        <p>
-                                            {{ $activity->description }}
-                                        </p>
-                                        @if($activity->book)
-
-                                            <span class="book-name">
-                                                <i class="bi bi-book"></i>
-                                                {{ $activity->book->title }}
-                                            </span>
-                                        @endif
-
-                                        <small>
-                                            {{ $activity->created_at->diffForHumans() }}
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <div class="activity-actions">
-                                    <form action="" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button 
-                                            type="submit"
-                                            class="btn-delete-activity">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-
-                                </div>
-
-                            </div>
-                            @empty
-                                <div class="text-center py-5">
-                                    <i class="bi bi-bell display-5 text-danger"></i>
-                                    <h5 class="mt-3"> Aucune activité </h5>
-                                    <p class="text-muted"> Vos actions apparaîtront ici.</p>
-                                </div>
-                            @endforelse
-
-                        </div>
-                    </div>
-
-                    <div class="card-footer">
-                    {{-- {{ $activities->links() }} --}}
-                    </div>
+        <section class="writer-panel">
+            <header class="writer-panel-header">
+                <div>
+                    <span>Historique</span>
+                    <h2>Toutes vos notifications</h2>
+                    <p>{{ $notifications->total() }} notification(s) enregistrée(s).</p>
                 </div>
+            </header>
+
+            <div class="writer-activity-list">
+                @forelse($notifications as $notification)
+                    @php
+                        $dataType = $notification->data['type'] ?? '';
+                        $class = class_basename($notification->type ?? '');
+                        [$icon, $activityClass] = match (true) {
+                            $dataType === 'book_published' || $class === 'BookPublishedNotification'
+                                => ['bi bi-check-circle-fill', 'success'],
+                            $dataType === 'book_rejected' || $class === 'BookRejectedNotification'
+                                => ['bi bi-x-circle-fill', 'danger'],
+                            $class === 'BookRevisionRequiredNotification'
+                                => ['bi bi-pencil-square', 'warning'],
+                            $class === 'BookUnderReviewNotification'
+                                => ['bi bi-hourglass-split', 'info'],
+                            $class === 'BookResubmittedNotification'
+                                => ['bi bi-arrow-repeat', 'primary'],
+                            default => ['bi bi-bell-fill', 'neutral'],
+                        };
+                        $url = $notification->data['url']
+                            ?? (isset($notification->data['book_id'])
+                                ? route('writer.books.show', $notification->data['book_id'])
+                                : null);
+                    @endphp
+                    <article class="writer-activity-item {{ $notification->read_at ? '' : 'is-unread' }}">
+                        <span class="writer-activity-icon {{ $activityClass }}">
+                            <i class="{{ $icon }}"></i>
+                        </span>
+                        <div class="writer-activity-content">
+                            <div>
+                                <strong>{{ $notification->data['title'] ?? 'Notification' }}</strong>
+                                <small>{{ $notification->created_at->diffForHumans() }}</small>
+                            </div>
+                            <p>{{ $notification->data['message'] ?? '' }}</p>
+                            @if($url)
+                                <a href="{{ $url }}">
+                                    <i class="bi bi-box-arrow-up-right"></i> Voir le détail
+                                </a>
+                            @endif
+                        </div>
+                        <form method="POST" action="{{ route('writer.activities.destroy', $notification) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="writer-icon-action danger" aria-label="Supprimer la notification">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </form>
+                    </article>
+                @empty
+                    <div class="writer-empty-state">
+                        <span><i class="bi bi-bell"></i></span>
+                        <h3>Aucune notification</h3>
+                        <p>Les alertes sur vos livres (publication, révision, rejet…) apparaîtront ici.</p>
+                    </div>
+                @endforelse
             </div>
 
-        </div>
-
+            @if($notifications->hasPages())
+                <footer class="writer-panel-footer">{{ $notifications->links() }}</footer>
+            @endif
+        </section>
     </div>
-
+</main>
 @endsection
+
+@push('styles')
+<style>
+.writer-activity-item.is-unread {
+    background: #fff8f7;
+    border-radius: 14px;
+}
+.writer-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+}
+</style>
+@endpush

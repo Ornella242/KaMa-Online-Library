@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        $avgRating = round((float) ($book->reviews_avg_rating ?? 0), 1);
+        $reviewsCount = (int) ($book->reviews_count ?? 0);
+        $isAudio = $book->type === 'audio';
+        $isOwner = auth()->check() && auth()->id() === $book->user_id;
+    @endphp
 
 <section class="details-hero">
 
@@ -367,13 +373,171 @@ Advertisement END -->
                                   class="see-more">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                            </div>
+                            @elseif($isOwner)
+                                <span class="owned"><i class="bi bi-info-circle"></i> Votre publication</span>
+                            @elseif($inCart)
+                                <a href="{{ route('cart.index') }}" class="btn-cart secondary">
+                                    <i class="bi bi-cart-check"></i> Voir le panier
+                                </a>
+                            @else
+                                <form method="POST" action="{{ route('cart.store', $book) }}">
+                                    @csrf
+                                    <button type="submit" class="btn-cart">
+                                        <i class="bi bi-cart-plus"></i> Ajouter au panier
+                                    </button>
+                                </form>
+                            @endif
+
+                            @auth
+                                @unless($isOwner)
+                                    @if($inWishlist)
+                                        <form method="POST" action="{{ route('wishlist.destroy', $book) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-wishlist active" title="Retirer de la wishlist">
+                                                <i class="bi bi-heart-fill"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form method="POST" action="{{ route('wishlist.store', $book) }}">
+                                            @csrf
+                                            <button type="submit" class="btn-wishlist" title="Ajouter à la wishlist">
+                                                <i class="bi bi-heart"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endunless
+                            @else
+                                <a href="{{ route('login') }}" class="btn-wishlist" title="Connexion pour wishlist">
+                                    <i class="bi bi-heart"></i>
+                                </a>
+                            @endauth
                         </div>
+                        @unless($alreadyOwned || $isOwner)
+                            <p class="buy-guest-hint">Achat possible sans créer de compte — paiement par carte via KKiaPay.</p>
+                        @endunless
                     </div>
-                    @endforeach
                 </div>
             </div>
-            <!-- Slider END -->
+
+            <section class="book-detail-section" id="extrait">
+                <header>
+                    <h2>Extrait du livre</h2>
+                    <p>
+                        @if($book->preview_type === 'pages')
+                            Feuilletez les pages sélectionnées par l’auteur.
+                        @else
+                            Découvrez un aperçu du contenu.
+                        @endif
+                    </p>
+                </header>
+
+                @if($book->preview_type === 'pages' && $previewStart && $previewEnd)
+                    <div class="book-detail-flip">
+                        <div class="book-wrapper">
+                            <div id="book-preview"></div>
+                        </div>
+                    </div>
+                @else
+                    <div class="book-detail-text-preview">
+                        {!! $book->long_description ?: '<p class="text-muted">Aucun extrait texte disponible pour ce livre.</p>' !!}
+                    </div>
+                @endif
+            </section>
+
+            @if($sameAuthorBooks->isNotEmpty())
+                <section class="book-detail-section">
+                    <header>
+                        <h2>Du même auteur</h2>
+                        <p>Autres ouvrages de {{ $book->author?->firstname }} {{ $book->author?->lastname }}</p>
+                    </header>
+                    <div class="book-detail-related">
+                        @foreach($sameAuthorBooks as $sameBook)
+                            <a href="{{ route('books.show', $sameBook) }}" class="related-card">
+                                <img src="{{ asset('storage/' . $sameBook->cover_image) }}" alt="">
+                                <strong>{{ $sameBook->title }}</strong>
+                                <small>{{ number_format($sameBook->price, 0, ',', ' ') }} XOF</small>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            <section class="book-detail-section" id="avis">
+                <header>
+                    <h2>Avis des lecteurs</h2>
+                    <p>{{ $reviewsCount }} avis · note moyenne {{ number_format($avgRating, 1) }}/5</p>
+                </header>
+
+                <div class="book-detail-reviews">
+                    <div class="reviews-list">
+                        @forelse($book->reviews as $review)
+                            <article class="review-item">
+                                <div class="review-top">
+                                    <span class="review-avatar">
+                                        {{ strtoupper(mb_substr($review->user?->firstname ?? 'L', 0, 1) . mb_substr($review->user?->lastname ?? '', 0, 1)) }}
+                                    </span>
+                                    <div>
+                                        <strong>{{ trim(($review->user?->firstname ?? '') . ' ' . ($review->user?->lastname ?? '')) ?: 'Lecteur' }}</strong>
+                                        <div class="stars">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <i class="bi {{ $i <= $review->rating ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    <small>{{ $review->created_at?->diffForHumans() }}</small>
+                                </div>
+                                <p>{{ $review->comment }}</p>
+                            </article>
+                        @empty
+                            <div class="reviews-empty">
+                                <i class="bi bi-chat-quote"></i>
+                                <p>Aucun avis pour le moment. Soyez le premier à partager votre lecture.</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <aside class="review-form-card">
+                        <h3>{{ $userReview ? 'Modifier votre avis' : 'Laisser un avis' }}</h3>
+
+                        @guest
+                            <p class="review-login-hint">
+                                Vous devez être connecté pour publier un avis.
+                            </p>
+                            <a href="{{ route('login') }}" class="btn btn-danger w-100">
+                                Se connecter
+                            </a>
+                        @else
+                            @if($isOwner)
+                                <p class="review-login-hint">Vous ne pouvez pas noter votre propre livre.</p>
+                            @else
+                                <form method="POST" action="{{ route('books.reviews.store', $book) }}" class="review-form">
+                                    @csrf
+                                    <label>Note</label>
+                                    <select name="rating" required>
+                                        @for($r = 5; $r >= 1; $r--)
+                                            <option value="{{ $r }}" @selected(old('rating', $userReview?->rating) == $r)>
+                                                {{ str_repeat('★', $r) }}{{ str_repeat('☆', 5 - $r) }} ({{ $r }}/5)
+                                            </option>
+                                        @endfor
+                                    </select>
+
+                                    <label>Votre commentaire</label>
+                                    <textarea name="comment" rows="5" required minlength="10" maxlength="1000"
+                                        placeholder="Qu’avez-vous pensé de ce livre ?">{{ old('comment', $userReview?->comment) }}</textarea>
+                                    @error('comment')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        {{ $userReview ? 'Mettre à jour mon avis' : 'Publier mon avis' }}
+                                    </button>
+                                </form>
+                            @endif
+                        @endguest
+                    </aside>
+                </div>
+            </section>
         </div>
 </section>
 

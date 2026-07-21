@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Country;
 use App\Models\Role;
 use App\Models\Payment;
+use App\Models\Wallet;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -18,74 +19,46 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-
-        // Nombre total utilisateurs
         $totalUsers = User::count();
+        $totalReaders = User::whereHas('role', fn ($q) => $q->where('name', 'reader'))->count();
+        $totalWriters = User::whereHas('role', fn ($q) => $q->where('name', 'writer'))->count();
+        $totalAdmins = User::whereHas('role', fn ($q) => $q->where('name', 'admin'))->count();
 
-        // Lecteurs = utilisateurs ayant acheté au moins un livre
-        $totalReaders = User::whereHas('payments', function($query){
-            $query->where('type', 'purchase');
-        })->count();
+        $query = User::with(['role', 'country']);
 
-        // Ecrivains
-        // ici je suppose que role_id = 2 pour écrivain
-        $totalWriters = User::whereHas('role', function($query){
-
-            $query->where('name', 'writer');
-
-        })->count();
-
-        $query = User::with(['role', 'payments']);
-
-        // recherche
         if ($request->filled('search')) {
-
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
-
                 $q->where('firstname', 'like', "%{$search}%")
-                ->orWhere('lastname', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%");
-
+                    ->orWhere('lastname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
-
         }
 
-        // filtre
-        if ($request->type == 'writer') {
-
-            $query->whereHas('role', function ($q) {
-
-                $q->where('name', 'writer');
-
+        if ($request->filled('type') && in_array($request->type, ['reader', 'writer', 'admin'], true)) {
+            $query->whereHas('role', function ($q) use ($request) {
+                $q->where('name', $request->type);
             });
-
-        }
-
-        if ($request->type == 'reader') {
-
-            $query
-                ->whereHas('role', function ($q) {
-                    $q->where('name', 'reader');
-                })
-                ->whereHas('payments', function ($q) {
-                    $q->where('type', 'purchase');
-                });
-
         }
 
         $users = $query
             ->latest()
-            ->paginate(15)
+            ->paginate(12)
             ->withQueryString();
 
+        $roles = Role::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
 
         return view('admin.users.users', compact(
             'users',
             'totalUsers',
             'totalReaders',
-            'totalWriters'
+            'totalWriters',
+            'totalAdmins',
+            'roles',
+            'countries'
         ));
     }
 
@@ -138,11 +111,11 @@ class UserController extends Controller
             ],
             'phone' => 'nullable|string|max:30',
             'country_id' => [
-                'required',
+                'nullable',
                 'exists:countries,id'
             ],
             'city' => [
-                'required',
+                'nullable',
                 'string',
                 'max:100'
             ],
@@ -161,7 +134,9 @@ class UserController extends Controller
             'bio'       => $request->bio,
         ]);
 
-        return back()->with('success', 'Utilisateur modifié avec succès.');
+        return redirect()
+            ->route('admin.users')
+            ->with('success', 'Utilisateur modifié avec succès.');
     }
 
     public function destroy(User $user)
@@ -245,16 +220,52 @@ class UserController extends Controller
 
     }
 
-    public function becomeWriter()
+    public function becomeWriter(Request $request)
     {
         $user = Auth::user();
 
-        $user->update([
-            'is_writer' => true
+        if ($user->isWriter()) {
+            return redirect()
+                ->route('writer.dashboard')
+                ->with('success', 'Vous êtes déjà écrivain.');
+        }
+
+        $validated = $request->validate([
+            'accept_fees' => ['accepted'],
+            'accept_rights' => ['accepted'],
+            'accept_terms' => ['accepted'],
+            'confirm_text' => ['required', 'string'],
+        ], [
+            'accept_fees.accepted' => 'Vous devez accepter les frais de publication.',
+            'accept_rights.accepted' => 'Vous devez confirmer détenir les droits sur vos contenus.',
+            'accept_terms.accepted' => 'Vous devez accepter les règles de publication KaMa.',
+            'confirm_text.required' => 'Veuillez taper ÉCRIVAIN pour confirmer.',
         ]);
 
-        return redirect('/writer/account')
-            ->with('success', 'Vous êtes maintenant écrivain !');
+        if (mb_strtoupper(trim($validated['confirm_text'])) !== 'ÉCRIVAIN') {
+            return back()
+                ->withErrors(['confirm_text' => 'Veuillez taper exactement ÉCRIVAIN pour confirmer.'])
+                ->withInput();
+        }
+
+        $writerRole = Role::query()->where('name', 'writer')->firstOrFail();
+
+        $user->update([
+            'role_id' => $writerRole->id,
+            'is_writer' => true,
+        ]);
+
+        if (! $user->wallet()->exists()) {
+            Wallet::query()->create([
+                'user_id' => $user->id,
+                'balance' => 0,
+                'currency' => 'USD',
+            ]);
+        }
+
+        return redirect()
+            ->route('writer.dashboard')
+            ->with('success', 'Bienvenue dans l’espace écrivain ! Votre espace auteur est prêt.');
     }
 
    public function updateProfile(Request $request)
@@ -279,7 +290,8 @@ class UserController extends Controller
         'email' => [
             'required',
             'email',
-            'max:255'
+            'max:255',
+            Rule::unique('users', 'email')->ignore($user->id),
         ],
 
         'country_id' => [
@@ -308,6 +320,13 @@ class UserController extends Controller
         'gender' => [
             'nullable',
             'in:male,female,other'
+        ],
+
+        'avatar' => [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:2048',
         ],
 
     ]);

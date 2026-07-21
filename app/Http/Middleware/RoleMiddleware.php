@@ -12,13 +12,25 @@ class RoleMiddleware
     /**
      * Handle an incoming request.
      *
+     * Accepts one or more role names, e.g. role:writer or role:writer,admin
+     *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle($request, Closure $next, $role)
+    public function handle($request, Closure $next, string ...$roles)
     {
         $user = Auth::user();
 
-        if (!$user || !$user->role || $user->role->name !== $role) {
+        if (!$user || !$user->role) {
+            abort(403);
+        }
+
+        $allowed = collect($roles)
+            ->flatMap(fn (string $role) => explode(',', $role))
+            ->map(fn (string $role) => trim($role))
+            ->filter()
+            ->all();
+
+        if (! in_array($user->role->name, $allowed, true)) {
             abort(403);
         }
 
