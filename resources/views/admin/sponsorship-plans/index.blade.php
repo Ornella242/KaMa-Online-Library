@@ -20,36 +20,12 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <section class="categories-stats">
-        <article>
-            <span class="total"><i class="bi bi-megaphone-fill"></i></span>
-            <div><small>Formules</small><strong>{{ number_format($stats['total']) }}</strong></div>
-        </article>
-        <article>
-            <span class="sub"><i class="bi bi-check-circle-fill"></i></span>
-            <div><small>Actives</small><strong>{{ number_format($stats['active']) }}</strong></div>
-        </article>
-        <article>
-            <span class="empty"><i class="bi bi-pause-circle-fill"></i></span>
-            <div><small>Inactives</small><strong>{{ number_format($stats['inactive']) }}</strong></div>
-        </article>
-        <article>
-            <span class="books"><i class="bi bi-cash-stack"></i></span>
-            <div><small>Prix moyen</small><strong>{{ number_format($stats['avg_price'], 0, ',', ' ') }} <small>XOF</small></strong></div>
-        </article>
-    </section>
-
     <section class="categories-panel">
         <form method="GET" action="{{ route('admin.sponsorship-plans.index') }}" class="categories-toolbar">
             <div class="categories-search">
                 <i class="bi bi-search"></i>
                 <input type="search" name="search" value="{{ request('search') }}" placeholder="Rechercher une formule…">
             </div>
-            <select name="status" class="form-select" style="max-width:160px;border-radius:12px;">
-                <option value="">Tous les statuts</option>
-                <option value="active" @selected(request('status') === 'active')>Actives</option>
-                <option value="inactive" @selected(request('status') === 'inactive')>Inactives</option>
-            </select>
             <button type="submit" class="categories-filter-btn">Filtrer</button>
         </form>
 
@@ -61,7 +37,6 @@
                         <th>Durée</th>
                         <th>Prix</th>
                         <th>Utilisations</th>
-                        <th>Statut</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -81,13 +56,6 @@
                             <td><strong>{{ number_format($plan->price, 0, ',', ' ') }} XOF</strong></td>
                             <td>{{ number_format($plan->sponsorships_count) }}</td>
                             <td>
-                                @if($plan->active)
-                                    <span class="categories-count-badge filled">Active</span>
-                                @else
-                                    <span class="categories-count-badge">Inactive</span>
-                                @endif
-                            </td>
-                            <td>
                                 <div class="categories-row-actions">
                                     <button type="button" class="edit js-categories-open" data-overlay-target="editPlan-{{ $plan->id }}">
                                         <i class="bi bi-pencil"></i> Modifier
@@ -100,7 +68,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="5">
                                 <div class="categories-empty">
                                     <span><i class="bi bi-megaphone"></i></span>
                                     <h3>Aucune formule</h3>
@@ -139,10 +107,6 @@
                     <input type="number" name="duration_days" min="1" max="365" required placeholder="30">
                     <label>Prix (XOF) *</label>
                     <input type="number" name="price" min="0" step="1" required placeholder="15000">
-                    <label class="d-flex align-items-center gap-2 mt-2">
-                        <input type="checkbox" name="active" value="1" checked>
-                        <span>Formule active (visible aux auteurs)</span>
-                    </label>
                 </div>
                 <footer class="categories-overlay-footer">
                     <button type="button" class="js-categories-close">Annuler</button>
@@ -172,11 +136,6 @@
                         <input type="number" name="duration_days" value="{{ $plan->duration_days }}" min="1" max="365" required>
                         <label>Prix (XOF) *</label>
                         <input type="number" name="price" value="{{ (int) $plan->price }}" min="0" step="1" required>
-                        <label class="d-flex align-items-center gap-2 mt-2">
-                            <input type="hidden" name="active" value="0">
-                            <input type="checkbox" name="active" value="1" @checked($plan->active)>
-                            <span>Formule active</span>
-                        </label>
                     </div>
                     <footer class="categories-overlay-footer">
                         <button type="button" class="js-categories-close">Annuler</button>

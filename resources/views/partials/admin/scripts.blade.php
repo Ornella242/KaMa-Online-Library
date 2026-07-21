@@ -72,14 +72,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const coverInput = document.getElementById('coverImageInput');
-    coverInput?.addEventListener('change', () => {
-        const file = coverInput.files?.[0];
+    coverInput?.addEventListener('change', (event) => {
+        const file = event.target.files?.[0];
         if (!file) return;
-        const image = document.getElementById('coverPreviewImage');
+
+        const coverImage = document.getElementById('coverPreviewImage');
         const placeholder = document.getElementById('coverPlaceholder');
-        image.src = URL.createObjectURL(file);
-        image.classList.remove('d-none');
-        placeholder?.classList.add('d-none');
+        const summaryCover = document.getElementById('summary_cover');
+        const reader = new FileReader();
+
+        reader.onload = (loadEvent) => {
+            const dataUrl = loadEvent.target?.result;
+            if (!dataUrl) return;
+
+            if (coverImage) {
+                coverImage.src = dataUrl;
+                coverImage.style.display = 'block';
+            }
+
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
+            if (summaryCover) {
+                summaryCover.src = dataUrl;
+            }
+        };
+
+        reader.readAsDataURL(file);
     });
 
     const typeInputs = document.querySelectorAll('input[name="type"]');

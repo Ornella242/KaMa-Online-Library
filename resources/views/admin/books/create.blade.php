@@ -6,83 +6,6 @@
 @section('admin-content')
 
 <!-- =======================
-Page Banner START -->
-<section class="book-create-hero">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <!-- LEFT -->
-            <div class="col-lg-8">
-
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
-                    <i class="bi bi-book me-2"></i>
-                    Publication d'un nouveau livre
-                </span>
-
-                <h2 class="display-6 fw-bold mb-3">
-                    Ajoutez votre livre à 
-                    <span class="text-red">
-                        KaMa Afrika, Online Library
-                    </span>
-                </h2>
-
-                <p class="lead text-black fw-semibold mb-0">
-                    Complétez les informations de votre ouvrage afin de préparer
-                    son intégration dans notre bibliothèque numérique.
-                    Après validation du dépôt et paiement des frais de publication,
-                    votre livre sera verifie et officiellement disponible sur la plateforme KaMa.
-					Faites la promotion de votre livre sur les pages KaMa avec nos offres spéciales de sponsoring.
-					Vous toucherez 80 % de vos ventes
-                </p>
-
-            </div>
-
-            <!-- RIGHT INFO CARD -->
-            <div class="col-lg-4">
-
-                <div class="publication-info-card">
-
-                    <div class="info-icon">
-                        <i class="bi bi-cloud-upload"></i>
-                    </div>
-
-
-                    <h5 class="fw-bold mb-3 text-white">
-                        Processus de publication
-                    </h5>
-
-
-                    <div class="process-item">
-                        <span>1</span>
-                        <p>
-                            Déposez les informations et fichiers du livre
-                        </p>
-                    </div>
-
-
-                    <div class="process-item">
-                        <span>2</span>
-                        <p>
-                            Effectuez le paiement du dépôt
-                        </p>
-                    </div>
-
-                    <div class="process-item">
-                        <span>3</span>
-                        <p>
-                            Validation puis mise en ligne officielle
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    </div>
-</section>
-<!-- =======================
-Page Banner END -->
-
-<!-- =======================
 Steps START -->
 <section>
 	<div class="container">
@@ -1000,91 +923,17 @@ Steps START -->
 
 									<!-- BOOK PREVIEW END -->
 
-									<!-- STATUS START -->
-
-									<div class="status-card">
-										<div class="status-icon">
-											<i class="bi bi-hourglass-split"></i>
+									<!-- STATUS ADMIN START -->
+									<div class="status-card" style="background: linear-gradient(135deg,#e8f5e9,#f1f8e9); border:1px solid #c8e6c9; border-radius:16px; padding:24px; display:flex; gap:20px; align-items:flex-start;">
+										<div class="status-icon" style="background:#2e7d32; color:#fff; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+											<i class="bi bi-patch-check-fill fs-4"></i>
 										</div>
-
 										<div>
-											<h5>
-												Statut : En attente de paiement
-											</h5>
-
-											<p>
-
-												Votre livre sera enregistré dans la base de données KaMa.
-												Il restera invisible au public jusqu'au paiement des frais
-												de dépôt et sera ensuite soumis au processus de validation avant publication.
-											</p>
-										</div>
-
-
-									</div>
-
-									<!-- STATUS END -->
-
-									<!-- DEPOSIT START -->
-
-									<div class="deposit-card">
-										<div class="deposit-left">
-											<h4>
-												Frais de dépôt KaMa
-											</h4>
-
-											<p>
-												Ces frais couvrent la préparation et la mise en ligne
-												de votre ouvrage sur la plateforme.
-											</p>
-
-											<ul>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Vérification éditoriale
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Contrôle qualité du fichier
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Référencement dans la bibliothèque KaMa
-												</li>
-
-												<li>
-													<i class="bi bi-check-circle-fill"></i>
-													Publication officielle après paiement et vérification
-												</li>
-
-
-											</ul>
-
-											<p class="fw-semibold text-white">
-												Le délai de publication du livre est de 15 jours à compter du jour du paiement de dépôt.
-											</p>
-										</div>
-
-										<div class="deposit-right">
-											<span>
-												Montant du dépôt
-											</span>
-											<h1>
-												10 $
-											</h1>
-
-											<small>
-												Le paiement sera effectué après l'enregistrement.
-											</small>
-
-
+											<h5 class="mb-1">Statut : Publication immédiate</h5>
+											<p class="mb-0 text-muted">En tant qu'administrateur, votre livre sera publié instantanément sur la plateforme. Aucun frais de dépôt ni délai de vérification ne sont requis.</p>
 										</div>
 									</div>
-
-									<!-- DEPOSIT END -->
+									<!-- STATUS ADMIN END -->
 
 
 									<!-- BUTTONS -->

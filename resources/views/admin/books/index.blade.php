@@ -18,15 +18,12 @@
     </div>
 
     @if(session('book_created'))
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                 <div>
-                    <strong><i class="bi bi-check-circle-fill me-2"></i>Livre ajouté</strong>
-                    <p class="mb-0 mt-1">{{ session('book_created.message') }}</p>
+                    <strong><i class="bi bi-check-circle-fill me-2"></i>Livre publié avec succès !</strong>
+                    <p class="mb-0 mt-1">Votre livre a été automatiquement publié dans la bibliothèque KaMa.</p>
                 </div>
-                <a href="{{ route('admin.books.deposit', session('book_created.book_id')) }}" class="admin-books-add">
-                    <i class="bi bi-credit-card"></i> Payer les frais
-                </a>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
         </div>
@@ -137,7 +134,6 @@
                             };
                             $statusLabel = $statusMeta[0];
                             $statusClass = $statusMeta[1];
-                            $fee = $publicationFees->get($book->type);
                         @endphp
                         <tr>
                             <td>
@@ -185,54 +181,34 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
-                                    @if($book->status === 'draft')
-                                        <a href="{{ route('admin.books.deposit', $book) }}" class="primary"
-                                           title="Payer le dépôt" aria-label="Payer le dépôt">
-                                            <i class="bi bi-credit-card"></i>
+                                    <a href="{{ route('admin.books.edit', $book) }}" title="Modifier" aria-label="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    @if($book->status === 'published')
+                                        <a href="{{ route('admin.books.boost', $book) }}" class="primary" title="Mettre en avant" aria-label="Mettre en avant">
+                                            <i class="bi bi-rocket-takeoff"></i>
                                         </a>
-                                        <a href="{{ route('admin.books.edit', $book) }}" title="Modifier" aria-label="Modifier">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('admin.books.destroy', $book) }}" method="POST"
-                                              onsubmit="return confirm('Supprimer ce brouillon ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" title="Supprimer" aria-label="Supprimer">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        </form>
                                     @elseif($book->status === 'revision_required')
-                                        <a href="{{ route('admin.books.edit', $book) }}" class="primary"
-                                           title="Corriger" aria-label="Corriger">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
                                         <form action="{{ route('admin.books.resubmit', $book) }}" method="POST">
                                             @csrf
                                             <button type="submit" title="Renvoyer" aria-label="Renvoyer">
                                                 <i class="bi bi-arrow-repeat"></i>
                                             </button>
                                         </form>
-                                    @elseif($book->status === 'published')
-                                        <a href="{{ route('admin.books.boost', $book) }}" title="Booster" aria-label="Booster">
-                                            <i class="bi bi-share-fill"></i>
-                                        </a>
                                     @endif
+
+                                    <form action="{{ route('admin.books.destroy', $book) }}" method="POST"
+                                          onsubmit="return confirm('Supprimer ce livre ?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" title="Supprimer" aria-label="Supprimer">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
-                        @if($book->status === 'draft' && $fee)
-                            <tr class="admin-books-inline-hint">
-                                <td colspan="6">
-                                    <div class="admin-author-inline-pay">
-                                        <span>
-                                            <i class="bi bi-shield-lock"></i>
-                                            Frais de publication : {{ number_format($fee->amount, 0, ',', ' ') }} {{ $fee->currency }}
-                                        </span>
-                                        <a href="{{ route('admin.books.deposit', $book) }}">Régler maintenant</a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
                     @empty
                         <tr>
                             <td colspan="6">

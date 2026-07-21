@@ -266,7 +266,7 @@ class BooksController extends Controller
             'original_file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getClientOriginalExtension(),
             'file_size' => $file->getSize(),
-            'status' => 'draft',
+            'status' => 'published',
             'copyright_accepted' => true,
             'copyright_accepted_at' => now(),
         ]);
@@ -280,13 +280,7 @@ class BooksController extends Controller
 
         return redirect()
             ->route('admin.books.index')
-            ->with(
-                'book_created',
-                [
-                    'book_id' => $book->id,
-                    'message' => 'Votre livre a été ajouté avec succès. Veuillez régler les frais de publication afin de poursuivre sa mise en ligne.',
-                ]
-            );
+            ->with('book_created', true);
     }
 
     public function show(Book $book)
@@ -300,31 +294,39 @@ class BooksController extends Controller
     public function edit(Book $book)
     {
         abort_unless($this->isOwnBook($book), 403, 'Vous ne pouvez modifier que vos propres livres.');
-        abort_unless(
-            in_array($book->status, ['draft', 'revision_required'], true),
-            409,
-            'Ce livre ne peut plus être modifié dans son état actuel.'
-        );
 
         $categories = Category::all();
         $subcategories = $book->category->subcategories;
+
+        $isAudioBook = $book->type === 'audio';
+        $existingFileName = $book->original_file_name
+            ?: ($book->file_path ? basename($book->file_path) : null);
+        $existingPreviewUrl = $book->file_path
+            ? ($isAudioBook
+                ? route('admin.books.audio', $book)
+                : route('admin.books.preview.file', $book))
+            : null;
+        $existingFileSize = $book->file_size
+            ? number_format($book->file_size / 1048576, 2).' MB'
+            : null;
+
         return view('admin.books.edit', compact(
             'book',
             'categories',
-            'subcategories'
+            'subcategories',
+            'isAudioBook',
+            'existingFileName',
+            'existingPreviewUrl',
+            'existingFileSize'
         ));
     }
 
     public function update(Request $request, Book $book)
     {
         abort_unless($this->isOwnBook($book), 403, 'Vous ne pouvez modifier que vos propres livres.');
-        abort_unless(
-            in_array($book->status, ['draft', 'revision_required'], true),
-            409,
-            'Ce livre ne peut plus être modifié dans son état actuel.'
-        );
+        // Admin peut modifier à tout statut — on saute la branche "published seul" et on tombe dans le code complet
 
-        if ($book->status === 'published') {
+        if (false) {
 
             $request->validate([
 
@@ -741,11 +743,6 @@ class BooksController extends Controller
     public function destroy(Book $book)
     {
         abort_unless($this->isOwnBook($book), 403);
-        abort_unless(
-            in_array($book->status, ['draft', 'revision_required'], true),
-            409,
-            'Seul un brouillon ou un livre à corriger peut être supprimé.'
-        );
 
         if (
             $book->cover_image &&

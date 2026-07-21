@@ -17,26 +17,11 @@ class SponsorshipPlanController extends Controller
                 $search = $request->search;
                 $query->where('name', 'like', '%' . $search . '%');
             })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                if ($request->status === 'active') {
-                    $query->where('active', true);
-                }
-                if ($request->status === 'inactive') {
-                    $query->where('active', false);
-                }
-            })
             ->orderBy('duration_days')
             ->paginate(10)
             ->withQueryString();
 
-        $stats = [
-            'total' => SponsorshipPlan::count(),
-            'active' => SponsorshipPlan::where('active', true)->count(),
-            'inactive' => SponsorshipPlan::where('active', false)->count(),
-            'avg_price' => (float) SponsorshipPlan::avg('price'),
-        ];
-
-        return view('admin.sponsorship-plans.index', compact('plans', 'stats'));
+        return view('admin.sponsorship-plans.index', compact('plans'));
     }
 
     public function store(Request $request)
@@ -45,14 +30,13 @@ class SponsorshipPlanController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:sponsorship_plans,name'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'],
             'price' => ['required', 'numeric', 'min:0'],
-            'active' => ['nullable', 'boolean'],
         ]);
 
         SponsorshipPlan::query()->create([
             'name' => $validated['name'],
             'duration_days' => $validated['duration_days'],
             'price' => $validated['price'],
-            'active' => $request->boolean('active', true),
+            'active' => true,
         ]);
 
         return redirect()
@@ -71,14 +55,12 @@ class SponsorshipPlanController extends Controller
             ],
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'],
             'price' => ['required', 'numeric', 'min:0'],
-            'active' => ['nullable', 'boolean'],
         ]);
 
         $sponsorship_plan->update([
             'name' => $validated['name'],
             'duration_days' => $validated['duration_days'],
             'price' => $validated['price'],
-            'active' => $request->boolean('active'),
         ]);
 
         return redirect()
@@ -89,7 +71,7 @@ class SponsorshipPlanController extends Controller
     public function destroy(SponsorshipPlan $sponsorship_plan)
     {
         if ($sponsorship_plan->sponsorships()->exists()) {
-            return back()->with('error', 'Impossible de supprimer une formule déjà utilisée. Désactivez-la plutôt.');
+            return back()->with('error', 'Impossible de supprimer une formule déjà utilisée.');
         }
 
         $sponsorship_plan->delete();
