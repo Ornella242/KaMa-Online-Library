@@ -13,8 +13,6 @@
     <!-- DECORATION -->
     <div class="hero-bg-circle c1"></div>
     <div class="hero-bg-circle c2"></div>
-
-
     <div class="kama-hero-container">
         <div class="hero-content">
             <!-- Breadcrumb -->
@@ -32,7 +30,6 @@
                     {{ $book->title }}
                 </span>
             </div>
-
             <!-- Category -->
             @if($book->category)
                 <span class="book-category-badge">
@@ -40,10 +37,6 @@
                     {{ $book->category->name }}
                 </span>
             @endif
-{{-- 
-            <h1>
-                {{ $book->title }}
-            </h1> --}}
         </div>
     </div>
 </section>
@@ -268,93 +261,50 @@ Advertisement END -->
 </section>
 
 <section class="book-preview-section" id="full-description">
-
-
     <div class="preview-card">
-
-
         <!-- HEADER -->
-
         <div class="preview-title">
-             <div class="row mb-2">
-                <div class="col-12 text-center">
-                    <span class="section-subtitle"> <i class="bi bi-book-half"></i>Aperçu</span>
-                    <h2 class="section-title">
-                        @if ($book->preview_type == 'pages')
-                          Feuilletez <span>quelques pages</span>
-                        @else
-                            Découvrez <span>le livre</span>
+            <span class="section-subtitle">
+                <i class="bi bi-book-half"></i>
+                Aperçu
+            </span>
 
-                        @endif  
-                    </h2>
-                </div>
-            </div>
-
-
+            <h2>
+                @if ($book->preview_type == 'pages')
+                    Feuilletez 
+                    <span>quelques pages</span>
+                @else
+                    Découvrez 
+                    <span>le livre</span>
+                @endif
+            </h2>
 
             @if($book->preview_type == 'pages')
-
                 <p>
                     Parcourez un extrait avant de commencer votre lecture.
                 </p>
-
             @endif
-
-
         </div>
 
-
-
-
         <!-- CONTENT -->
-
-
         @if($book->preview_type == 'pages')
-
-
             <div class="flipbook-zone">
-
-
                 <div class="reading-tip">
-
-                    <i class="bi bi-hand-index"></i>
-
-                    Tournez les pages pour lire l'extrait
-
+                    <i class="bi bi-hand-index-thumb"></i>
+                    Tournez les pages pour découvrir l'extrait
                 </div>
-
-
 
                 <div class="flipbook-frame">
-
+                    <div class="book-shadow"></div>
                     <div id="book-preview"></div>
-
                 </div>
-
-
             </div>
-
-
-
         @else
-
-
-
             <article class="book-text-preview">
-
                 {!! $book->long_description !!}
-
             </article>
-
-
-
         @endif
-
-
-
     </div>
-
-
 </section>
 
 <section class="same-author-section">
@@ -408,7 +358,6 @@ Advertisement END -->
             <!-- Slider END -->
         </div>
 </section>
-
 
 
 <section class="reviews-section">
@@ -529,199 +478,91 @@ Advertisement END -->
 
 <script>
 
+        let pages = [];
+        // COUVERTURE
+        const cover = document.createElement("div");
+        cover.className="page cover";
+        cover.innerHTML = `
+        <img src="/storage/{{ $book->cover_image }}">
+        `;
+        pages.push(cover);
 
-    let pages = [];
+        // PAGES PREVIEW IMAGES
+        @for(
+        $i=$previewStart;
+        $i<=$previewEnd;
+        $i++
+        )
 
+        const page{{ $i }} = document.createElement("div");
+        page{{ $i }}.className="page";
+        page{{ $i }}.innerHTML = `
+        <img src="{{ route('book.preview.page',[$book->id,$i]) }}">
+        `;
+        pages.push(page{{ $i }});
+        @endfor
 
+        // PAGE FIN
+        const finalPage=document.createElement("div");
+        finalPage.className="page preview-end-page";
+        finalPage.innerHTML=`
+        <div class="preview-end-content">
+            <!-- ICON -->
+            <div class="end-book-icon">
+                <i class="bi bi-book"></i>
+            </div>
 
-    // =============================
-    // COUVERTURE
-    // =============================
+            <!-- LABEL -->
+            <span class="end-label">
+                Aperçu terminé
+            </span>
 
-    const cover = document.createElement("div");
+            <!-- TITLE -->
+            <h2>
+                Fin de l'aperçu
+            </h2>
+            <!-- DESCRIPTION -->
+            <p>
+                Vous venez de découvrir un extrait de ce livre.
+                Continuez votre lecture complète et plongez dans toute l’histoire.
+            </p>
+            <!-- PRICE -->
+            <div class="end-price">
+                {{ number_format($book->price,2) }} $
+            </div>
 
-    cover.className="page cover";
-
-
-    cover.innerHTML = `
-
-    <img src="/storage/{{ $book->cover_image }}">
-
-    `;
-
-
-    pages.push(cover);
-
-
-
-
-    // =============================
-    // PAGES PREVIEW IMAGES
-    // =============================
-
-
-    @for(
-    $i=$previewStart;
-    $i<=$previewEnd;
-    $i++
-    )
-
-
-    const page{{ $i }} = document.createElement("div");
-
-
-    page{{ $i }}.className="page";
-
-
-    page{{ $i }}.innerHTML = `
-
-    <img src="{{ route('book.preview.page',[$book->id,$i]) }}">
-
-    `;
-
-    pages.push(page{{ $i }});
-
-    @endfor
-
-    // =============================
-    // PAGE FIN
-    // =============================
-
-
-    const finalPage=document.createElement("div");
-
-
-    finalPage.className="page preview-end-page";
-
-
-    finalPage.innerHTML=`
-
-    <div class="preview-end-content">
-
-
-        <!-- ICON -->
-        <div class="end-book-icon">
-
-            <i class="bi bi-book"></i>
-
+            <!-- ACTION -->
+            <a href="#"
+            class="end-buy-btn">
+                <i class="bi bi-cart"></i>
+                Acheter le livre
+            </a>
         </div>
 
-
-
-        <!-- LABEL -->
-        <span class="end-label">
-
-            Aperçu terminé
-
-        </span>
-
-
-
-        <!-- TITLE -->
-        <h2>
-
-            Fin de l'aperçu
-
-        </h2>
-
-
-
-        <!-- DESCRIPTION -->
-        <p>
-
-            Vous venez de découvrir un extrait de ce livre.
-            Continuez votre lecture complète et plongez dans toute l’histoire.
-
-        </p>
-
-
-
-        <!-- PRICE -->
-        <div class="end-price">
-
-            {{ number_format($book->price,2) }} $
-
-        </div>
-
-
-
-        <!-- ACTION -->
-        <a href="#"
-        class="end-buy-btn">
-
-            <i class="bi bi-cart"></i>
-
-            Acheter le livre
-
-        </a>
-
-
-    </div>
-
-    `;
-
-
-
-    pages.push(finalPage);
-
-
-    // =============================
-    // FLIPBOOK
-    // =============================
-
-
-    const isMobile = window.innerWidth <= 992;
-
-
-
-    const flipBook = new St.PageFlip(
-
-    document.getElementById("book-preview"),
-
-    {
-
-        width: isMobile ? 320 : 400,
-
-        height: isMobile ? 480 : 560,
-
-
-        size: "fixed",
-
-
-        minWidth: 280,
-
-        maxWidth: 800,
-
-
-        minHeight: 400,
-
-        maxHeight: 1000,
-
-
-        showCover: true,
-
-
-        usePortrait: isMobile,
-
-
-        drawShadow: true,
-
-
-        maxShadowOpacity: 0.4,
-
-
-        flippingTime: 900,
-
-
-        mobileScrollSupport: true
-
-    }
-
-);
-
+        `;
+        pages.push(finalPage);
+        // FLIPBOOK
+
+        const isMobile = window.innerWidth <= 992;
+        const flipBook = new St.PageFlip(
+        document.getElementById("book-preview"),
+            {
+                width: isMobile ? 320 : 500,
+                height: isMobile ? 480 : 700,
+                size: "fixed",
+                minWidth: 280,
+                maxWidth: 500,
+                minHeight: 400,
+                maxHeight: 700,
+                showCover: true,
+                usePortrait: true,
+                drawShadow: true,
+                maxShadowOpacity: 0.4,
+                flippingTime: 900,
+                mobileScrollSupport: true
+            }
+        );
     flipBook.loadFromHTML(pages);
-
-
 
 </script>
 

@@ -74,7 +74,7 @@
 
 @push('styles')
 <style>
-.writer-sponsor-page { max-width:1100px; margin:0 auto; padding:10px 0 40px; }
+.writer-sponsor-page { max-width:1400px; margin:0 auto; padding:10px 0 40px; }
 .writer-sponsor-hero {
   display:flex; flex-wrap:wrap; justify-content:space-between; gap:18px; align-items:flex-end;
   margin-bottom:24px; padding:22px 24px; border-radius:18px; background:linear-gradient(135deg,#fff7f5,#fff); border:1px solid #f0e4e2;

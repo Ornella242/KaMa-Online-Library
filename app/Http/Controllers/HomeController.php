@@ -41,6 +41,12 @@ class HomeController extends Controller
         ->where('ends_at','>',now())
         ->get();
 
+        $sponsoredPrestigeBooks = BookSponsorship::with('book.author')
+        ->where('sponsorship_plan_id', 7)
+        ->where('status', 'paid')
+        ->where('ends_at','>',now())
+        ->get();
+
        // Livre le mieux noté (grand affichage)
         $bestRatedBook = Book::published()->with(['author', 'category'])
             ->withAvg('reviews', 'rating')
@@ -116,7 +122,7 @@ class HomeController extends Controller
             'categories',
             'bestRatedBook',
             'topRatedBooks','highestRatedBooks',
-            'bestSellingBooks','latestReviews','topAuthors','sponsoredBooks', 'authors'
+            'bestSellingBooks','latestReviews','topAuthors','sponsoredBooks', 'authors','sponsoredPrestigeBooks'
         ));
 
     }

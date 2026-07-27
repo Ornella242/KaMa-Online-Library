@@ -212,7 +212,7 @@ About START -->
 					</svg>
 				</figure>
 				<!-- Image -->
-				<div class="position-relative mb-5">
+				{{-- <div class="position-relative mb-5">
 					<!-- Image -->
 					<img src="{{ asset('assets/images/sponsor/02.jpg') }}" class="rounded-3" alt="">
 					<!-- Manager -->
@@ -222,7 +222,67 @@ About START -->
 							<h6 class="fw-normal">Livres au Total </h6>
 						</div>
 					</div>
-				</div>	
+				</div>	 --}}
+
+                @if($sponsoredPrestigeBooks->count())
+                    <div class="pb-2 pb-lg-5 position-relative mb-5">
+
+                        <div class="kama-hero-container">
+                            <div class="tiny-slider arrow-round arrow-blur arrow-hover">
+                                <div class="tiny-slider-inner"
+                                    data-autoplay="true"
+                                    data-arrow="true"
+                                    data-edge="2"
+                                    data-dots="false"
+                                    data-items-xl="1"
+                                    data-items-lg="1"
+                                    data-items-md="1"
+                                    data-speed="600">
+
+                                    @foreach($sponsoredPrestigeBooks as $sponsored)
+                                    <div>
+                                        <div class="position-relative mb-5">
+                                            <!-- COVER LIVRE -->
+                                            <img
+                                            src="{{ asset('storage/'.$sponsored->book->cover_image) }}"
+                                            class="rounded-3 w-100"
+                                            style="height:450px; object-fit:cover;"
+                                            alt="{{ $sponsored->book->title }}">
+                                            <!-- OVERLAY CTA -->
+
+                                            <div class="position-absolute bottom-0 start-0 ms-3 ms-lg-5 mb-4 z-index-1">
+                                                <div class="bg-mode shadow rounded-4 p-4"
+                                                    style="max-width:360px;">
+                                                    <span class="badge bg-danger mb-3">
+                                                        Kama Prestige +
+                                                    </span>
+
+                                                    <h5 class="fw-bold mb-2">
+                                                        {{ $sponsored->book->title }}
+                                                    </h5>
+
+                                                    <p class="mb-3" style="color:#b30000; font-weight:700; font-style:italic;">
+                                                        Par
+                                                        {{ $sponsored->book->author->firstname }}
+                                                        {{ $sponsored->book->author->lastname }}
+                                                    </p>
+
+                                                    <a href="{{ route('books.show',$sponsored->book) }}"
+                                                    class="btn btn-dark">
+                                                        Voir les détails du livre
+                                                        <i class="bi bi-arrow-right ms-2"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
 				<!-- Features START -->
 				<div class="row g-4 g-md-5">
 					<!-- Item -->

@@ -25839,27 +25839,18 @@ Mobile (≤768px)
 
 
 .details-hero{
-
     position:relative;
-
-    padding:50px 0 80px;
-
+    padding:20px 0;
     background:#fafafa;
-
     overflow:hidden;
-
 }
 
 
 
 .hero-content{
-
     position:relative;
-
     z-index:2;
-
     max-width:800px;
-
 }
 
 
@@ -25867,15 +25858,10 @@ Mobile (≤768px)
 /* BREADCRUMB */
 
 .breadcrumb{
-
     display:flex;
-
     align-items:center;
-
     gap:10px;
-
-    font-size:14px;
-
+    font-size:15px;
     margin-bottom:25px;
 
 }
@@ -25885,49 +25871,29 @@ Mobile (≤768px)
 .breadcrumb a{
 
     color:#b30000;
-
     font-weight:600;
-
     text-decoration:none;
-
 }
 
 
 
 .breadcrumb span:last-child{
-
     color:#777;
-
 }
 
-
-
-
-
 /* CATEGORY */
-
 .book-category-badge{
 
     display:inline-flex;
-
     align-items:center;
-
     gap:8px;
-
-    padding:8px 18px;
-
+    padding:5px;
     border-radius:50px;
-
     background:#fff0f0;
-
     color:#b30000;
-
-    font-size:14px;
-
+    font-size:12px;
     font-weight:700;
-
-    margin-bottom:20px;
-
+    margin-bottom:10px;
 }
 
 
@@ -25935,21 +25901,14 @@ Mobile (≤768px)
 
 
 .details-hero h1{
-
     font-size:45px;
     line-height:1.15;
     font-weight:800;
     color:#111;
-
     margin:20px 0;
-
     max-width:1000px;
-
-    /* garde une ligne quand le titre rentre */
     white-space:nowrap;
-
     overflow:hidden;
-
     text-overflow:ellipsis;
 
 }
@@ -40140,10 +40099,11 @@ html, body {
 
 
 /* FLIPBOOK */
-/* =========================================
-   BOOK PREVIEW SECTION
-========================================= */
 
+
+/* 
+   BOOK PREVIEW SECTION
+ */
 
 .book-preview-section {
 
@@ -40154,9 +40114,9 @@ html, body {
 
 
 
-/* =========================================
+/* 
    MAIN CARD
-========================================= */
+ */
 
 
 .preview-card {
@@ -40237,6 +40197,81 @@ html, body {
 
 }
 
+/* =========================================
+   BOOK PREVIEW SECTION
+========================================= */
+
+.book-preview-section {
+
+    margin-top:70px;
+    padding:0 20px;
+
+}
+
+
+/* =========================================
+   MAIN CARD
+========================================= */
+
+.preview-card{
+
+    position:relative;
+    overflow:hidden;
+
+    background:#fff;
+
+    border-radius:32px;
+
+    padding:50px;
+
+    border:1px solid rgba(0,0,0,.05);
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.08),
+        0 10px 30px rgba(0,0,0,.04);
+
+}
+
+
+.preview-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:350px;
+    height:350px;
+
+    right:-150px;
+    top:-150px;
+
+    background:rgba(179,0,0,.05);
+
+    border-radius:50%;
+
+}
+
+
+.preview-card::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:250px;
+    height:250px;
+
+    left:-120px;
+    bottom:-120px;
+
+    background:rgba(179,0,0,.03);
+
+    border-radius:50%;
+
+}
+
+
+
 
 
 /* =========================================
@@ -40244,36 +40279,48 @@ html, body {
 ========================================= */
 
 
-.flipbook-zone {
+.flipbook-zone{
+
+    position:relative;
+
+    padding:60px;
+
+    border-radius:32px;
+
+    text-align:center;
 
     background:
 
-    linear-gradient(
-        135deg,
-        #faf6f2,
+    radial-gradient(
+        circle at top left,
+        #fff4f4,
         #ffffff
     );
 
-    border-radius: 25px;
 
-    padding: 35px 25px;
+    border:1px solid rgba(0,0,0,.05);
 
 }
 
 
 
-/* MESSAGE AU-DESSUS DU LIVRE */
 
+.reading-tip{
 
-.reading-tip {
-
-    display:flex;
+    display:inline-flex;
 
     align-items:center;
 
-    justify-content:center;
+    gap:10px;
 
-    gap:8px;
+    padding:12px 25px;
+
+    margin-bottom:40px;
+
+
+    border-radius:50px;
+
+    background:#fff;
 
     color:#b30000;
 
@@ -40281,16 +40328,25 @@ html, body {
 
     font-weight:600;
 
-    margin-bottom:25px;
+
+    border:1px solid rgba(179,0,0,.15);
+
+    box-shadow:
+
+        0 10px 25px rgba(0,0,0,.05);
 
 }
 
 
 
-/* CONTENEUR LIVRE */
+/* =========================================
+   FLIPBOOK
+========================================= */
 
 
-.flipbook-frame {
+.flipbook-frame{
+
+    position:relative;
 
     display:flex;
 
@@ -40298,60 +40354,111 @@ html, body {
 
     align-items:center;
 
+}
+
+
+.book-shadow{
+
+    position:absolute;
+
+    bottom:-15px;
+
+    width:70%;
+
+    height:40px;
+
+    background:rgba(0,0,0,.18);
+
+    filter:blur(30px);
+
+    border-radius:50%;
+
+}
+
+
+
+#book-preview{
+
+    position:relative;
+
+    z-index:2;
+
+    margin:auto;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    transition:.4s;
+
+}
+
+
+#book-preview:hover{
+
+    transform:translateY(-6px);
+
+}
+
+
+
+#book-preview .page{
+
+    background:#fff;
+
+    border:1px solid #eee;
+
+}
+
+
+
+#book-preview .page img{
+
     width:100%;
 
-}
+    height:100%;
 
+    object-fit:cover;
 
+    display:block;
 
-/* FLIPBOOK */
+    user-select:none;
 
+    pointer-events:none;
 
-#book-preview {
-
-    max-width:100%;
-
-}
-
-
-
-/* Taille desktop */
-
-@media(min-width:992px){
-
-
-    .flipbook-frame {
-
-        max-width:850px;
-
-        margin:auto;
-
-    }
-
+    -webkit-user-drag:none;
 
 }
+
 
 
 
 /* =========================================
-   DESCRIPTION TEXTE
+ DESCRIPTION
 ========================================= */
 
 
-.book-text-preview {
-
+.book-text-preview{
 
     max-width:900px;
 
     margin:auto;
 
-
-    background:#fafafa;
-
-    padding:35px;
+    padding:45px;
 
 
-    border-radius:22px;
+    background:#fff;
+
+
+    border-radius:25px;
+
+
+    border:1px solid rgba(0,0,0,.05);
+
+
+    box-shadow:
+
+        0 15px 40px rgba(0,0,0,.05);
 
 
     color:#444;
@@ -40360,69 +40467,85 @@ html, body {
 
     line-height:1.9;
 
-
-}
-
-
-
-.book-text-preview p {
-
-    margin-bottom:20px;
-
 }
 
 
 
 /* =========================================
-   FIN DE L'APERÇU
+ END PAGE
 ========================================= */
 
 
-.preview-end-content {
+.preview-end-page{
+
+    background:#fffaf7;
+
+    padding:40px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
 
 
-    max-width:620px;
+/* TABLETTE */
 
+@media(max-width:992px){
 
-    margin:50px auto 20px;
+    .preview-end-page{
 
+        padding:30px;
 
-    padding:45px 40px;
-
-
-    text-align:center;
-
-
-    background:#fff;
-
-
-    border-radius:28px;
-
-
-    border:1px solid rgba(179,0,0,.10);
-
-
-    box-shadow:
-
-        0 20px 60px rgba(0,0,0,.08);
-
+    }
 
 }
 
 
 
-/* ICON */
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .preview-end-page{
+
+        padding:15px;
+
+    }
+
+}
 
 
-.end-book-icon {
+
+.preview-end-content{
+
+    max-width:380px;
+    padding:45px 35px ;
+    text-align:center;
+    background:
+
+    linear-gradient(
+        180deg,
+        #fff,
+        #fff7f7
+    );
+    border-radius:30px;
+    border:1px solid rgba(179,0,0,.12);
+    box-shadow:
+    0 20px 60px rgba(0,0,0,.08);
+}
 
 
-    width:75px;
 
-    height:75px;
+.end-book-icon{
 
+    width:90px;
 
-    margin:0 auto 20px;
+    height:90px;
+
+    margin:0 auto 25px;
 
 
     display:flex;
@@ -40435,132 +40558,101 @@ html, body {
     border-radius:50%;
 
 
-    background:#b30000;
+    background:
+
+    linear-gradient(
+        135deg,
+        #d60000,
+        #850000
+    );
 
 
-    color:#fff;
+    color:white;
 
+
+    box-shadow:
+
+    0 15px 35px rgba(179,0,0,.3);
+
+}
+
+
+.end-book-icon i{
+
+    font-size:38px;
 
 }
 
 
 
-.end-book-icon i {
+.end-label{
 
-    font-size:34px;
-
-}
-
-
-
-/* LABEL */
-
-
-.end-label {
-
-
-    display:inline-block;
-
+    display:block;
 
     color:#b30000;
 
+    font-weight:700;
 
     font-size:14px;
 
-    font-weight:700;
-
-
-    margin-bottom:10px;
-
+    margin-bottom:12px;
 
 }
 
 
 
-/* TITLE */
-
-
-.preview-end-content h2 {
-
+.preview-end-content h2{
 
     font-size:32px;
 
-    font-weight:700;
+    font-weight:800;
 
     color:#111;
 
-
     margin-bottom:15px;
-
 
 }
 
 
 
-/* DESCRIPTION */
-
-
-.preview-end-content p {
-
-
-    max-width:480px;
-
-
-    margin:auto;
-
+.preview-end-content p{
 
     color:#666;
 
-
-    line-height:1.8;
-
-    font-size:16px;
-
+    line-height:1.7;
 
 }
 
 
 
-/* PRICE */
-
-
-.end-price {
-
+.end-price{
 
     margin:30px 0;
 
+    font-size:48px;
 
-    font-size:36px;
-
-
-    font-weight:800;
-
+    font-weight:900;
 
     color:#b30000;
-
 
 }
 
 
 
-/* BUTTON */
-
-
-.end-buy-btn {
-
+.end-buy-btn{
 
     display:inline-flex;
-
 
     align-items:center;
 
     justify-content:center;
 
-
     gap:10px;
 
 
-    padding:14px 35px;
+    min-width:230px;
+
+    height:56px;
 
 
     border-radius:50px;
@@ -40568,67 +40660,109 @@ html, body {
 
     background:#111;
 
-
     color:#fff;
 
 
-    text-decoration:none;
-
-
     font-weight:600;
+
+    text-decoration:none;
 
 
     transition:.3s;
 
 
+    box-shadow:
+
+    0 15px 30px rgba(0,0,0,.18);
+
 }
 
 
 
-.end-buy-btn:hover {
-
+.end-buy-btn:hover{
 
     background:#b30000;
 
-    color:#fff;
+    color:white;
 
+    transform:translateY(-3px);
 
 }
 
 
 
 /* =========================================
-   TABLETTE
+   RESPONSIVE TABLETTE
 ========================================= */
 
-
 @media(max-width:992px){
 
 
-    .preview-card {
+    .book-preview-section{
+
+        margin-top:50px;
+
+        padding:0 15px;
+
+    }
+
+
+
+    .preview-card{
 
         padding:35px 25px;
-    color:#666;
 
-}
+        border-radius:25px;
 
-
-
-/* NOTE: ne pas redéclarer .d-none ici — cela casserait les utilitaires
-   responsives Bootstrap (ex: .d-none.d-sm-flex de la pagination). */
+    }
 
 
 
-/* TABLETTE */
+    .preview-title{
 
-@media(max-width:992px){
+        margin-bottom:35px;
+
+    }
 
 
-    .book-wrapper{
 
-        min-height:520px;
+    .preview-title h2{
 
-        padding:20px;
+        font-size:32px;
+
+    }
+
+
+
+    .preview-title p{
+
+        font-size:15px;
+
+    }
+
+
+
+    .flipbook-zone{
+
+        padding:40px 15px;
+
+        border-radius:25px;
+
+    }
+
+
+
+    .reading-tip{
+
+        margin-bottom:30px;
+
+    }
+
+
+
+    .flipbook-frame{
+
+        overflow:hidden;
 
     }
 
@@ -40636,51 +40770,73 @@ html, body {
 
     #book-preview{
 
-        width:700px;
+        transform:scale(.85);
 
-        height:480px;
-
-    }
-
-
-
-    .end-preview{
-
-        width:330px;
-
-        padding:25px;
+        transform-origin:center;
 
     }
 
 
 
+    .book-text-preview{
+
+        padding:35px 25px;
+
+        font-size:16px;
+
+    }
+
+
+
+    .preview-end-content{
+
+        max-width:330px;
+
+        padding:35px 25px;
+
+    }
+
+
+
+    .preview-end-content h2{
+
+        font-size:28px;
+
+    }
+
+
+
+    .end-price{
+
+        font-size:38px;
+
+    }
+
+
 }
 
 
-
-}
 
 
 
 /* =========================================
-   MOBILE
+   RESPONSIVE MOBILE
 ========================================= */
-
 
 @media(max-width:576px){
 
 
-    .book-preview-section {
+    .book-preview-section{
+
+        margin-top:35px;
 
         padding:0 10px;
-
-        margin-top:40px;
 
     }
 
 
 
-    .preview-card {
+    .preview-card{
 
         padding:25px 15px;
 
@@ -40690,7 +40846,7 @@ html, body {
 
 
 
-    .preview-title {
+    .preview-title{
 
         margin-bottom:25px;
 
@@ -40698,113 +40854,236 @@ html, body {
 
 
 
-    .preview-title h2 {
+    .section-subtitle{
 
-        font-size:23px;
+        font-size:13px;
+
+        padding:8px 16px;
 
     }
 
 
 
-    .preview-title p {
+    .preview-title h2{
+
+        font-size:24px;
+
+        line-height:1.3;
+
+    }
+
+
+
+    .preview-title p{
 
         font-size:14px;
 
     }
 
 
-}
 
+    .flipbook-zone{
 
-.preview-end-page {
+        padding:30px 5px;
 
-
-    background:#fffdf8;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-
-}
-
-
-
-.preview-end-content {
-
-
-        text-align:center;
-
-    padding:40px;
-
-    max-width:350px;
-
-
-}
-
-
-
-.preview-end-content h2 {
-
-
-    font-size:30px;
-
-    font-weight:700;
-
-    margin-bottom:20px;
-
-
-}
-
-
-
-.preview-end-content p {
-
-
-        font-size:14px;
-
-    line-height:1.6;
+        border-radius:20px;
 
     }
 
 
 
-    .end-price {
+    .reading-tip{
 
-        font-size:28px;
+        display:flex;
 
-        margin:25px 0;
+        width:max-content;
+
+        max-width:100%;
+
+        margin:0 auto 25px;
+
+        padding:10px 15px;
+
+        font-size:12px;
 
     }
 
 
 
-    .end-buy-btn {
+    .flipbook-frame{
 
         width:100%;
 
-        padding:13px 20px;
+    }
+
+
+
+    #book-preview{
+
+        transform:scale(.70);
+
+        transform-origin:center;
+
+        margin-left:-45px;
+
+        margin-right:-45px;
+
+    }
+
+
+
+    .book-text-preview{
+
+        padding:25px 20px;
+
+        border-radius:20px;
+
+        font-size:15px;
+
+        line-height:1.7;
+
+    }
+
+
+
+    .preview-end-content{
+
+        width:100%;
+
+        max-width:290px;
+
+        padding:30px 20px;
+
+        border-radius:22px;
+
+    }
+
+
+
+    .end-book-icon{
+
+        width:70px;
+
+        height:70px;
+
+    }
+
+
+
+    .end-book-icon i{
+
+        font-size:30px;
+
+    }
+
+
+
+    .preview-end-content h2{
+
+        font-size:24px;
+
+    }
+
+
+
+    .preview-end-content p{
+
+        font-size:14px;
+
+    }
+
+
+
+    .end-price{
+
+        font-size:30px;
+
+        margin:20px 0;
+
+    }
+
+
+
+    .end-buy-btn{
+
+        width:100%;
+
+        height:50px;
+
+        font-size:15px;
 
     }
 
 
 }
 
-#book-preview {
+
+
+
+
+/* =========================================
+   PETIT MOBILE
+========================================= */
+
+@media(max-width:380px){
+
+
+    .preview-title h2{
+
+        font-size:22px;
+
+    }
+
+
+
+    #book-preview{
+
+        transform:scale(.62);
+
+        margin-left:-65px;
+
+        margin-right:-65px;
+
+    }
+
+
+
+    .reading-tip{
+
+        font-size:11px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================================
+   IMAGE PAGES
+========================================= */
+
+
+#book-preview{
+
     margin:auto;
-}
-
-
-#book-preview .page {
-
-    background:white;
 
 }
 
 
-#book-preview .page img {
+
+#book-preview .page{
+
+    background:#fff;
+
+}
+
+
+
+#book-preview .page img{
+
 
     width:100%;
 
@@ -40814,15 +41093,26 @@ html, body {
 
     display:block;
 
+
+    user-select:none;
+
+    pointer-events:none;
+
     -webkit-user-drag:none;
 
 }
 
+
+
 #book-preview img{
 
+
     user-select:none;
+
     pointer-events:none;
+
     -webkit-user-drag:none;
+
 
 }
 

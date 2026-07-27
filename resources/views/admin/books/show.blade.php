@@ -432,7 +432,7 @@
             minHeight: 400,
             maxHeight: 1200,
             showCover: true,
-            usePortrait: isMobile,
+            usePortrait: true,
             drawShadow: true,
             maxShadowOpacity: 1,
             flippingTime: 1200,
