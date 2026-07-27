@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\PublicationFee;
 use App\Models\User;
 use App\Notifications\NewBookSubmittedNotification;
+use App\Services\PublicationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,18 +16,17 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-    public function payPublication(Book $book)
+    public function payPublication(Book $book, PublicationService $publicationService)
     {
         abort_unless($book->user_id === Auth::id(), 403);
-
         abort_unless($book->status === 'draft', 409, 'Ce livre a déjà été soumis ou payé.');
         abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
+        abort_unless($publicationService->shouldRequirePayment(),403,'Les frais de dépôt ne sont pas requis actuellement.');
 
         $payment = DB::transaction(function () use ($book) {
             $lockedBook = Book::query()
                 ->lockForUpdate()
                 ->findOrFail($book->id);
-
             abort_unless($lockedBook->status === 'draft', 409, 'Ce livre a déjà été soumis.');
 
             $fee = PublicationFee::query()
@@ -68,7 +68,6 @@ class PaymentController extends Controller
                     'payment_method' => 'kkiapay',
                 ]);
             }
-
             return $payment;
         });
 
@@ -232,5 +231,31 @@ class PaymentController extends Controller
             ->whereHas('role', fn ($query) => $query->where('name', 'admin'))
             ->where('id', '!=', $book->user_id)
             ->each(fn (User $admin) => $admin->notify(new NewBookSubmittedNotification($book)));
+    }
+
+    public function submitWithoutPayment(Book $book, PublicationService $publicationService)
+    {
+        abort_unless($book->user_id === Auth::id(), 403);
+        abort_unless($book->status === 'draft', 409);
+        abort_if(
+            $publicationService->shouldRequirePayment(),
+            403,
+            'Le paiement est désormais obligatoire.'
+        );
+
+        DB::transaction(function () use ($book) {
+            $lockedBook = Book::lockForUpdate()->findOrFail($book->id);
+            $lockedBook->update([
+                'status' => 'waiting_review',
+            ]);
+        });
+
+        $this->notifyAdmins($book);
+        return redirect()
+            ->route('writer.books')
+            ->with(
+                'success',
+                'Votre livre a été soumis pour vérification.'
+            );
     }
 }

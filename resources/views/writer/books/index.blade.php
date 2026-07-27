@@ -361,11 +361,33 @@
                                                 <div><strong>Paiement non finalisé</strong><small>Reprendre le paiement</small></div>
                                                 <i class="bi bi-chevron-right ms-auto"></i>
                                             </a>
+
+                                        @elseif(!$paymentRequired)
+                                            <form action="{{ route('writer.books.submit', $book) }}" method="POST">
+                                                @csrf
+
+                                                <button type="submit" class="book-payment-action">
+                                                    <span>
+                                                        <i class="bi bi-send-check"></i>
+                                                        Soumettre à la vérification
+                                                    </span>
+                                                </button>
+                                            </form>
                                         @elseif($publicationFee)
+
                                             <a href="{{ route('writer.books.deposit', $book) }}"
-                                               class="book-payment-action">
-                                                <span><i class="bi bi-shield-lock"></i> Régler les frais</span>
-                                                <strong>{{ number_format($publicationFee->amount, 0, ',', ' ') }} {{ $publicationFee->currency }}</strong>
+                                            class="book-payment-action">
+
+                                                <span>
+                                                    <i class="bi bi-shield-lock"></i>
+                                                    Régler les frais
+                                                </span>
+
+                                                <strong>
+                                                    {{ number_format($publicationFee->amount,0,',',' ') }}
+                                                    {{ $publicationFee->currency }}
+                                                </strong>
+
                                             </a>
                                         @else
                                             <div class="book-payment-state unavailable">

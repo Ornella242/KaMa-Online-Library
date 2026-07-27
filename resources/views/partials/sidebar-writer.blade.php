@@ -7,7 +7,7 @@
     $notifications = $writer->unreadNotifications()->latest()->take(5)->get();
 @endphp
 
-<section class="writer-workspace">
+<div class="writer-workspace">
     <div class="container">
         <div class="writer-workspace-shell">
             <header class="writer-workspace-topbar">
@@ -153,4 +153,4 @@
             </div>
         </div>
     </div>
-</section>
+</div>

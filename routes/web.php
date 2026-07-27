@@ -184,6 +184,9 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
         Route::get('/books/{book}/deposit',[BooksController::class, 'deposit'])
             ->name('writer.books.deposit');
 
+        Route::post('/writer/books/{book}/submit',[PaymentController::class, 'submitWithoutPayment'])
+           ->name('writer.books.submit');
+
         Route::get('/books/{book}/boost',[BooksController::class,'boost'])
            ->name('writer.books.boost');
 

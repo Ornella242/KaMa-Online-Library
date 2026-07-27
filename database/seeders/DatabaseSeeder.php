@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
                 SponsorshipPlanSeeder::class,
                 FaqCategorySeeder::class,
                 FaqSeeder::class,
+                SettingSeeder::class,
             ]);
     }
 }

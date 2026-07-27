@@ -122,7 +122,7 @@
 								</a>
 
 							@elseif(Auth::user()->role->name == 'reader')
-								<a href="#" class="dropdown-item">
+								<a href="" class="dropdown-item">
 									<i class="bi bi-speedometer2 me-2"></i>
 									Tableau de bord
 								</a>

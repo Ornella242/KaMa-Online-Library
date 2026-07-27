@@ -168,7 +168,7 @@
             @endif
 
             @if($book->status === 'waiting_review' && ! $isOwnBook)
-                @if($depositPaid)
+                @if(!$paymentRequired || $depositPaid)
                     <div class="writer-book-alert warning">
                         <i class="bi bi-shield-check"></i>
                         <div class="flex-grow-1">

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Imagick;
 use App\Models\User;
+use App\Services\PublicationService;
 use App\Notifications\BookResubmittedNotification;
 
 
@@ -26,12 +27,10 @@ class BooksController extends Controller
     /**
      * Liste des livres de l'auteur connecté
      */
-    public function listBooks(Request $request)
+    public function listBooks(Request $request, PublicationService $publicationService)
     {
 
-         $userId = Auth::id();
-
-
+        $userId = Auth::id();
         $query = Book::query()->where('user_id', $userId)
             ->with([
                 'category',
@@ -40,11 +39,9 @@ class BooksController extends Controller
             ]);
 
         if($request->filled('search')){
-
             $query->where('title','like',
                 '%'.$request->search.'%'
             );
-
         }
 
         if (
@@ -54,7 +51,6 @@ class BooksController extends Controller
             $query->where('status', $request->string('status')->toString());
         }
 
-
         if (
             $request->filled('type') &&
             in_array($request->string('type')->toString(), ['ebook', 'audio'], true)
@@ -62,20 +58,15 @@ class BooksController extends Controller
             $query->where('type', $request->string('type')->toString());
         }
 
-
         switch($request->sort){
             case 'oldest':
-
                 $query->oldest();
-
             break;
             case 'price_high':
-
                 $query->orderBy(
                     'price',
                     'desc'
                 );
-
             break;
 
             case 'price_low':
@@ -86,13 +77,9 @@ class BooksController extends Controller
             break;
 
             default:
-
                 $query->latest();
-
             break;
-
         }
-
 
         $books = $query
             ->paginate(9)
@@ -114,12 +101,14 @@ class BooksController extends Controller
             ->get()
             ->keyBy('book_type');
 
-        return view(
-            'writer.books.index',
-            compact('books', 'stats', 'publicationFees')
-        );
-    }
+        return view('writer.books.index', [
+            'books' => $books,
+            'stats' => $stats,
+            'publicationFees' => $publicationFees,
+            'paymentRequired' => $publicationService->shouldRequirePayment(),
+        ]);
 
+    }
 
     /**
      * Afficher le formulaire d'ajout
@@ -138,8 +127,6 @@ class BooksController extends Controller
                     ->get();
         return response()->json($subcategories);
     }
-
-   
 
     /**
      * Enregistrer un nouveau livre
@@ -161,41 +148,33 @@ class BooksController extends Controller
                 'required',
                 'in:ebook,audio'
             ],
-
             'price' => 'required|numeric|min:0',
-
             'pages' => [
                 'required_if:type,ebook',
                 'nullable',
                 'integer',
                 'min:1'
             ],
-
             'duration' => [
                 'required_if:type,audio',
                 'nullable',
                 'string',
                 'regex:/^\d{1,3}:[0-5]\d:[0-5]\d$/'
             ],
-
             'language' => 'required|string|max:50',
-
             'publication_year' => 'required|digits:4',
-
             'cover_image' => [
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120'
             ],
-
             'ebook_file' => [
                 'required_if:type,ebook',
                 'file',
                 'mimes:pdf',
                 'max:102400'
             ],
-
             'audio_file' => [
                 'required_if:type,audio',
                 'file',
@@ -223,24 +202,18 @@ class BooksController extends Controller
             }
         }
         
-
         // Upload couverture
         $coverPath = $request
             ->file('cover_image')
             ->store('books/covers', 'public');
 
-
         // Upload ebook/audio
         if ($request->type === 'ebook') {
-
             $file = $request->file('ebook_file');
             $fileType = 'pdf';
-
         } else {
-
             $file = $request->file('audio_file');
             $fileType = 'mp3';
-
         }
 
         $fileName = Str::uuid().'-'.Str::slug(
@@ -262,9 +235,7 @@ class BooksController extends Controller
         );
         }
      
-
        $fileSize = $file->getSize();
-
        $book = Book::create([
             // auteur connecté
             'user_id' => Auth::id(),

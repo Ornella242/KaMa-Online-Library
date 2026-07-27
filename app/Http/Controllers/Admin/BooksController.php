@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Services\PublicationService;
 use App\Models\Category;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -317,7 +318,7 @@ class BooksController extends Controller
             ->with('book_created', true);
     }
 
-    public function show(Book $book)
+    public function show(Book $book, PublicationService $publicationService)
     {
         $book->load(['author', 'category', 'subcategory']);
 
@@ -337,6 +338,9 @@ class BooksController extends Controller
             ->where('status', 'success')
             ->exists();
 
+        $paymentRequired = $publicationService->shouldRequirePayment();
+
+
         return view('admin.books.show', compact(
             'book',
             'previewStart',
@@ -344,7 +348,7 @@ class BooksController extends Controller
             'activeSponsorship',
             'isOwnBook',
             'pendingPublicationPayment',
-            'depositPaid'
+            'depositPaid','paymentRequired'
         ));
     }
 
@@ -1276,21 +1280,21 @@ class BooksController extends Controller
             return back()->with('error', 'Seul un livre en attente peut passer en vérification.');
         }
 
-        $payment = Payment::query()->where('book_id',$book->id)
-            ->where('type','publication')
-            ->where('status','success')
-            ->first();
+        // Vérifier seulement si ce livre nécessitait un dépôt
+        if ($book->payment_required) {
+            $payment = Payment::query()
+                ->where('book_id', $book->id)
+                ->where('type', 'publication')
+                ->where('status', 'success')
+                ->exists();
 
-
-        if(!$payment){
-            return back()->with(
-                'error',
-                'Le paiement du dépôt est requis avant la vérification.'
-            );
-
+            if (!$payment) {
+                return back()->with(
+                    'error',
+                    'Le paiement du dépôt est requis avant la vérification.'
+                );
+            }
         }
-
-
 
         $book->update([
             'status'=>'under_review'
