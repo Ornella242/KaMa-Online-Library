@@ -257,11 +257,11 @@ About START -->
                                                         Kama Prestige +
                                                     </span>
 
-                                                    <h5 class="fw-bold mb-2">
+                                                    <h6 class="fw-bold mb-2">
                                                         {{ $sponsored->book->title }}
-                                                    </h5>
+                                                    </h6>
 
-                                                    <p class="mb-3" style="color:#b30000; font-weight:700; font-style:italic;">
+                                                    <p class="mb-3" style="color:#b30000; font-weight:700; font-style:italic; font-size:12px;">
                                                         Par
                                                         {{ $sponsored->book->author->firstname }}
                                                         {{ $sponsored->book->author->lastname }}
@@ -269,7 +269,7 @@ About START -->
 
                                                     <a href="{{ route('books.show',$sponsored->book) }}"
                                                     class="btn btn-dark">
-                                                        Voir les détails du livre
+                                                        Voir le livre
                                                         <i class="bi bi-arrow-right ms-2"></i>
                                                     </a>
                                                 </div>
