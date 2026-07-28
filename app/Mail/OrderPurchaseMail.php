@@ -49,7 +49,7 @@ class OrderPurchaseMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.order-purchase',
+            view: 'emails.orders.order-purchase',
             with: [
                 'order' => $this->order,
                 'downloads' => $this->downloads,

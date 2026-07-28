@@ -38,21 +38,19 @@ class BookRejectedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-         return (new MailMessage)
-            ->subject('Votre livre nécessite des modifications')
-            ->greeting('Bonjour '.$notifiable->firstname)
-            ->line(
-                'Votre livre "'.$this->book->title.'" n’a pas été accepté après vérification éditoriale.'
+
+        return (new MailMessage)
+
+            ->subject(
+                'Votre livre nécessite des modifications - KaMa'
             )
-            ->line(
-                'Motif du rejet :'
-            )
-            ->line(
-                $this->book->rejection_reason
-            )
-            ->action(
-                'Modifier mon livre',
-                route('writer.books.edit',$this->book)
+
+            ->view(
+                'emails.books.rejected',
+                [
+                    'user' => $notifiable,
+                    'book' => $this->book
+                ]
             );
 
     }

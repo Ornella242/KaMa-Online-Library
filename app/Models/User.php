@@ -10,6 +10,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\VerifyEmailNotification;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use App\Notifications\ResetPasswordNotification;
 use App\Models\Book;
 use App\Models\Country;
 use App\Models\Wallet;
@@ -17,7 +19,7 @@ use App\Models\Wallet;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, CanResetPassword;
 
     /**
      * Champs autorisés en mass assignment
@@ -149,6 +151,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function wishlistBooks()
     {
         return $this->belongsToMany(Book::class, 'wishlists')->withTimestamps();
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 
 }

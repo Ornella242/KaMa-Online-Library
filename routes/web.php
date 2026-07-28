@@ -16,6 +16,8 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewsController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Writer\DashboardController as WriterDashboardController;
 use App\Http\Controllers\Writer\SettingsController as WriterSettingsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
@@ -38,6 +40,20 @@ use App\Http\Controllers\Admin\AuthorSpaceController as AdminAuthorSpaceControll
 use App\Http\Controllers\Writer\BooksController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+
+
+
+Route::get('/forgot-password',[ForgotPasswordController::class,'show'])
+     ->name('password.request');
+
+Route::post('/forgot-password',[ForgotPasswordController::class,'send'])
+    ->name('password.email');
+
+Route::get('/reset-password/{token}',[ResetPasswordController::class,'show'])
+    ->name('password.reset');
+
+Route::post('/reset-password',[ResetPasswordController::class,'update'])
+    ->name('password.update');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');

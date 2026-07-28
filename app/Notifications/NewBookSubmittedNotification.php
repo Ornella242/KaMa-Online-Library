@@ -55,23 +55,21 @@ class NewBookSubmittedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+
         return (new MailMessage)
-            ->subject('Nouveau livre soumis sur KaMa')
-            ->greeting('Bonjour équipe KaMa,')
-            ->line(
-                'Un nouveau livre a été soumis par '.$this->book->author->firstname.' '.$this->book->author->lastname.'.'
+
+            ->subject(
+                'Nouveau livre soumis sur KaMa'
             )
-            ->line(
-                'Titre du livre : '.$this->book->title
-            )
-            ->action(
-                'Vérifier le livre',
-                route('admin.books.show',$this->book->id)
-            )
-            ->line(
-                'Le paiement du dépôt a été confirmé. Le livre est prêt pour une vérification éditoriale.'
-            )
-            ->salutation('L’équipe KaMa');
+
+            ->view(
+                'emails.books.book-submitted',
+                [
+                    'user' => $notifiable,
+                    'book' => $this->book
+                ]
+            );
+
     }
 
     /**

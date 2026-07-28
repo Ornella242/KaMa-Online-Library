@@ -69,40 +69,21 @@ class BookResubmittedNotification extends Notification
     /**
      * Email administrateur
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable)
     {
-
         return (new MailMessage)
 
             ->subject(
-                'Nouveau livre resoumis - KaMa'
+                'Votre livre nécessite des modifications - KaMa'
             )
-            ->greeting(
-                'Bonjour '.$notifiable->firstname.','
-            )
-            ->line(
-                'Un auteur a effectué des corrections et a resoumis son livre pour validation.'
-            )
-            ->line(
-                'Livre : '.$this->book->title
-            )
-            ->line(
-                'Auteur : '
-                .$this->book->author->firstname
-                .' '
-                .$this->book->author->lastname
-            )
-            ->action(
-                'Voir le livre',
-                route(
-                    'admin.books.show',
-                    $this->book
-                )
-            )
-            ->line(
-                'Merci de procéder à une nouvelle vérification éditoriale.'
-            );
 
+            ->view(
+                'emails.books.needs-modifications',
+                [
+                    'user' => $notifiable,
+                    'book' => $this->book
+                ]
+            );
     }
 
     /**

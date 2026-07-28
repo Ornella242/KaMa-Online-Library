@@ -125,13 +125,9 @@
                     <!-- OPTIONS -->
 
                     <div class="login-options">
-
                         <label class="remember-me">
-
-                            <input type="checkbox">
-
+                            <input type="checkbox" name="remember" value="1">
                             <span>Se souvenir de moi</span>
-
                         </label>
 
                         <a href="{{ url('/forgot-password') }}" class="forgot-password">
