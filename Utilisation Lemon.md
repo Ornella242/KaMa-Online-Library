@@ -100,7 +100,7 @@ Vérifier :
 - Nom : `Default` (ou `Standard`)
 - Prix : `1.00 USD`
 - Disponible en test
-
+   
 ### 3.3 Variant ID
 
 Sur le produit / variant → menu `...` → **Copy ID**
