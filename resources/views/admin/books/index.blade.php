@@ -162,7 +162,7 @@
                                 </div>
                             </td>
                             <td>
-                                <strong class="admin-books-price">{{ number_format($book->price, 0, ',', ' ') }} FCFA</strong>
+                                <strong class="admin-books-price">${{ number_format($book->price, 2, '.', ',') }}</strong>
                             </td>
                             <td>
                                 <span class="admin-books-status {{ $statusClass }}">

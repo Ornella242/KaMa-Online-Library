@@ -44,7 +44,7 @@ class CartController extends Controller
 
         $this->cart->add($book->loadMissing('author'));
 
-        return back()->with('success', 'Livre ajouté au panier.');
+        return back()->with('success', 'Livre ajouté avec succès.');
     }
 
     public function destroy(Book $book)

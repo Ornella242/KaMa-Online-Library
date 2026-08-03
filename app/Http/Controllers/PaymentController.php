@@ -2,26 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Book;
+use App\Models\Payment;
 use App\Models\PublicationFee;
 use App\Models\User;
 use App\Notifications\NewBookSubmittedNotification;
+use App\Services\LemonSqueezyService;
 use App\Services\PublicationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Kkiapay\Kkiapay;
 use Throwable;
 
 class PaymentController extends Controller
 {
-    public function payPublication(Book $book, PublicationService $publicationService)
+    public function payPublication(Book $book, PublicationService $publicationService, LemonSqueezyService $lemonSqueezy)
     {
         abort_unless($book->user_id === Auth::id(), 403);
         abort_unless($book->status === 'draft', 409, 'Ce livre a déjà été soumis ou payé.');
-        abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
-        abort_unless($publicationService->shouldRequirePayment(),403,'Les frais de dépôt ne sont pas requis actuellement.');
+        abort_unless($lemonSqueezy->isConfigured(), 503, 'Lemon Squeezy n’est pas encore configuré.');
+        abort_unless($publicationService->shouldRequirePayment(), 403, 'Les frais de dépôt ne sont pas requis actuellement.');
 
         $payment = DB::transaction(function () use ($book) {
             $lockedBook = Book::query()
@@ -39,11 +39,6 @@ class PaymentController extends Controller
                 503,
                 'Les frais de publication ne sont pas encore configurés pour ce format.'
             );
-            abort_unless(
-                strtoupper($fee->currency) === 'XOF',
-                409,
-                'KKiaPay exige un tarif configuré en XOF.'
-            );
 
             $payment = Payment::query()->firstOrCreate(
                 [
@@ -55,39 +50,86 @@ class PaymentController extends Controller
                     'user_id' => Auth::id(),
                     'reference' => 'KAMA-'.str()->uuid(),
                     'amount' => $fee->amount,
-                    'currency' => $fee->currency,
-                    'payment_method' => 'kkiapay',
+                    'currency' => 'USD',
+                    'payment_method' => 'lemonsqueezy',
                     'transaction_id' => null,
                 ]
             );
 
-            if (! $payment->wasRecentlyCreated && $payment->transaction_id === null) {
+            if ($payment->transaction_id === null) {
                 $payment->update([
                     'amount' => $fee->amount,
-                    'currency' => $fee->currency,
-                    'payment_method' => 'kkiapay',
+                    'currency' => 'USD',
+                    'payment_method' => 'lemonsqueezy',
                 ]);
             }
-            return $payment;
+
+            return $payment->fresh();
         });
 
+        try {
+            $checkout = $lemonSqueezy->createCheckout(
+                (float) $payment->amount,
+                [
+                    'name' => trim(Auth::user()->firstname.' '.Auth::user()->lastname),
+                    'email' => Auth::user()->email,
+                    'custom' => [
+                        'type' => 'publication',
+                        'payment_id' => (string) $payment->id,
+                        'payment_reference' => $payment->reference,
+                        'book_id' => (string) $book->id,
+                    ],
+                ],
+                Auth::user()?->isAdmin()
+                    ? route('admin.books.index')
+                    : route('writer.books'),
+                'Frais de publication — '.$book->title
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 502);
+        }
+
         return response()->json([
+            'checkout_url' => $checkout['url'],
+            'checkout_id' => $checkout['id'],
             'payment' => [
                 'reference' => $payment->reference,
                 'amount' => (float) $payment->amount,
-                'currency' => $payment->currency,
+                'currency' => 'USD',
             ],
         ]);
     }
 
-    public function verifyKkiapayPublication(Request $request, Book $book)
+    public function submitWithoutPayment(Book $book, PublicationService $publicationService)
     {
         abort_unless($book->user_id === Auth::id(), 403);
-        abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
+        abort_unless($book->status === 'draft', 409, 'Ce livre a déjà été soumis.');
+        abort_if(
+            $publicationService->shouldRequirePayment(),
+            403,
+            'Le paiement est désormais obligatoire.'
+        );
 
-        $validated = $request->validate([
-            'transaction_id' => ['required', 'string', 'max:255'],
-        ]);
+        DB::transaction(function () use ($book) {
+            $lockedBook = Book::query()->lockForUpdate()->findOrFail($book->id);
+            abort_unless($lockedBook->status === 'draft', 409, 'Ce livre a déjà été soumis.');
+            $lockedBook->update(['status' => 'waiting_review']);
+        });
+
+        $this->notifyAdmins($book);
+
+        return redirect()
+            ->to($this->publicationSuccessRedirect())
+            ->with('success', 'Votre livre a été soumis pour vérification.');
+    }
+
+    public function verifyPublication(Request $request, Book $book)
+    {
+        abort_unless($book->user_id === Auth::id(), 403);
 
         $payment = Payment::query()
             ->where('book_id', $book->id)
@@ -96,89 +138,17 @@ class PaymentController extends Controller
             ->latest()
             ->firstOrFail();
 
-        if ($payment->status === 'success' && $payment->transaction_id === $validated['transaction_id']) {
+        if ($payment->status === 'success') {
             return response()->json([
                 'redirect' => $this->publicationSuccessRedirect(),
-                'message' => 'Paiement déjà confirmé.',
+                'message' => 'Paiement confirmé.',
             ]);
         }
-
-        abort_unless($payment->status === 'pending', 409, 'Cette demande de paiement ne peut plus être validée.');
-        abort_if(
-            Payment::query()
-                ->where('transaction_id', $validated['transaction_id'])
-                ->where('id', '!=', $payment->id)
-                ->exists(),
-            409,
-            'Cette transaction a déjà été utilisée.'
-        );
-
-        try {
-            $kkiapay = new Kkiapay(
-                config('services.kkiapay.public_key'),
-                config('services.kkiapay.private_key'),
-                config('services.kkiapay.secret'),
-                (bool) config('services.kkiapay.sandbox', true)
-            );
-            $verification = $kkiapay->verifyTransaction($validated['transaction_id']);
-        } catch (Throwable $exception) {
-            report($exception);
-
-            return response()->json([
-                'message' => 'La vérification KKiaPay est momentanément indisponible. Réessayez sans effectuer un nouveau paiement.',
-            ], 502);
-        }
-
-        abort_unless(
-            is_object($verification)
-                && strtoupper((string) ($verification->status ?? '')) === 'SUCCESS',
-            422,
-            'KKiaPay n’a pas confirmé cette transaction.'
-        );
-        abort_unless(
-            abs((float) ($verification->amount ?? -1) - (float) $payment->amount) < 0.01,
-            422,
-            'Le montant confirmé par KKiaPay ne correspond pas aux frais attendus.'
-        );
-
-        $partnerId = trim((string) ($verification->partnerId ?? ''));
-        abort_unless(
-            $partnerId === '' || hash_equals($payment->reference, $partnerId),
-            422,
-            'La référence KKiaPay ne correspond pas à cette demande.'
-        );
-
-        $book = DB::transaction(function () use ($payment, $validated, $verification) {
-            $lockedPayment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
-            $lockedBook = Book::query()->lockForUpdate()->findOrFail($lockedPayment->book_id);
-
-            abort_unless($lockedPayment->status === 'pending', 409, 'Ce paiement a déjà été traité.');
-            abort_unless($lockedBook->status === 'draft', 409, 'Le livre n’est plus à l’état brouillon.');
-            abort_if(
-                Payment::query()
-                    ->where('transaction_id', $validated['transaction_id'])
-                    ->where('id', '!=', $lockedPayment->id)
-                    ->exists(),
-                409,
-                'Cette transaction a déjà été utilisée.'
-            );
-
-            $lockedPayment->update([
-                'status' => 'success',
-                'payment_method' => strtolower((string) ($verification->source ?? 'kkiapay')),
-                'transaction_id' => $validated['transaction_id'],
-            ]);
-            $lockedBook->update(['status' => 'waiting_review']);
-
-            return $lockedBook;
-        });
-
-        $this->notifyAdmins($book);
 
         return response()->json([
-            'redirect' => $this->publicationSuccessRedirect(),
-            'message' => 'Paiement confirmé. Votre livre est maintenant en attente de vérification.',
-        ]);
+            'message' => 'Paiement en cours de confirmation…',
+            'pending' => true,
+        ], 202);
     }
 
     public function confirmPublication(Payment $payment)
@@ -218,44 +188,11 @@ class PaymentController extends Controller
             : route('writer.books');
     }
 
-    private function kkiapayIsConfigured(): bool
-    {
-        return filled(config('services.kkiapay.public_key'))
-            && filled(config('services.kkiapay.private_key'))
-            && filled(config('services.kkiapay.secret'));
-    }
-
     private function notifyAdmins(Book $book): void
     {
         User::query()
-            ->whereHas('role', fn ($query) => $query->where('name', 'admin'))
-            ->where('id', '!=', $book->user_id)
+            ->whereHas('role', fn ($q) => $q->where('name', 'admin'))
+            ->get()
             ->each(fn (User $admin) => $admin->notify(new NewBookSubmittedNotification($book)));
-    }
-
-    public function submitWithoutPayment(Book $book, PublicationService $publicationService)
-    {
-        abort_unless($book->user_id === Auth::id(), 403);
-        abort_unless($book->status === 'draft', 409);
-        abort_if(
-            $publicationService->shouldRequirePayment(),
-            403,
-            'Le paiement est désormais obligatoire.'
-        );
-
-        DB::transaction(function () use ($book) {
-            $lockedBook = Book::lockForUpdate()->findOrFail($book->id);
-            $lockedBook->update([
-                'status' => 'waiting_review',
-            ]);
-        });
-
-        $this->notifyAdmins($book);
-        return redirect()
-            ->route('writer.books')
-            ->with(
-                'success',
-                'Votre livre a été soumis pour vérification.'
-            );
     }
 }

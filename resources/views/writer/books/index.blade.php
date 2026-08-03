@@ -384,8 +384,7 @@
                                                 </span>
 
                                                 <strong>
-                                                    {{ number_format($publicationFee->amount,0,',',' ') }}
-                                                    {{ $publicationFee->currency }}
+                                                    ${{ number_format($publicationFee->amount, 2, '.', ',') }}
                                                 </strong>
 
                                             </a>

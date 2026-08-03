@@ -45,8 +45,7 @@
                     @endif
                     <h3>{{ $plan->name }}</h3>
                     <div class="price">
-                        {{ number_format($plan->price, 0, ',', ' ') }}
-                        <small>XOF</small>
+                        ${{ number_format($plan->price, 2, '.', ',') }}
                     </div>
                     <p class="days">{{ $plan->duration_days }} jours de visibilité</p>
                     <ul>

@@ -8,7 +8,7 @@
                 <i class="bi bi-arrow-left"></i> Continuer mes achats
             </a>
             <h1>Mon panier</h1>
-            <p>{{ count($items) }} article(s) · Total {{ number_format($total, 0, ',', ' ') }} XOF</p>
+            <p>{{ count($items) }} article(s) · Total ${{ number_format($total, 2, '.', ',') }}</p>
         </div>
 
         @if(session('success'))
@@ -43,7 +43,7 @@
                                         @endif
                                     </h3>
                                     <small>Par {{ $item['author'] ?: 'Auteur inconnu' }}</small>
-                                    <strong>{{ number_format($item['price'], 0, ',', ' ') }} XOF</strong>
+                                    <strong>${{ number_format($item['price'], 2, '.', ',') }}</strong>
                                 </div>
                                 <form method="POST" action="{{ route('cart.destroy', $item['book_id']) }}">
                                     @csrf
@@ -66,16 +66,16 @@
                 <div class="col-lg-4">
                     <aside class="kama-cart-summary">
                         <h2>Récapitulatif</h2>
-                        <div class="line"><span>Sous-total</span><strong>{{ number_format($total, 0, ',', ' ') }} XOF</strong></div>
+                        <div class="line"><span>Sous-total</span><strong>${{ number_format($total, 2, '.', ',') }}</strong></div>
                         <div class="line"><span>Articles</span><strong>{{ count($items) }}</strong></div>
                         <hr>
-                        <div class="line total"><span>Total</span><strong>{{ number_format($total, 0, ',', ' ') }} XOF</strong></div>
+                        <div class="line total"><span>Total</span><strong>${{ number_format($total, 2, '.', ',') }}</strong></div>
 
                         <a href="{{ route('checkout.show') }}" class="btn btn-danger w-100 mt-3">
                             <i class="bi bi-shield-lock me-1"></i> Commander
                         </a>
 
-                        <p class="hint">Aucun compte requis. Renseignez vos infos puis payez par carte via KKiaPay.</p>
+                        <p class="hint">Aucun compte requis. Renseignez vos infos puis payez en USD via Lemon Squeezy.</p>
                     </aside>
                 </div>
             </div>

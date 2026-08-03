@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\BookSponsorshipController as AdminBookSponsorshipController;
 use App\Http\Controllers\Admin\SponsorshipPlanController as AdminSponsorshipPlanController;
 use App\Http\Controllers\Writer\RevenueController as WriterRevenuesController;
+use App\Http\Controllers\Writer\WalletController as WriterWalletController;
+use App\Http\Controllers\Writer\WithdrawalController as WriterWithdrawalController;
 use App\Http\Controllers\Writer\ActivityController as WriterActivityController;
 use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\NotificationSettingController;
@@ -37,6 +39,8 @@ use App\Http\Controllers\Reader\SettingsController as ReaderSettingsController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\BooksController as AdminBooksController;
 use App\Http\Controllers\Admin\AuthorSpaceController as AdminAuthorSpaceController;
+use App\Http\Controllers\Admin\PlatformWalletController as AdminPlatformWalletController;
+use App\Http\Controllers\Admin\WithdrawalController as AdminWithdrawalController;
 use App\Http\Controllers\Writer\BooksController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -178,6 +182,16 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
         Route::get('/revenues', [WriterRevenuesController::class,'index'])
             ->name('writer.revenues');
 
+        Route::get('/wallet', [WriterWalletController::class, 'index'])
+            ->name('writer.wallet');
+
+        Route::get('/withdrawals', [WriterWithdrawalController::class, 'index'])
+            ->name('writer.withdrawals.index');
+        Route::get('/withdrawals/create', [WriterWithdrawalController::class, 'create'])
+            ->name('writer.withdrawals.create');
+        Route::post('/withdrawals', [WriterWithdrawalController::class, 'store'])
+            ->name('writer.withdrawals.store');
+
         // Livres
         Route::get('/books', [BooksController::class, 'listBooks'])
             ->name('writer.books');
@@ -200,7 +214,7 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
         Route::get('/books/{book}/deposit',[BooksController::class, 'deposit'])
             ->name('writer.books.deposit');
 
-        Route::post('/writer/books/{book}/submit',[PaymentController::class, 'submitWithoutPayment'])
+        Route::post('/books/{book}/submit', [PaymentController::class, 'submitWithoutPayment'])
            ->name('writer.books.submit');
 
         Route::get('/books/{book}/boost',[BooksController::class,'boost'])
@@ -295,10 +309,26 @@ Route::post('/social-profile', [SocialProfileController::class, 'storeOrUpdate']
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('dashboard');
+        Route::get('/platform-wallet', [AdminPlatformWalletController::class, 'index'])
+            ->name('platform-wallet');
+
+        Route::get('/withdrawals', [AdminWithdrawalController::class, 'index'])
+            ->name('withdrawals.index');
+        Route::get('/withdrawals/{withdrawal}', [AdminWithdrawalController::class, 'show'])
+            ->name('withdrawals.show');
+        Route::post('/withdrawals/{withdrawal}/process', [AdminWithdrawalController::class, 'process'])
+            ->name('withdrawals.process');
+        Route::post('/withdrawals/{withdrawal}/complete', [AdminWithdrawalController::class, 'complete'])
+            ->name('withdrawals.complete');
+        Route::post('/withdrawals/{withdrawal}/reject', [AdminWithdrawalController::class, 'reject'])
+            ->name('withdrawals.reject');
+
         Route::get('/settings', [AdminSettingsController::class, 'index'])
             ->name('settings');
         Route::put('/settings/publication-fees', [AdminSettingsController::class, 'updatePublicationFees'])
             ->name('settings.publication-fees.update');
+        Route::put('/settings/withdrawal', [AdminSettingsController::class, 'updateWithdrawalSettings'])
+            ->name('settings.withdrawal.update');
         Route::put('/change-password', [UserController::class, 'changePassword'])
             ->name('password.update');
         Route::put('/account', [UserController::class, 'updateProfile'])
@@ -350,6 +380,14 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
             ->name('author.reviews');
         Route::get('/author/revenues', [AdminAuthorSpaceController::class, 'revenues'])
             ->name('author.revenues');
+        Route::get('/author/wallet', [AdminAuthorSpaceController::class, 'wallet'])
+            ->name('author.wallet');
+        Route::get('/author/withdrawals', [AdminAuthorSpaceController::class, 'withdrawals'])
+            ->name('author.withdrawals.index');
+        Route::get('/author/withdrawals/create', [AdminAuthorSpaceController::class, 'createWithdrawal'])
+            ->name('author.withdrawals.create');
+        Route::post('/author/withdrawals', [AdminAuthorSpaceController::class, 'storeWithdrawal'])
+            ->name('author.withdrawals.store');
         Route::get('/author/activities', [AdminAuthorSpaceController::class, 'activities'])
             ->name('author.activities');
         Route::delete('/author/activities/{notification}', [AdminAuthorSpaceController::class, 'destroyNotification'])
@@ -423,10 +461,13 @@ Route::post('/books/{book}/publication-payment',
         ->middleware(['auth', 'role:writer,admin'])
         ->name('books.payment.publication');
 Route::post('/books/{book}/publication-payment/verify',
-            [PaymentController::class, 'verifyKkiapayPublication']
+            [PaymentController::class, 'verifyPublication']
         )
         ->middleware(['auth', 'role:writer,admin'])
         ->name('books.payment.publication.verify');
+
+Route::post('/webhooks/lemonsqueezy', \App\Http\Controllers\LemonSqueezyWebhookController::class)
+    ->name('webhooks.lemonsqueezy');
 
 
     // routes communes

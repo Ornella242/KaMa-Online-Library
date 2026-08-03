@@ -48,7 +48,7 @@
                         <small>admin</small>
                     </div>
                     <p class="days">{{ $plan->duration_days }} jours de visibilité</p>
-                    <p class="price-ref">Tarif auteur : {{ number_format($plan->price, 0, ',', ' ') }} XOF</p>
+                    <p class="price-ref">Tarif auteur : ${{ number_format($plan->price, 2, '.', ',') }}</p>
                     <ul>
                         <li><i class="bi bi-check-circle-fill"></i> Mise en avant sur l’accueil</li>
                         <li><i class="bi bi-check-circle-fill"></i> Bannière livres sponsorisés</li>

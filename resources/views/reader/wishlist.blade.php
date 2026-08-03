@@ -55,7 +55,7 @@
                             @if($book->category) · {{ $book->category->name }} @endif
                         </p>
                         <div class="meta">
-                            <strong>{{ number_format($book->price, 0, ',', ' ') }} XOF</strong>
+                            <strong>${{ number_format($book->price, 2, '.', ',') }}</strong>
                             @if($avg)
                                 <span><i class="bi bi-star-fill"></i> {{ number_format($avg, 1) }}</span>
                             @endif

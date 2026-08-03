@@ -23,7 +23,9 @@
             <p>Suivez l’activité éditoriale, les membres et les revenus depuis un seul espace.</p>
         </div>
         <div class="admin-welcome-actions">
-            
+            <a href="{{ route('admin.platform-wallet') }}" class="btn btn-outline-dark">
+                <i class="bi bi-safe2 me-2"></i>Portefeuille KaMa
+            </a>
             <a href="{{ route('admin.books.create') }}" class="btn admin-btn-dark">
                 <i class="bi bi-plus-lg me-2"></i>Ajouter un livre
             </a>

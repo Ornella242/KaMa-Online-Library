@@ -48,6 +48,15 @@
 
 			<div class="kama-header-actions">
 
+				<a href="{{ route('cart.index') }}"
+					class="kama-cart-btn {{ request()->routeIs('cart.*') ? 'is-active' : '' }}"
+					title="Panier"
+					aria-label="Panier{{ ($cartCount ?? 0) > 0 ? ' ('.$cartCount.' article'.(($cartCount ?? 0) > 1 ? 's' : '').')' : '' }}">
+					<i class="bi bi-bag"></i>
+					@if(($cartCount ?? 0) > 0)
+						<span class="kama-cart-badge">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+					@endif
+				</a>
 
 				@guest
 
@@ -274,13 +283,36 @@
 
 
 		<div class="mobile-actions">
-			<a href="{{url('/login')}}">
-			Connexion
+			<a href="{{ route('cart.index') }}" class="kama-mobile-cart">
+				<i class="bi bi-bag me-2"></i>
+				Panier
+				@if(($cartCount ?? 0) > 0)
+					<span class="kama-cart-badge">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+				@endif
 			</a>
 
-			<a href="{{url('/register')}}">
-			Inscription
-			</a>
+			@guest
+				<a href="{{url('/login')}}">
+				Connexion
+				</a>
+
+				<a href="{{url('/register')}}">
+				Inscription
+				</a>
+			@else
+				@if(Auth::user()->role->name == 'admin')
+					<a href="{{ route('admin.dashboard') }}">Tableau de bord</a>
+				@elseif(Auth::user()->role->name == 'writer')
+					<a href="{{ route('writer.dashboard') }}">Tableau de bord</a>
+				@endif
+
+				<form method="POST" action="{{ route('logout') }}">
+					@csrf
+					<button type="submit" class="dropdown-item text-danger px-0">
+						Déconnexion
+					</button>
+				</form>
+			@endguest
 		</div>
 	</div>
 

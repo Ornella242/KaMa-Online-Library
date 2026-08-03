@@ -28,7 +28,7 @@
 
                 <div class="total">
                     <span>Total payé</span>
-                    <strong>{{ number_format($order->amount, 0, ',', ' ') }} XOF</strong>
+                    <strong>${{ number_format($order->amount, 2, '.', ',') }}</strong>
                 </div>
                 <p class="meta">
                     Un email avec les mêmes liens a été envoyé à <strong>{{ $order->email }}</strong>

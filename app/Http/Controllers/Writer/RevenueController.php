@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Writer;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Withdrawal;
+use App\Services\WalletService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -36,15 +37,16 @@ class RevenueController extends Controller
 
 
         $totalWithdrawn = Withdrawal::query()->where('user_id',$userId)
-            ->where('status','approved')
+            ->where('status', Withdrawal::STATUS_COMPLETED)
             ->sum('amount');
 
         $pendingWithdrawals = Withdrawal::query()
             ->where('user_id', $userId)
-            ->where('status', 'pending')
+            ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
             ->sum('amount');
 
-        $availableBalance = max(0, $totalRevenue - $totalWithdrawn - $pendingWithdrawals);
+        $wallet = app(WalletService::class)->ensureWallet(Auth::user());
+        $availableBalance = (float) $wallet->balance;
 
 
         $totalSales = Payment::whereHas('book', function($q) use($userId){

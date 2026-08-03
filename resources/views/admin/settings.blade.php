@@ -74,12 +74,12 @@
                         <div class="admin-publication-fee-input">
                             <input type="number"
                                    name="ebook_amount"
-                                   min="1"
+                                   min="0.01"
                                    max="999999"
-                                   step="1"
+                                   step="0.01"
                                    value="{{ old('ebook_amount', data_get($publicationFees, 'ebook.amount', 10)) }}"
                                    required>
-                            <span class="fee-currency-preview">XOF</span>
+                            <span class="fee-currency-preview">USD</span>
                         </div>
                     </div>
                 </label>
@@ -92,12 +92,12 @@
                         <div class="admin-publication-fee-input">
                             <input type="number"
                                    name="audio_amount"
-                                   min="1"
+                                   min="0.01"
                                    max="999999"
-                                   step="1"
+                                   step="0.01"
                                    value="{{ old('audio_amount', data_get($publicationFees, 'audio.amount', 15)) }}"
                                    required>
-                            <span class="fee-currency-preview">XOF</span>
+                            <span class="fee-currency-preview">USD</span>
                         </div>
                     </div>
                 </label>
@@ -110,7 +110,7 @@
                            type="text"
                            name="currency"
                            maxlength="3"
-                           value="XOF"
+                           value="{{ old('currency', data_get($publicationFees, 'ebook.currency', 'USD')) }}"
                            readonly
                            required>
                 </div>
@@ -120,6 +120,72 @@
                 </p>
                 <button type="submit">
                     <i class="bi bi-check2-circle"></i> Enregistrer les frais
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-publication-fees" style="margin-top:22px;">
+        <div class="admin-publication-fees-header">
+            <div>
+                <span>Configuration commerciale</span>
+                <h4>Retraits auteurs</h4>
+                <p>Commission prélevée sur chaque demande de retrait et montant minimum autorisé.</p>
+            </div>
+            <span class="admin-publication-fees-lock">
+                <i class="bi bi-percent"></i> Appliqué à chaque nouvelle demande
+            </span>
+        </div>
+
+        <form method="POST" action="{{ route('admin.settings.withdrawal.update') }}">
+            @csrf
+            @method('PUT')
+
+            <div class="admin-publication-fees-grid">
+                <label>
+                    <span class="admin-publication-fee-icon"><i class="bi bi-percent"></i></span>
+                    <div>
+                        <strong>Commission de retrait</strong>
+                        <small>Pourcentage prélevé par KaMa sur le montant demandé.</small>
+                        <div class="admin-publication-fee-input">
+                            <input type="number"
+                                   name="withdrawal_commission_percent"
+                                   min="0"
+                                   max="50"
+                                   step="0.01"
+                                   value="{{ old('withdrawal_commission_percent', $withdrawalCommissionPercent) }}"
+                                   required>
+                            <span class="fee-currency-preview">%</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label>
+                    <span class="admin-publication-fee-icon audio"><i class="bi bi-cash-coin"></i></span>
+                    <div>
+                        <strong>Montant minimum</strong>
+                        <small>Seuil en dessous duquel un retrait n’est pas possible.</small>
+                        <div class="admin-publication-fee-input">
+                            <input type="number"
+                                   name="withdrawal_minimum_amount"
+                                   min="1"
+                                   max="999999"
+                                   step="0.01"
+                                   value="{{ old('withdrawal_minimum_amount', $withdrawalMinimumAmount) }}"
+                                   required>
+                            <span class="fee-currency-preview">USD</span>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="admin-publication-fees-footer">
+                <p>
+                    <i class="bi bi-info-circle"></i>
+                    Exemple : 100 $ demandés avec 5 % → commission 5 $, net versé 95 $.
+                </p>
+                <button type="submit">
+                    <i class="bi bi-check2-circle"></i> Enregistrer les retraits
                 </button>
             </div>
         </form>

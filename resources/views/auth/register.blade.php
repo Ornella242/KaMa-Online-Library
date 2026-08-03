@@ -221,63 +221,58 @@
                     </div>
 
                     <!-- Password -->
-                    {{-- <div class="register-field">
+                    <div class="register-field">
 
                         <label>Mot de passe</label>
 
-                        <div class="input-icon-group">
+                        <div class="input-icon-group has-password-toggle">
 
                             <i class="bi bi-lock input-icon"></i>
 
                             <input
                                 type="password"
+                                id="password"
                                 name="password"
                                 placeholder="••••••••"
-                                required>
+                                required
+                                autocomplete="new-password">
+
+                            <i
+                                class="bi bi-eye-slash toggle-password password-toggle"
+                                data-target="password"
+                                role="button"
+                                tabindex="0"
+                                title="Afficher le mot de passe"
+                                aria-label="Afficher le mot de passe"></i>
+
                         </div>
 
-                    </div> --}}
-
-                   
-
-                       <!-- New password -->
-                    <div class="mb-3 register-field">
-
-                        <label>
-                            Mot de passe
-                        </label>
-
-                        <div class="input-group">
-
-                            <span class="input-group-text bg-transparent">
-                                <i class="fas fa-eye-slash cursor-pointer toggle-password" data-target="password"></i>                                        
-                            </span>
-                            <input type="password"
-                                id="password"
-                                class="form-control"
-                                name="password"
-                                placeholder="Mot de passe">
-                        </div>
                     </div>
+
                     <!-- Confirm password -->
-                    <div class="mb-4 register-field">
+                    <div class="register-field">
 
-                        <label>
-                            Confirmation du mot de passe
-                        </label>
+                        <label>Confirmation du mot de passe</label>
 
-                        <div class="input-group">
+                        <div class="input-icon-group has-password-toggle">
 
-                            <span class="input-group-text bg-transparent">
-                                <i class="fas fa-eye-slash cursor-pointer toggle-password"
-                                data-target="password_confirmation"></i>
-                            </span>
+                            <i class="bi bi-lock input-icon"></i>
 
-                            <input type="password"
+                            <input
+                                type="password"
                                 id="password_confirmation"
-                                class="form-control"
                                 name="password_confirmation"
-                                placeholder="Confirmez votre nouveau mot de passe">
+                                placeholder="••••••••"
+                                required
+                                autocomplete="new-password">
+
+                            <i
+                                class="bi bi-eye-slash toggle-password password-toggle"
+                                data-target="password_confirmation"
+                                role="button"
+                                tabindex="0"
+                                title="Afficher le mot de passe"
+                                aria-label="Afficher le mot de passe"></i>
 
                         </div>
 

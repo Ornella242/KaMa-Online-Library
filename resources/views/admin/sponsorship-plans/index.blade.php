@@ -53,7 +53,7 @@
                                 </div>
                             </td>
                             <td>{{ $plan->duration_days }} jour(s)</td>
-                            <td><strong>{{ number_format($plan->price, 0, ',', ' ') }} XOF</strong></td>
+                            <td><strong>${{ number_format($plan->price, 2, '.', ',') }}</strong></td>
                             <td>{{ number_format($plan->sponsorships_count) }}</td>
                             <td>
                                 <div class="categories-row-actions">
@@ -105,8 +105,8 @@
                     <input type="text" name="name" required placeholder="Ex : 1 mois">
                     <label>Durée (jours) *</label>
                     <input type="number" name="duration_days" min="1" max="365" required placeholder="30">
-                    <label>Prix (XOF) *</label>
-                    <input type="number" name="price" min="0" step="1" required placeholder="15000">
+                    <label>Prix (USD) *</label>
+                    <input type="number" name="price" min="0" step="0.01" required placeholder="29.99">
                 </div>
                 <footer class="categories-overlay-footer">
                     <button type="button" class="js-categories-close">Annuler</button>
@@ -134,8 +134,8 @@
                         <input type="text" name="name" value="{{ $plan->name }}" required>
                         <label>Durée (jours) *</label>
                         <input type="number" name="duration_days" value="{{ $plan->duration_days }}" min="1" max="365" required>
-                        <label>Prix (XOF) *</label>
-                        <input type="number" name="price" value="{{ (int) $plan->price }}" min="0" step="1" required>
+                        <label>Prix (USD) *</label>
+                        <input type="number" name="price" value="{{ number_format((float) $plan->price, 2, '.', '') }}" min="0" step="0.01" required>
                     </div>
                     <footer class="categories-overlay-footer">
                         <button type="button" class="js-categories-close">Annuler</button>

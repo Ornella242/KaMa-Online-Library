@@ -72,6 +72,11 @@
             <i class="bi bi-chat-square-quote-fill"></i>
             <span>Avis lecteurs</span>
         </a>
+        <a href="{{ route('admin.author.wallet') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.author.wallet', 'admin.author.withdrawals.*') ? 'active' : '' }}">
+            <i class="bi bi-wallet2"></i>
+            <span>Mon portefeuille</span>
+        </a>
         <a href="{{ route('admin.author.revenues') }}"
            class="kama-admin-nav-link {{ request()->routeIs('admin.author.revenues') ? 'active' : '' }}">
             <i class="bi bi-graph-up-arrow"></i>
@@ -91,16 +96,16 @@
         </a>
 
         <span class="kama-admin-nav-label">Activité commerciale</span>
-        <span class="kama-admin-nav-link disabled" aria-disabled="true">
-            <i class="bi bi-credit-card-fill"></i>
-            <span>Paiements</span>
-            <small>Bientôt</small>
-        </span>
-        <span class="kama-admin-nav-link disabled" aria-disabled="true">
+        <a href="{{ route('admin.platform-wallet') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.platform-wallet') ? 'active' : '' }}">
+            <i class="bi bi-safe2-fill"></i>
+            <span>Portefeuille KaMa</span>
+        </a>
+        <a href="{{ route('admin.withdrawals.index') }}"
+           class="kama-admin-nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
             <i class="bi bi-cash-stack"></i>
             <span>Retraits</span>
-            <small>Bientôt</small>
-        </span>
+        </a>
 
         <span class="kama-admin-nav-label">Système</span>
         <a href="{{ route('admin.settings') }}"

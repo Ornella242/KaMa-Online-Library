@@ -15,8 +15,8 @@
                     @if($order->phone) · {{ $order->phone }} @endif
                 </p>
             </div>
-            @if($kkiapaySandbox)
-                <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Sandbox</span>
+            @if($lemonTestMode)
+                <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Lemon Squeezy</span>
             @endif
         </div>
 
@@ -28,12 +28,12 @@
                     @foreach($order->items as $item)
                         <div>
                             <span>{{ $item->title }}</span>
-                            <strong>{{ number_format($item->unit_price, 0, ',', ' ') }} FCFA</strong>
+                            <strong>${{ number_format($item->unit_price, 2, '.', ',') }}</strong>
                         </div>
                     @endforeach
                     <div class="total">
                         <span>Total à payer</span>
-                        <strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong>
+                        <strong>${{ number_format($order->amount, 2, '.', ',') }}</strong>
                     </div>
                 </div>
             </aside>
@@ -47,12 +47,12 @@
                     </div>
                 </header>
 
-                @unless($kkiapayConfigured)
+                @unless($lemonConfigured)
                     <div class="kkiapay-config-warning">
                         <i class="bi bi-exclamation-triangle"></i>
                         <div>
-                            <strong>KKiaPay n’est pas encore configuré</strong>
-                            <p>Ajoutez les clés KKiaPay dans le fichier <code>.env</code>, puis rechargez cette page.</p>
+                            <strong>Lemon Squeezy n’est pas encore configuré</strong>
+                            <p>Ajoutez <code>LEMON_SQUEEZY_API_KEY</code>, <code>LEMON_SQUEEZY_STORE_ID</code> et <code>LEMON_SQUEEZY_VARIANT_ID</code> dans le fichier <code>.env</code>.</p>
                         </div>
                     </div>
                 @endunless
@@ -62,8 +62,8 @@
                         <input type="radio" name="payment_method" value="card" checked>
                         <span class="kkiapay-method-icon card"><i class="bi bi-credit-card-2-front"></i></span>
                         <div>
-                            <strong>Carte bancaire</strong>
-                            <small>Visa ou Mastercard via l’interface KKiaPay</small>
+                            <strong>Carte bancaire (USD)</strong>
+                            <small>Visa, Mastercard, Apple Pay, PayPal via Lemon Squeezy</small>
                         </div>
                         <div class="kkiapay-card-logos">
                             <img src="{{ asset('assets/images/element/visa.svg') }}" alt="Visa">
@@ -74,30 +74,24 @@
                 </div>
 
                 <div class="kkiapay-payment-summary">
-                    <div><span>Montant</span><strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong></div>
-                    <div><span>Frais KaMa supplémentaires</span><strong>0 FCFA</strong></div>
-                    <div class="total"><span>Total maintenant</span><strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong></div>
+                    <div><span>Montant</span><strong>${{ number_format($order->amount, 2, '.', ',') }}</strong></div>
+                    <div><span>Devise</span><strong>USD</strong></div>
+                    <div class="total"><span>Total maintenant</span><strong>${{ number_format($order->amount, 2, '.', ',') }}</strong></div>
                 </div>
 
-                <div id="kkiapayPaymentFeedback" class="kkiapay-payment-feedback d-none" role="alert"></div>
+                <div id="paymentFeedback" class="kkiapay-payment-feedback d-none" role="alert"></div>
 
                 <button type="button"
-                        id="openKkiapayPayment"
+                        id="openLemonPayment"
                         class="kkiapay-pay-button"
-                        @disabled(! $kkiapayConfigured)>
-                    <span><i class="bi bi-lock-fill"></i> Payer avec KKiaPay</span>
-                    <strong>{{ number_format($order->amount, 0, ',', ' ') }} FCFA</strong>
-                </button>
-
-                <button type="button"
-                        id="retryKkiapayVerification"
-                        class="kkiapay-retry-button d-none">
-                    <i class="bi bi-arrow-clockwise"></i> Réessayer la vérification
+                        @disabled(! $lemonConfigured)>
+                    <span><i class="bi bi-lock-fill"></i> Payer avec Lemon Squeezy</span>
+                    <strong>${{ number_format($order->amount, 2, '.', ',') }}</strong>
                 </button>
 
                 <footer>
                     <i class="bi bi-shield-lock"></i>
-                    <span>Vos informations de paiement sont saisies et protégées directement par KKiaPay.</span>
+                    <span>Le paiement est traité de façon sécurisée par Lemon Squeezy (USD).</span>
                 </footer>
             </section>
         </div>
@@ -106,13 +100,12 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.kkiapay.me/k.js"></script>
+<script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const payButton = document.getElementById('openKkiapayPayment');
-    const retryButton = document.getElementById('retryKkiapayVerification');
-    const feedback = document.getElementById('kkiapayPaymentFeedback');
-    let pendingTransactionId = null;
+    const payButton = document.getElementById('openLemonPayment');
+    const feedback = document.getElementById('paymentFeedback');
+    let pollTimer = null;
 
     const showFeedback = (message, type = 'error') => {
         feedback.className = `kkiapay-payment-feedback ${type}`;
@@ -120,18 +113,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setLoading = (loading) => {
-        payButton.disabled = loading || {{ $kkiapayConfigured ? 'false' : 'true' }};
+        payButton.disabled = loading || {{ $lemonConfigured ? 'false' : 'true' }};
         payButton.classList.toggle('loading', loading);
         payButton.querySelector('span').innerHTML = loading
             ? '<span class="spinner-border spinner-border-sm"></span> Préparation…'
-            : '<i class="bi bi-lock-fill"></i> Payer avec KKiaPay';
+            : '<i class="bi bi-lock-fill"></i> Payer avec Lemon Squeezy';
     };
 
-    const verifyTransaction = async (transactionId) => {
-        pendingTransactionId = transactionId;
-        retryButton.classList.add('d-none');
-        showFeedback('Paiement reçu. Vérification sécurisée en cours…', 'loading');
-
+    const pollVerification = async () => {
         try {
             const response = await fetch(@json(route('checkout.verify', $order)), {
                 method: 'POST',
@@ -140,30 +129,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': @json(csrf_token()),
                 },
-                body: JSON.stringify({ transaction_id: transactionId }),
+                body: JSON.stringify({}),
             });
             const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.message || 'La transaction n’a pas pu être vérifiée.');
+            if (response.ok && result.redirect) {
+                showFeedback(result.message || 'Paiement confirmé.', 'success');
+                window.clearInterval(pollTimer);
+                window.setTimeout(() => window.location.assign(result.redirect), 700);
             }
-
-            showFeedback(result.message, 'success');
-            window.setTimeout(() => window.location.assign(result.redirect), 900);
-        } catch (error) {
-            showFeedback(error.message, 'error');
-            retryButton.classList.remove('d-none');
+        } catch (e) {
+            // keep polling briefly
         }
     };
 
-    if (typeof addSuccessListener === 'function') {
-        addSuccessListener((response) => {
-            const transactionId = response?.transactionId || response?.transaction_id;
-            if (!transactionId) {
-                showFeedback('KKiaPay n’a pas retourné de référence de transaction.', 'error');
-                return;
+    window.createLemonSqueezy?.();
+    if (window.LemonSqueezy?.Setup) {
+        window.LemonSqueezy.Setup({
+            eventHandler: (event) => {
+                if (event?.event === 'Checkout.Success') {
+                    showFeedback('Paiement reçu. Confirmation en cours…', 'loading');
+                    pollVerification();
+                    pollTimer = window.setInterval(pollVerification, 2000);
+                    window.setTimeout(() => window.clearInterval(pollTimer), 30000);
+                }
             }
-            verifyTransaction(transactionId);
         });
     }
 
@@ -184,35 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error(result.message || 'Impossible de préparer le paiement.');
             }
-            if (typeof openKkiapayWidget !== 'function') {
-                throw new Error('Le service KKiaPay n’a pas pu être chargé.');
+            if (!result.checkout_url) {
+                throw new Error('URL de paiement Lemon Squeezy manquante.');
             }
 
-            const method = 'card';
-            openKkiapayWidget({
-                amount: result.payment.amount,
-                key: @json($kkiapayPublicKey),
-                sandbox: @json($kkiapaySandbox),
-                position: 'center',
-                theme: '#b30000',
-                paymentmethod: method,
-                partnerId: result.payment.reference,
-                name: result.customer.name,
-                email: result.customer.email,
-                phone: result.customer.phone,
-                data: {
-                    order_reference: result.payment.reference,
-                },
-            });
+            if (window.LemonSqueezy?.Url?.Open) {
+                window.LemonSqueezy.Url.Open(result.checkout_url);
+            } else {
+                window.location.assign(result.checkout_url);
+            }
         } catch (error) {
             showFeedback(error.message, 'error');
         } finally {
             setLoading(false);
         }
-    });
-
-    retryButton?.addEventListener('click', () => {
-        if (pendingTransactionId) verifyTransaction(pendingTransactionId);
     });
 });
 </script>

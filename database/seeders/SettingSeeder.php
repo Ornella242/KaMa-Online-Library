@@ -15,6 +15,8 @@ class SettingSeeder extends Seeder
     {
       
         Setting::setValue('free_submission_limit', 1000);
+        Setting::setValue('withdrawal_commission_percent', 5);
+        Setting::setValue('withdrawal_minimum_amount', 10);
     
     }
 }

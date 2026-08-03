@@ -27,7 +27,7 @@
         </article>
         <article>
             <span class="books"><i class="bi bi-cash-coin"></i></span>
-            <div><small>Revenus payés</small><strong>{{ number_format($stats['revenue'], 0, ',', ' ') }} <small>XOF</small></strong></div>
+            <div><small>Revenus payés</small><strong>${{ number_format($stats['revenue'], 2, '.', ',') }}</strong></div>
         </article>
     </section>
 
@@ -91,7 +91,7 @@
                                     <br><small>{{ $item->plan->duration_days }} jours</small>
                                 @endif
                             </td>
-                            <td><strong>{{ number_format($item->amount, 0, ',', ' ') }} XOF</strong></td>
+                            <td><strong>${{ number_format($item->amount, 2, '.', ',') }}</strong></td>
                             <td>
                                 <small>{{ $item->paid_at?->format('d/m/Y H:i') ?? '—' }}</small>
                                 @if($item->transaction_reference)

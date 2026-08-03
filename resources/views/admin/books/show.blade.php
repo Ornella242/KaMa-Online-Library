@@ -74,7 +74,7 @@
                     <div class="writer-book-meta-grid">
                         <div>
                             <small>Prix</small>
-                            <strong>{{ number_format((float) $book->price, 0, ',', ' ') }} FCFA</strong>
+                            <strong>${{ number_format((float) $book->price, 2, '.', ',') }}</strong>
                         </div>
                         <div>
                             <small>Langue</small>
@@ -322,7 +322,7 @@
                         </div>
                         <div>
                             <dt>Prix de vente</dt>
-                            <dd>{{ number_format((float) $book->price, 0, ',', ' ') }} FCFA</dd>
+                            <dd>${{ number_format((float) $book->price, 2, '.', ',') }}</dd>
                         </div>
                         @if($book->type === 'ebook')
                             <div>
@@ -417,7 +417,7 @@
             <div class="preview-end-content">
                 <h2>Fin de l'aperçu</h2>
                 <p>Vous venez de lire la dernière page sélectionnée.</p>
-                <h3>{{ number_format((float) $book->price, 0, ',', ' ') }} FCFA</h3>
+                <h3>${{ number_format((float) $book->price, 2, '.', ',') }}</h3>
             </div>
         `;
         pages.push(finalPage);

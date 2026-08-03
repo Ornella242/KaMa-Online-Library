@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\TrackSiteVisit::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/lemonsqueezy',
+        ]);
+
         $middleware->alias([
           'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);

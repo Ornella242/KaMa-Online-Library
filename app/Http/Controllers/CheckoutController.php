@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\OrderPurchaseMail;
 use App\Models\Book;
 use App\Models\Country;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\CartService;
+use App\Services\LemonSqueezyFulfillmentService;
+use App\Services\LemonSqueezyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Kkiapay\Kkiapay;
 use Throwable;
 
 class CheckoutController extends Controller
@@ -119,9 +118,9 @@ class CheckoutController extends Controller
                 'country_id' => $validated['country_id'],
                 'city' => $validated['city'],
                 'amount' => $amount,
-                'currency' => 'XOF',
+                'currency' => 'USD',
                 'status' => Order::STATUS_PENDING,
-                'payment_method' => 'kkiapay',
+                'payment_method' => 'lemonsqueezy',
             ]);
 
             foreach ($orderItems as $line) {
@@ -136,165 +135,96 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.payment', $order);
     }
 
-    public function payment(Order $order)
+    public function payment(Order $order, LemonSqueezyService $lemonSqueezy)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
 
         $order->load(['items.book', 'country']);
 
-        $kkiapayConfigured = $this->kkiapayIsConfigured();
-        $kkiapayPublicKey = config('services.kkiapay.public_key');
-        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
-
-        return view('checkout.payment', compact(
-            'order',
-            'kkiapayConfigured',
-            'kkiapayPublicKey',
-            'kkiapaySandbox'
-        ));
+        return view('checkout.payment', [
+            'order' => $order,
+            'lemonConfigured' => $lemonSqueezy->isConfigured(),
+            'lemonTestMode' => $lemonSqueezy->isTestMode(),
+        ]);
     }
 
-    public function preparePayment(Order $order)
+    public function preparePayment(Order $order, LemonSqueezyService $lemonSqueezy)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
-        abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
+        abort_unless($lemonSqueezy->isConfigured(), 503, 'Lemon Squeezy n’est pas encore configuré.');
         abort_unless(
-            strtoupper($order->currency) === 'XOF',
+            strtoupper((string) $order->currency) === 'USD',
             409,
-            'KKiaPay exige un paiement en XOF.'
-        );
-
-        return response()->json([
-            'payment' => [
-                'reference' => $order->reference,
-                'amount' => (float) $order->amount,
-                'currency' => $order->currency,
-            ],
-            'customer' => [
-                'name' => $order->fullName(),
-                'email' => $order->email,
-                'phone' => $order->phone,
-            ],
-        ]);
-    }
-
-    public function verify(Request $request, Order $order)
-    {
-        abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
-
-        $validated = $request->validate([
-            'transaction_id' => ['required', 'string', 'max:255'],
-        ]);
-
-        if ($order->status === Order::STATUS_PAID && $order->transaction_id === $validated['transaction_id']) {
-            return response()->json([
-                'redirect' => route('checkout.success', $order),
-                'message' => 'Paiement déjà confirmé.',
-            ]);
-        }
-
-        abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande ne peut plus être payée.');
-        abort_if(
-            Order::query()
-                ->where('transaction_id', $validated['transaction_id'])
-                ->where('id', '!=', $order->id)
-                ->exists(),
-            409,
-            'Cette transaction a déjà été utilisée.'
+            'Le paiement Lemon Squeezy est configuré en USD.'
         );
 
         try {
-            $kkiapay = new Kkiapay(
-                config('services.kkiapay.public_key'),
-                config('services.kkiapay.private_key'),
-                config('services.kkiapay.secret'),
-                (bool) config('services.kkiapay.sandbox', true)
+            $checkout = $lemonSqueezy->createCheckout(
+                (float) $order->amount,
+                [
+                    'name' => $order->fullName(),
+                    'email' => $order->email,
+                    'custom' => [
+                        'type' => 'order',
+                        'order_id' => (string) $order->id,
+                        'order_reference' => $order->reference,
+                    ],
+                ],
+                route('checkout.success', $order),
+                'Commande KaMa '.$order->reference
             );
-            $verification = $kkiapay->verifyTransaction($validated['transaction_id']);
         } catch (Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'La vérification KKiaPay est momentanément indisponible. Réessayez sans effectuer un nouveau paiement.',
+                'message' => $exception->getMessage(),
             ], 502);
         }
 
-        abort_unless(
-            is_object($verification)
-                && strtoupper((string) ($verification->status ?? '')) === 'SUCCESS',
-            422,
-            'KKiaPay n’a pas confirmé cette transaction.'
-        );
-        abort_unless(
-            abs((float) ($verification->amount ?? -1) - (float) $order->amount) < 0.01,
-            422,
-            'Le montant confirmé par KKiaPay ne correspond pas à la commande.'
-        );
+        return response()->json([
+            'checkout_url' => $checkout['url'],
+            'checkout_id' => $checkout['id'],
+            'payment' => [
+                'reference' => $order->reference,
+                'amount' => (float) $order->amount,
+                'currency' => 'USD',
+            ],
+        ]);
+    }
 
-        $partnerId = trim((string) ($verification->partnerId ?? ''));
-        abort_unless(
-            $partnerId === '' || hash_equals($order->reference, $partnerId),
-            422,
-            'La référence KKiaPay ne correspond pas à cette commande.'
-        );
-
-        DB::transaction(function () use ($order, $validated, $verification) {
-            $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
-            abort_unless($lockedOrder->status === Order::STATUS_PENDING, 409, 'Cette commande a déjà été traitée.');
-            abort_if(
-                Order::query()
-                    ->where('transaction_id', $validated['transaction_id'])
-                    ->where('id', '!=', $lockedOrder->id)
-                    ->exists(),
-                409,
-                'Cette transaction a déjà été utilisée.'
-            );
-
-            $method = strtolower((string) ($verification->source ?? 'kkiapay'));
-
-            $lockedOrder->update([
-                'status' => Order::STATUS_PAID,
-                'payment_method' => $method,
-                'transaction_id' => $validated['transaction_id'],
+    public function verify(Order $order, LemonSqueezyFulfillmentService $fulfillment)
+    {
+        if ($order->status === Order::STATUS_PAID) {
+            return response()->json([
+                'redirect' => route('checkout.success', $order),
+                'message' => 'Paiement confirmé.',
             ]);
+        }
 
-            $lockedOrder->load('items');
+        abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande ne peut plus être payée.');
 
-            foreach ($lockedOrder->items as $item) {
-                Payment::query()->updateOrCreate(
-                    [
-                        'order_id' => $lockedOrder->id,
-                        'book_id' => $item->book_id,
-                        'type' => 'purchase',
-                    ],
-                    [
-                        'user_id' => $lockedOrder->user_id,
-                        'guest_email' => $lockedOrder->user_id ? null : $lockedOrder->email,
-                        'reference' => $lockedOrder->reference . '-' . $item->book_id,
-                        'amount' => $item->unit_price,
-                        'currency' => $lockedOrder->currency,
-                        'status' => 'success',
-                        'payment_method' => $method,
-                        'transaction_id' => $validated['transaction_id'] . '-' . $item->book_id,
-                    ]
-                );
-            }
-        });
-
-        $order->refresh()->load('items.book');
-        $this->sendPurchaseEmail($order);
+        // Soft-confirm while waiting for webhook: refresh status only.
+        $order->refresh();
+        if ($order->status === Order::STATUS_PAID) {
+            return response()->json([
+                'redirect' => route('checkout.success', $order),
+                'message' => 'Paiement confirmé.',
+            ]);
+        }
 
         return response()->json([
-            'redirect' => route('checkout.success', $order),
-            'message' => 'Paiement confirmé. Vos livres ont été envoyés par email.',
-        ]);
+            'message' => 'Paiement en cours de confirmation…',
+            'pending' => true,
+        ], 202);
     }
 
     public function success(Order $order)
     {
-        abort_unless($order->status === Order::STATUS_PAID, 404);
-
         $order->load(['items.book', 'country']);
+
+        if ($order->status !== Order::STATUS_PAID) {
+            return view('checkout.pending', compact('order'));
+        }
 
         $downloads = $order->items
             ->filter(fn ($item) => $item->book && filled($item->book->file_path))
@@ -328,15 +258,6 @@ class CheckoutController extends Controller
         return Storage::disk('local')->download($book->file_path, $filename);
     }
 
-    private function sendPurchaseEmail(Order $order): void
-    {
-        try {
-            Mail::to($order->email)->send(new OrderPurchaseMail($order));
-        } catch (Throwable $exception) {
-            report($exception);
-        }
-    }
-
     private function userOwnsBook(int $userId, int $bookId): bool
     {
         return Payment::query()
@@ -345,12 +266,5 @@ class CheckoutController extends Controller
             ->where('type', 'purchase')
             ->where('status', 'success')
             ->exists();
-    }
-
-    private function kkiapayIsConfigured(): bool
-    {
-        return filled(config('services.kkiapay.public_key'))
-            && filled(config('services.kkiapay.private_key'))
-            && filled(config('services.kkiapay.secret'));
     }
 }

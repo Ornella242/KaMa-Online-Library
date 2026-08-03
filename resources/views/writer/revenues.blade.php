@@ -9,6 +9,9 @@
                 <h1>Revenus</h1>
                 <p>Suivez les ventes de vos ouvrages et vos frais de publication.</p>
             </div>
+            <a href="{{ route('writer.wallet') }}" class="writer-primary-action">
+                <i class="bi bi-wallet2"></i> Mon portefeuille
+            </a>
         </header>
 
         <div class="writer-metric-grid">
@@ -33,7 +36,7 @@
         <div class="writer-finance-summary">
             <div>
                 <span><i class="bi bi-wallet2"></i></span>
-                <div><small>Solde disponible estimé</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }} $</strong></div>
+                <div><small>Solde portefeuille</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }} $</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-arrow-up-right"></i></span>

@@ -114,9 +114,19 @@
 
                             <input
                                 type="password"
+                                id="login_password"
                                 name="password"
                                 placeholder="••••••••"
-                                required>
+                                required
+                                autocomplete="current-password">
+
+                            <i
+                                class="bi bi-eye-slash toggle-password"
+                                data-target="login_password"
+                                role="button"
+                                tabindex="0"
+                                title="Afficher le mot de passe"
+                                aria-label="Afficher le mot de passe"></i>
 
                         </div>
 
@@ -161,7 +171,7 @@
 
                         Vous n'avez pas encore de compte ?
 
-                        <a href="{{ url('/register') }}" >
+                        <a href="{{ url('/register') }}" class="login-register-link">
                             Inscrivez-vous
                         </a>
 

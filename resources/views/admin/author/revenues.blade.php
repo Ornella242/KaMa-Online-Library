@@ -11,16 +11,19 @@
             <h2>Revenus</h2>
             <p>Suivez les ventes de vos ouvrages et vos frais de publication.</p>
         </div>
+        <a href="{{ route('admin.author.wallet') }}" class="admin-books-add">
+            <i class="bi bi-wallet2"></i> Portefeuille
+        </a>
     </div>
 
     <div class="admin-books-stats">
         <div class="admin-books-stat">
             <span class="admin-books-stat-icon total"><i class="bi bi-cash-stack"></i></span>
-            <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 0, ',', ' ') }}</strong></div>
+            <div><small>Revenus bruts</small><strong>${{ number_format($totalRevenue, 2, '.', ',') }}</strong></div>
         </div>
         <div class="admin-books-stat">
             <span class="admin-books-stat-icon waiting"><i class="bi bi-calendar3"></i></span>
-            <div><small>Ce mois</small><strong>{{ number_format($monthlyRevenue, 0, ',', ' ') }}</strong></div>
+            <div><small>Ce mois</small><strong>${{ number_format($monthlyRevenue, 2, '.', ',') }}</strong></div>
         </div>
         <div class="admin-books-stat">
             <span class="admin-books-stat-icon published"><i class="bi bi-bag-check"></i></span>
@@ -28,7 +31,7 @@
         </div>
         <div class="admin-books-stat">
             <span class="admin-books-stat-icon review"><i class="bi bi-wallet2"></i></span>
-            <div><small>Solde estimé</small><strong>{{ number_format($availableBalance, 0, ',', ' ') }}</strong></div>
+            <div><small>Solde portefeuille</small><strong>${{ number_format($availableBalance, 2, '.', ',') }}</strong></div>
         </div>
     </div>
 
@@ -73,7 +76,7 @@
                             </td>
                             <td>
                                 <strong class="admin-books-price">
-                                    {{ number_format($payment->amount, 0, ',', ' ') }} {{ $payment->currency }}
+                                    ${{ number_format($payment->amount, 2, '.', ',') }}
                                 </strong>
                             </td>
                             <td>
@@ -153,7 +156,7 @@
                             </td>
                             <td>
                                 <strong class="admin-books-price">
-                                    {{ number_format($payment->amount, 0, ',', ' ') }} {{ $payment->currency }}
+                                    ${{ number_format($payment->amount, 2, '.', ',') }}
                                 </strong>
                             </td>
                             <td>

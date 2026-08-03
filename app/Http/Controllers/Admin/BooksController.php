@@ -899,27 +899,17 @@ class BooksController extends Controller
             503,
             'Les frais de publication ne sont pas encore configurés pour ce format.'
         );
-        abort_unless(
-            strtoupper($fee->currency) === 'XOF',
-            503,
-            'Le tarif doit être enregistré en XOF pour être utilisé avec KKiaPay.'
-        );
 
-        $kkiapayPublicKey = config('services.kkiapay.public_key');
-        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
-        $kkiapayConfigured = filled($kkiapayPublicKey)
-            && filled(config('services.kkiapay.private_key'))
-            && filled(config('services.kkiapay.secret'));
+        $lemonSqueezy = app(\App\Services\LemonSqueezyService::class);
 
         return view(
             'admin.books.deposit',
-            compact(
-                'book',
-                'fee',
-                'kkiapayPublicKey',
-                'kkiapaySandbox',
-                'kkiapayConfigured'
-            )
+            [
+                'book' => $book,
+                'fee' => $fee,
+                'lemonConfigured' => $lemonSqueezy->isConfigured(),
+                'lemonTestMode' => $lemonSqueezy->isTestMode(),
+            ]
         );
     }
 

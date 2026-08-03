@@ -38,7 +38,7 @@
         </article>
         <article>
             <span>Dépensé</span>
-            <strong>{{ number_format($stats['spent'], 0, ',', ' ') }} <small>XOF</small></strong>
+            <strong>${{ number_format($stats['spent'], 2, '.', ',') }}</strong>
         </article>
     </div>
 
@@ -88,7 +88,7 @@
                                         {{ $book->type === 'audio' ? 'Audio' : 'Ebook' }}
                                     </span>
                                 </td>
-                                <td class="price">{{ number_format($purchase->amount, 0, ',', ' ') }} XOF</td>
+                                <td class="price">${{ number_format($purchase->amount, 2, '.', ',') }}</td>
                                 <td>{{ $purchase->created_at?->format('d/m/Y') ?? '—' }}</td>
                                 <td class="text-end">
                                     <div class="reader-table-actions">

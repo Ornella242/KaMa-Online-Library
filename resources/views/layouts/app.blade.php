@@ -133,7 +133,6 @@
 	<script>
 		document.querySelectorAll('.toggle-password').forEach(icon => {
 			icon.addEventListener('click', function () {
-
 				const targetId = this.getAttribute('data-target');
 				const input = document.getElementById(targetId);
 
@@ -142,8 +141,29 @@
 				const isPassword = input.type === 'password';
 				input.type = isPassword ? 'text' : 'password';
 
-				this.classList.toggle('fa-eye');
-				this.classList.toggle('fa-eye-slash');
+				if (this.classList.contains('bi-eye') || this.classList.contains('bi-eye-slash')) {
+					this.classList.toggle('bi-eye');
+					this.classList.toggle('bi-eye-slash');
+				} else {
+					this.classList.toggle('fa-eye');
+					this.classList.toggle('fa-eye-slash');
+				}
+
+				this.setAttribute(
+					'title',
+					isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+				);
+				this.setAttribute(
+					'aria-label',
+					isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+				);
+			});
+
+			icon.addEventListener('keydown', function (event) {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					this.click();
+				}
 			});
 		});
 	</script>
@@ -898,6 +918,28 @@
 				});
 			});
 
+	</script>
+
+	<script>
+		@if(session('success'))
+			Swal.fire({
+				icon: 'success',
+				title: 'Succès',
+				text: @json(session('success')),
+				confirmButtonColor: '#b30000',
+				timer: 2800,
+				timerProgressBar: true
+			});
+		@endif
+
+		@if(session('error'))
+			Swal.fire({
+				icon: 'error',
+				title: 'Oups',
+				text: @json(session('error')),
+				confirmButtonColor: '#b30000'
+			});
+		@endif
 	</script>
 	@stack('scripts')
 </body>

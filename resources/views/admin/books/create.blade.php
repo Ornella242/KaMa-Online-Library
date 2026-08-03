@@ -78,7 +78,8 @@ Steps START -->
 
 					<!-- Main content START -->
 					<div class="col-12">
-						<form method="POST" 
+						<form method="POST"
+								id="adminCreateBookForm"
 								action="{{ route('admin.books.store') }}"
 								enctype="multipart/form-data">
 
@@ -952,9 +953,16 @@ Steps START -->
 
 										<button
 											type="submit"
+											id="saveBookBtn"
 											class="btn btn-danger wizard-action-btn wizard-action-primary">
-											<i class="bi bi-cloud-check me-2"></i>
-											Enregistrer mon livre
+											<span class="save-book-idle">
+												<i class="bi bi-cloud-check me-2"></i>
+												Enregistrer mon livre
+											</span>
+											<span class="save-book-loading d-none">
+												<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+												Enregistrement en cours…
+											</span>
 										</button>
 									</div>
 								</div>
@@ -1340,8 +1348,8 @@ if (previewStartPage && previewEndPage) {
         const price = document.querySelector('[name="price"]')?.value;
         setText(
             'summary_price',
-            price ? Number(price).toLocaleString('fr-FR') + ' FCFA' : null,
-            '0 FCFA'
+            price ? Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' $' : null,
+            '0.00 $'
         );
 
         const pagesInput = document.getElementById('pagesInput');
@@ -1399,6 +1407,26 @@ if (previewStartPage && previewEndPage) {
 
     document.addEventListener('DOMContentLoaded', updateBookSummary);
     updateBookSummary();
+})();
+</script>
+
+<script>
+(function () {
+	const form = document.getElementById('adminCreateBookForm');
+	const saveBtn = document.getElementById('saveBookBtn');
+	if (!form || !saveBtn) return;
+
+	const idleLabel = saveBtn.querySelector('.save-book-idle');
+	const loadingLabel = saveBtn.querySelector('.save-book-loading');
+
+	form.addEventListener('submit', function () {
+		if (saveBtn.disabled) return;
+
+		saveBtn.disabled = true;
+		saveBtn.setAttribute('aria-busy', 'true');
+		idleLabel?.classList.add('d-none');
+		loadingLabel?.classList.remove('d-none');
+	});
 })();
 </script>
 @endsection

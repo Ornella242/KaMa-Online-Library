@@ -42,4 +42,12 @@ return [
         'sandbox' => env('KKIAPAY_SANDBOX', true),
     ],
 
+    'lemonsqueezy' => [
+        'api_key' => env('LEMON_SQUEEZY_API_KEY'),
+        'store_id' => env('LEMON_SQUEEZY_STORE_ID'),
+        'variant_id' => env('LEMON_SQUEEZY_VARIANT_ID'),
+        'webhook_secret' => env('LEMON_SQUEEZY_WEBHOOK_SECRET'),
+        'test_mode' => env('LEMON_SQUEEZY_TEST_MODE', true),
+    ],
+
 ];
