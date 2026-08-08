@@ -42,7 +42,7 @@
                     </form>
                 </nav>
 
-                @unless(auth()->user()->isWriter())
+                {{-- @unless(auth()->user()->isWriter())
                     <div class="reader-become-writer">
                         <button type="button" id="openBecomeWriterOverlay">
                             <i class="bi bi-pen"></i> Devenir écrivain
@@ -53,7 +53,7 @@
                             Veuillez compléter la confirmation pour devenir écrivain.
                         </div>
                     @endif
-                @endunless
+                @endunless --}}
             </aside>
         </div>
     </div>

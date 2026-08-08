@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Writer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\BookSponsorship;
 use App\Models\Review;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -154,13 +155,50 @@ class DashboardController extends Controller
         })
         ->count();
 
+        // ==========================================
+// STATISTIQUES PAR LIVRE
+// ==========================================
+
+$bookPerformance = Book::query()
+    ->where('user_id', $userId)
+    ->where('status', 'published')
+    ->get()
+    ->map(function ($book) {
+
+        // Frais de dépôt/publication
+        $publicationFee = Payment::where('book_id', $book->id)
+            ->where('status', 'success')
+            ->where('type', 'publication')
+            ->sum('amount');
+
+        // Total des sponsoring payés
+        $sponsorshipAmount = BookSponsorship::where('book_id', $book->id)
+            ->where('status', 'success')
+            ->sum('amount');
+
+        // Total des ventes du livre
+        $salesAmount = Payment::where('book_id', $book->id)
+            ->where('status', 'success')
+            ->where('type', 'purchase')
+            ->sum('amount');
+
+        // Budget total investi dans le livre
+        $investment = $publicationFee + $sponsorshipAmount;
+
+        return [
+            'label' => $book->title,
+            'investment' => $investment,
+            'sales' => $salesAmount,
+        ];
+    });
+
         return view(
             'writer.dashboard',
             compact(
                 'publishedBooks',
                 'totalBooks',
                 'bestBooks', 'totalRevenue','totalReaders','averageRating', 'totalReviews',
-                'readersGrowth','booksGrowth','revenueGrowth'
+                'readersGrowth','booksGrowth','revenueGrowth','bookPerformance'
             )
         );
 

@@ -430,12 +430,32 @@ Advertisement END -->
                 avis lecteurs
             </p>
 
-            @auth
-                <a href="#avis-form"
-                   class="review-btn">
+            @if(!auth()->check())
+
+                <a href="{{ route('login') }}"
+                class="review-btn">
                     Donner mon avis
                 </a>
-            @endauth
+
+            @elseif(!$hasPurchased)
+
+                <button
+                    type="button"
+                    class="review-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#purchaseReviewModal">
+                    <i class="bi bi-chat-left-text me-1"></i>
+                    Donner mon avis
+                </button>
+
+            @else
+
+                <a href="{{ route('login') }}"
+                class="review-btn">
+                    {{ $myReview ? 'Modifier mon avis' : 'Donner mon avis' }}
+                </a>
+
+            @endif
         </div>
     </div>
 </section>
@@ -567,5 +587,55 @@ Advertisement END -->
 </script>
 
 @endif
+
+<div class="modal fade"
+     id="purchaseReviewModal"
+     tabindex="-1"
+     aria-labelledby="purchaseReviewModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content border-0 rounded-4">
+
+            <div class="modal-body text-center p-5">
+
+                <div class="review-purchase-icon mx-auto mb-3">
+                    <i class="bi bi-lock"></i>
+                </div>
+
+                <h5 class="fw-bold mb-2">
+                    Votre avis compte
+                </h5>
+
+                <p class="text-muted mb-4">
+                    Achetez ce livre pour partager votre expérience
+                    et donner votre avis aux autres lecteurs.
+                </p>
+
+                <div class="d-flex justify-content-center align-items-center gap-2">
+
+                    <button
+                        type="button"
+                        class="btn review-modal-close"
+                        data-bs-dismiss="modal">
+                        Fermer
+                    </button>
+
+                    <a
+                        href="{{ route('books.show', $book) }}"
+                        class="btn review-modal-book px-4">
+                        <i class="bi bi-bag me-1"></i>
+                        Voir le livre
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
 @endsection

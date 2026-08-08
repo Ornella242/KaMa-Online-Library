@@ -62,6 +62,18 @@
         </div>
 
         <div class="writer-panel">
+            <div class="writer-panel-header">
+                <div>
+                    <span>Performance de vos livres</span>
+                    <h2>Revenus & investissements</h2>
+                    <p>Comparez vos investissements et vos revenus pour chaque livre.</p>
+                </div>
+                <span class="writer-panel-badge">Données réelles</span>
+            </div>
+            <div id="writerBookPerformanceChart"></div>
+        </div>
+
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Performance</span>
@@ -130,4 +142,97 @@
         </div>
     </div>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+const bookPerformanceElement = document.querySelector('#writerBookPerformanceChart');
+
+if (bookPerformanceElement && typeof ApexCharts !== 'undefined') {
+
+    new ApexCharts(bookPerformanceElement, {
+
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: {
+                show: false
+            },
+            fontFamily: 'DM Sans, sans-serif'
+        },
+
+        series: [
+            {
+                name: 'Budget investi',
+                data: @json($bookPerformance->pluck('investment')->values())
+            },
+            {
+                name: 'Ventes',
+                data: @json($bookPerformance->pluck('sales')->values())
+            }
+        ],
+
+        colors: ['#18191c', '#b30000'],
+
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '45%',
+                borderRadius: 4
+            }
+        },
+
+        dataLabels: {
+            enabled: false
+        },
+
+        xaxis: {
+            categories: @json($bookPerformance->pluck('label')->values()),
+
+            axisBorder: {
+                show: false
+            },
+
+            axisTicks: {
+                show: false
+            },
+
+            labels: {
+                rotate: -45,
+                trim: true,
+                maxHeight: 80
+            }
+        },
+
+        yaxis: {
+            min: 0,
+            forceNiceScale: true,
+
+            labels: {
+                formatter: function(value) {
+                    return '$' + value.toLocaleString();
+                }
+            }
+        },
+
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return '$' + value.toLocaleString();
+                }
+            }
+        },
+
+        grid: {
+            borderColor: '#eff0f2',
+            strokeDashArray: 4
+        },
+
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right'
+        }
+
+    }).render();
+}
+</script>
 @endsection

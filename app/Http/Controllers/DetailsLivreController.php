@@ -72,6 +72,22 @@ class DetailsLivreController extends Controller
                 ->exists();
         }
 
+        $myReview = null;
+        $hasPurchased = false;
+
+        if (Auth::check()) {
+
+            $myReview = Review::where('book_id', $book->id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+            $hasPurchased = Payment::where('book_id', $book->id)
+                ->where('user_id', Auth::id())
+                ->where('status', 'success')
+                ->where('type', 'purchase')
+                ->exists();
+        }
+
         return view('books.detaillivre', compact(
             'book',
             'sameAuthorBooks',
@@ -82,7 +98,9 @@ class DetailsLivreController extends Controller
             'alreadyOwned',
             'inCart',
             'inWishlist',
-            'isOwner'
+            'isOwner',
+            'myReview',
+            'hasPurchased'
         ));
     }
 }
