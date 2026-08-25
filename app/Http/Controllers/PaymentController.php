@@ -7,8 +7,8 @@ use App\Models\Payment;
 use App\Models\PublicationFee;
 use App\Models\User;
 use App\Notifications\NewBookSubmittedNotification;
-use App\Services\LemonSqueezyService;
 use App\Services\PublicationService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +16,11 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-    public function payPublication(Book $book, PublicationService $publicationService, LemonSqueezyService $lemonSqueezy)
+    public function payPublication(Book $book, PublicationService $publicationService, StripeService $stripe)
     {
         abort_unless($book->user_id === Auth::id(), 403);
         abort_unless($book->status === 'draft', 409, 'Ce livre a déjà été soumis ou payé.');
-        abort_unless($lemonSqueezy->isConfigured(), 503, 'Lemon Squeezy n’est pas encore configuré.');
+        abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
         abort_unless($publicationService->shouldRequirePayment(), 403, 'Les frais de dépôt ne sont pas requis actuellement.');
 
         $payment = DB::transaction(function () use ($book) {
@@ -51,7 +51,7 @@ class PaymentController extends Controller
                     'reference' => 'KAMA-'.str()->uuid(),
                     'amount' => $fee->amount,
                     'currency' => 'USD',
-                    'payment_method' => 'lemonsqueezy',
+                    'payment_method' => 'stripe',
                     'transaction_id' => null,
                 ]
             );
@@ -60,15 +60,19 @@ class PaymentController extends Controller
                 $payment->update([
                     'amount' => $fee->amount,
                     'currency' => 'USD',
-                    'payment_method' => 'lemonsqueezy',
+                    'payment_method' => 'stripe',
                 ]);
             }
 
             return $payment->fresh();
         });
 
+        $successUrl = Auth::user()?->isAdmin()
+            ? route('admin.books.index')
+            : route('writer.books');
+
         try {
-            $checkout = $lemonSqueezy->createCheckout(
+            $checkout = $stripe->createCheckout(
                 (float) $payment->amount,
                 [
                     'name' => trim(Auth::user()->firstname.' '.Auth::user()->lastname),
@@ -80,9 +84,10 @@ class PaymentController extends Controller
                         'book_id' => (string) $book->id,
                     ],
                 ],
+                $successUrl.'?paid=1',
                 Auth::user()?->isAdmin()
-                    ? route('admin.books.index')
-                    : route('writer.books'),
+                    ? route('admin.books.deposit', $book)
+                    : route('writer.books.deposit', $book),
                 'Frais de publication — '.$book->title
             );
         } catch (Throwable $exception) {

@@ -20,7 +20,7 @@
             <div>
                 <small>Total encaissé</small>
                 <strong class="admin-metric-amount">${{ number_format($platformBalance, 2, '.', ',') }}</strong>
-                <span>Tout ce qui est entré via Lemon Squeezy</span>
+                <span>Tout ce qui est entré via Stripe</span>
             </div>
         </article>
         <article class="admin-metric-card">
@@ -171,7 +171,7 @@
             </div>
         </div>
         <div class="admin-status-list">
-            <div><span><i class="bi bi-safe2-fill text-success"></i> Total encaissé</span><strong>Tout ce qui est entré via Lemon Squeezy</strong></div>
+            <div><span><i class="bi bi-safe2-fill text-success"></i> Total encaissé</span><strong>Tout ce qui est entré via Stripe</strong></div>
             <div><span><i class="bi bi-wallet2 text-warning"></i> Dû aux auteurs</span><strong>Somme des portefeuilles auteurs</strong></div>
             <div><span><i class="bi bi-piggy-bank-fill text-danger"></i> Net plateforme</span><strong>Encaissé − dû aux auteurs</strong></div>
         </div>

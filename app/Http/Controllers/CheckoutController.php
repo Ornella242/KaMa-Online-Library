@@ -7,8 +7,8 @@ use App\Models\Country;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\CartService;
-use App\Services\LemonSqueezyFulfillmentService;
-use App\Services\LemonSqueezyService;
+use App\Services\PaymentFulfillmentService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -109,7 +109,7 @@ class CheckoutController extends Controller
 
         $order = DB::transaction(function () use ($validated, $orderItems, $amount) {
             $order = Order::query()->create([
-                'reference' => 'ORD-' . strtoupper(Str::random(10)),
+                'reference' => 'ORD-'.strtoupper(Str::random(10)),
                 'user_id' => Auth::id(),
                 'firstname' => $validated['firstname'],
                 'lastname' => $validated['lastname'],
@@ -120,7 +120,7 @@ class CheckoutController extends Controller
                 'amount' => $amount,
                 'currency' => 'USD',
                 'status' => Order::STATUS_PENDING,
-                'payment_method' => 'lemonsqueezy',
+                'payment_method' => 'stripe',
             ]);
 
             foreach ($orderItems as $line) {
@@ -135,7 +135,7 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.payment', $order);
     }
 
-    public function payment(Order $order, LemonSqueezyService $lemonSqueezy)
+    public function payment(Order $order, StripeService $stripe)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
 
@@ -143,23 +143,23 @@ class CheckoutController extends Controller
 
         return view('checkout.payment', [
             'order' => $order,
-            'lemonConfigured' => $lemonSqueezy->isConfigured(),
-            'lemonTestMode' => $lemonSqueezy->isTestMode(),
+            'stripeConfigured' => $stripe->isConfigured(),
+            'stripeTestMode' => $stripe->isTestMode(),
         ]);
     }
 
-    public function preparePayment(Order $order, LemonSqueezyService $lemonSqueezy)
+    public function preparePayment(Order $order, StripeService $stripe)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
-        abort_unless($lemonSqueezy->isConfigured(), 503, 'Lemon Squeezy n’est pas encore configuré.');
+        abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
         abort_unless(
             strtoupper((string) $order->currency) === 'USD',
             409,
-            'Le paiement Lemon Squeezy est configuré en USD.'
+            'Le paiement Stripe est configuré en USD.'
         );
 
         try {
-            $checkout = $lemonSqueezy->createCheckout(
+            $checkout = $stripe->createCheckout(
                 (float) $order->amount,
                 [
                     'name' => $order->fullName(),
@@ -170,7 +170,8 @@ class CheckoutController extends Controller
                         'order_reference' => $order->reference,
                     ],
                 ],
-                route('checkout.success', $order),
+                route('checkout.success', $order).'?session_id={CHECKOUT_SESSION_ID}',
+                route('checkout.payment', $order),
                 'Commande KaMa '.$order->reference
             );
         } catch (Throwable $exception) {
@@ -192,7 +193,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function verify(Order $order, LemonSqueezyFulfillmentService $fulfillment)
+    public function verify(Order $order, PaymentFulfillmentService $fulfillment)
     {
         if ($order->status === Order::STATUS_PAID) {
             return response()->json([
@@ -203,7 +204,6 @@ class CheckoutController extends Controller
 
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande ne peut plus être payée.');
 
-        // Soft-confirm while waiting for webhook: refresh status only.
         $order->refresh();
         if ($order->status === Order::STATUS_PAID) {
             return response()->json([

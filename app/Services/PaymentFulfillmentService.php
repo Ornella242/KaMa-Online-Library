@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-class LemonSqueezyFulfillmentService
+class PaymentFulfillmentService
 {
     /**
      * @param  array<string, mixed>  $custom
      */
-    public function handlePaidCheckout(array $custom, string $transactionId, ?string $paymentMethod = 'lemonsqueezy'): array
+    public function handlePaidCheckout(array $custom, string $transactionId, ?string $paymentMethod = 'stripe'): array
     {
         $type = (string) ($custom['type'] ?? '');
 
@@ -33,7 +33,7 @@ class LemonSqueezyFulfillmentService
     /**
      * @param  array<string, mixed>  $custom
      */
-    public function fulfillOrder(array $custom, string $transactionId, ?string $paymentMethod = 'lemonsqueezy'): array
+    public function fulfillOrder(array $custom, string $transactionId, ?string $paymentMethod = 'stripe'): array
     {
         $order = Order::query()
             ->when(
@@ -65,7 +65,7 @@ class LemonSqueezyFulfillmentService
 
             $lockedOrder->update([
                 'status' => Order::STATUS_PAID,
-                'payment_method' => $paymentMethod ?: 'lemonsqueezy',
+                'payment_method' => $paymentMethod ?: 'stripe',
                 'transaction_id' => $transactionId,
             ]);
 
@@ -81,12 +81,12 @@ class LemonSqueezyFulfillmentService
                     [
                         'user_id' => $lockedOrder->user_id,
                         'guest_email' => $lockedOrder->user_id ? null : $lockedOrder->email,
-                        'reference' => $lockedOrder->reference . '-' . $item->book_id,
+                        'reference' => $lockedOrder->reference.'-'.$item->book_id,
                         'amount' => $item->unit_price,
                         'currency' => $lockedOrder->currency ?: 'USD',
                         'status' => 'success',
-                        'payment_method' => $paymentMethod ?: 'lemonsqueezy',
-                        'transaction_id' => $transactionId . '-' . $item->book_id,
+                        'payment_method' => $paymentMethod ?: 'stripe',
+                        'transaction_id' => $transactionId.'-'.$item->book_id,
                     ]
                 );
 
@@ -107,7 +107,7 @@ class LemonSqueezyFulfillmentService
     /**
      * @param  array<string, mixed>  $custom
      */
-    public function fulfillPublication(array $custom, string $transactionId, ?string $paymentMethod = 'lemonsqueezy'): array
+    public function fulfillPublication(array $custom, string $transactionId, ?string $paymentMethod = 'stripe'): array
     {
         $payment = Payment::query()
             ->when(
@@ -144,7 +144,7 @@ class LemonSqueezyFulfillmentService
 
             $lockedPayment->update([
                 'status' => 'success',
-                'payment_method' => $paymentMethod ?: 'lemonsqueezy',
+                'payment_method' => $paymentMethod ?: 'stripe',
                 'transaction_id' => $transactionId,
             ]);
             $lockedBook->update(['status' => 'waiting_review']);
@@ -164,7 +164,7 @@ class LemonSqueezyFulfillmentService
     /**
      * @param  array<string, mixed>  $custom
      */
-    public function fulfillSponsorship(array $custom, string $transactionId, ?string $paymentMethod = 'lemonsqueezy'): array
+    public function fulfillSponsorship(array $custom, string $transactionId, ?string $paymentMethod = 'stripe'): array
     {
         $sponsorship = BookSponsorship::query()
             ->when(

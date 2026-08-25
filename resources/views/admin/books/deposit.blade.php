@@ -13,10 +13,10 @@
                 </a>
                 <span>Publication KaMa</span>
                 <h1>Finaliser les frais de publication</h1>
-                <p>Payez les frais de dépôt en USD via Lemon Squeezy.</p>
+                <p>Payez les frais de dépôt en USD via Stripe.</p>
             </div>
-            @if($lemonTestMode)
-                <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Lemon Squeezy</span>
+            @if($stripeTestMode)
+                <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Stripe</span>
             @endif
         </div>
 
@@ -36,20 +36,20 @@
             </aside>
 
             <section class="kkiapay-payment-card">
-                @unless($lemonConfigured)
+                @unless($stripeConfigured)
                     <div class="kkiapay-config-warning">
                         <i class="bi bi-exclamation-triangle"></i>
                         <div>
-                            <strong>Lemon Squeezy n’est pas configuré</strong>
-                            <p>Renseignez <code>LEMON_SQUEEZY_*</code> dans <code>.env</code>.</p>
+                            <strong>Stripe n’est pas configuré</strong>
+                            <p>Renseignez <code>STRIPE_SECRET</code> dans <code>.env</code>.</p>
                         </div>
                     </div>
                 @endunless
 
                 <div id="paymentFeedback" class="kkiapay-payment-feedback d-none" role="alert"></div>
 
-                <button type="button" id="openLemonPayment" class="kkiapay-pay-button" @disabled(! $lemonConfigured)>
-                    <span><i class="bi bi-lock-fill"></i> Payer avec Lemon Squeezy</span>
+                <button type="button" id="openStripePayment" class="kkiapay-pay-button" @disabled(! $stripeConfigured)>
+                    <span><i class="bi bi-lock-fill"></i> Payer avec Stripe</span>
                     <strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong>
                 </button>
             </section>
@@ -59,12 +59,10 @@
 @endsection
 
 @push('scripts')
-<script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const payButton = document.getElementById('openLemonPayment');
+    const payButton = document.getElementById('openStripePayment');
     const feedback = document.getElementById('paymentFeedback');
-    let pollTimer = null;
 
     const showFeedback = (message, type = 'error') => {
         feedback.className = `kkiapay-payment-feedback ${type}`;
@@ -72,42 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setLoading = (loading) => {
-        payButton.disabled = loading || {{ $lemonConfigured ? 'false' : 'true' }};
+        payButton.disabled = loading || {{ $stripeConfigured ? 'false' : 'true' }};
         payButton.classList.toggle('loading', loading);
         payButton.querySelector('span').innerHTML = loading
-            ? '<span class="spinner-border spinner-border-sm"></span> Préparation…'
-            : '<i class="bi bi-lock-fill"></i> Payer avec Lemon Squeezy';
+            ? '<span class="spinner-border spinner-border-sm"></span> Redirection…'
+            : '<i class="bi bi-lock-fill"></i> Payer avec Stripe';
     };
-
-    const pollVerification = async () => {
-        const response = await fetch(@json(route('books.payment.publication.verify', $book)), {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': @json(csrf_token()),
-            },
-            body: JSON.stringify({}),
-        });
-        const result = await response.json();
-        if (response.ok && result.redirect) {
-            showFeedback(result.message || 'Paiement confirmé.', 'success');
-            window.clearInterval(pollTimer);
-            window.setTimeout(() => window.location.assign(result.redirect), 700);
-        }
-    };
-
-    window.createLemonSqueezy?.();
-    window.LemonSqueezy?.Setup?.({
-        eventHandler: (event) => {
-            if (event?.event === 'Checkout.Success') {
-                showFeedback('Paiement reçu. Confirmation en cours…', 'loading');
-                pollVerification();
-                pollTimer = window.setInterval(pollVerification, 2000);
-                window.setTimeout(() => window.clearInterval(pollTimer), 30000);
-            }
-        }
-    });
 
     payButton?.addEventListener('click', async () => {
         setLoading(true);
@@ -121,14 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || 'Impossible de préparer le paiement.');
-            if (window.LemonSqueezy?.Url?.Open) {
-                window.LemonSqueezy.Url.Open(result.checkout_url);
-            } else {
-                window.location.assign(result.checkout_url);
-            }
+            if (!result.checkout_url) throw new Error('URL de paiement Stripe manquante.');
+            window.location.assign(result.checkout_url);
         } catch (error) {
             showFeedback(error.message, 'error');
-        } finally {
             setLoading(false);
         }
     });

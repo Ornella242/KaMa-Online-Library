@@ -8,7 +8,7 @@
                 <i class="bi bi-arrow-left"></i> Retour au panier
             </a>
             <h1>Finaliser ma commande</h1>
-            <p>Renseignez vos informations pour payer en USD via Lemon Squeezy — aucun compte n’est requis.</p>
+            <p>Renseignez vos informations pour payer en USD via Stripe — aucun compte n’est requis.</p>
         </div>
 
         @if($errors->any())
@@ -99,7 +99,7 @@
                         <span>Total</span>
                         <strong>${{ number_format($total, 2, '.', ',') }}</strong>
                     </div>
-                    <p class="hint">Paiement sécurisé par carte bancaire via Lemon Squeezy (USD).</p>
+                    <p class="hint">Paiement sécurisé par carte bancaire via Stripe (USD).</p>
                 </aside>
             </div>
         </div>

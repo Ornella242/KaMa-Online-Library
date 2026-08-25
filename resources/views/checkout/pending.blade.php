@@ -7,7 +7,7 @@
             <span><i class="bi bi-hourglass-split"></i></span>
             <h2>Confirmation du paiement…</h2>
             <p>
-                Votre paiement Lemon Squeezy est en cours de validation.
+                Votre paiement Stripe est en cours de validation.
                 Cette page se mettra à jour automatiquement.
             </p>
             <p class="text-muted mb-0">Commande {{ $order->reference }}</p>

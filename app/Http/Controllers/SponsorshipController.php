@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\BookSponsorship;
 use App\Models\SponsorshipPlan;
-use App\Services\LemonSqueezyService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -69,7 +69,7 @@ class SponsorshipController extends Controller
         return redirect()->route('writer.sponsorship.payment', $sponsorship);
     }
 
-    public function payment(BookSponsorship $sponsorship, LemonSqueezyService $lemonSqueezy)
+    public function payment(BookSponsorship $sponsorship, StripeService $stripe)
     {
         abort_unless($sponsorship->writer_id === Auth::id(), 403);
         abort_unless($sponsorship->status === 'pending', 409, 'Cette demande n’est plus en attente de paiement.');
@@ -78,19 +78,19 @@ class SponsorshipController extends Controller
 
         return view('writer.sponsorship.payment', [
             'sponsorship' => $sponsorship,
-            'lemonConfigured' => $lemonSqueezy->isConfigured(),
-            'lemonTestMode' => $lemonSqueezy->isTestMode(),
+            'stripeConfigured' => $stripe->isConfigured(),
+            'stripeTestMode' => $stripe->isTestMode(),
         ]);
     }
 
-    public function preparePayment(BookSponsorship $sponsorship, LemonSqueezyService $lemonSqueezy)
+    public function preparePayment(BookSponsorship $sponsorship, StripeService $stripe)
     {
         abort_unless($sponsorship->writer_id === Auth::id(), 403);
         abort_unless($sponsorship->status === 'pending', 409);
-        abort_unless($lemonSqueezy->isConfigured(), 503, 'Lemon Squeezy n’est pas encore configuré.');
+        abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
 
         try {
-            $checkout = $lemonSqueezy->createCheckout(
+            $checkout = $stripe->createCheckout(
                 (float) $sponsorship->amount,
                 [
                     'name' => trim(Auth::user()->firstname.' '.Auth::user()->lastname),
@@ -102,7 +102,8 @@ class SponsorshipController extends Controller
                         'book_id' => (string) $sponsorship->book_id,
                     ],
                 ],
-                route('writer.books'),
+                route('writer.books').'?paid=1',
+                route('writer.sponsorship.payment', $sponsorship),
                 'Sponsoring KaMa — '.$sponsorship->book->title
             );
         } catch (Throwable $exception) {

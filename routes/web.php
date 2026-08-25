@@ -466,8 +466,8 @@ Route::post('/books/{book}/publication-payment/verify',
         ->middleware(['auth', 'role:writer,admin'])
         ->name('books.payment.publication.verify');
 
-Route::post('/webhooks/lemonsqueezy', \App\Http\Controllers\LemonSqueezyWebhookController::class)
-    ->name('webhooks.lemonsqueezy');
+Route::post('/webhooks/stripe', \App\Http\Controllers\StripeWebhookController::class)
+    ->name('webhooks.stripe');
 
 
     // routes communes

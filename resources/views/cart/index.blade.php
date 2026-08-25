@@ -75,7 +75,7 @@
                             <i class="bi bi-shield-lock me-1"></i> Commander
                         </a>
 
-                        <p class="hint">Aucun compte requis. Renseignez vos infos puis payez en USD via Lemon Squeezy.</p>
+                        <p class="hint">Aucun compte requis. Renseignez vos infos puis payez en USD via Stripe.</p>
                     </aside>
                 </div>
             </div>

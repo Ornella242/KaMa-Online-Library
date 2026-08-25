@@ -973,15 +973,15 @@ class BooksController extends Controller
             'Les frais de publication ne sont pas encore configurés pour ce format.'
         );
 
-        $lemonSqueezy = app(\App\Services\LemonSqueezyService::class);
+        $stripe = app(\App\Services\StripeService::class);
 
         return view(
             'writer.books.deposit',
             [
                 'book' => $book,
                 'fee' => $fee,
-                'lemonConfigured' => $lemonSqueezy->isConfigured(),
-                'lemonTestMode' => $lemonSqueezy->isTestMode(),
+                'stripeConfigured' => $stripe->isConfigured(),
+                'stripeTestMode' => $stripe->isTestMode(),
             ]
         );
     }
