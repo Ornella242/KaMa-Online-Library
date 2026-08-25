@@ -209,7 +209,7 @@
                                                     </div>
 
                                                     <div class="col-md-4">
-                                                        <label class="form-label">Prix en $ *</label>
+                                                        <label class="form-label">Prix en € *</label>
                                                         <input type="number" name="price" value="{{ old('price', $book->price) }}" class="form-control book-input" placeholder="5000">
                                                     </div>
                                                 </div>
@@ -500,7 +500,7 @@
                                                 <span id="summary_type" class="tag">Type</span>
                                             </div>
                                             <div class="book-meta">
-                                                <div><small>Prix</small><strong id="summary_price">0 $</strong></div>
+                                                <div><small>Prix</small><strong id="summary_price">0 €</strong></div>
                                                 <div id="summary_pages_box"><small>Pages</small><strong id="summary_pages">0</strong></div>
                                                 <div id="summary_duration_box" style="display:none;"><small>Durée</small><strong id="summary_duration">00:00</strong></div>
                                                 <div><small>Publication</small><strong id="summary_year">{{ date('Y') }}</strong></div>

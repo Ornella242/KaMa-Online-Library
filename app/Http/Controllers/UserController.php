@@ -259,7 +259,7 @@ class UserController extends Controller
             Wallet::query()->create([
                 'user_id' => $user->id,
                 'balance' => 0,
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ]);
         }
 

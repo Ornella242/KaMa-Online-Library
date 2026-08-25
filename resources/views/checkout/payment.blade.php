@@ -28,12 +28,12 @@
                     @foreach($order->items as $item)
                         <div>
                             <span>{{ $item->title }}</span>
-                            <strong>${{ number_format($item->unit_price, 2, '.', ',') }}</strong>
+                            <strong>{{ number_format($item->unit_price, 2, '.', ',') }}€</strong>
                         </div>
                     @endforeach
                     <div class="total">
                         <span>Total à payer</span>
-                        <strong>${{ number_format($order->amount, 2, '.', ',') }}</strong>
+                        <strong>{{ number_format($order->amount, 2, '.', ',') }}€</strong>
                     </div>
                 </div>
             </aside>
@@ -62,7 +62,7 @@
                         <input type="radio" name="payment_method" value="card" checked>
                         <span class="kkiapay-method-icon card"><i class="bi bi-credit-card-2-front"></i></span>
                         <div>
-                            <strong>Carte bancaire (USD)</strong>
+                            <strong>Carte bancaire (EUR)</strong>
                             <small>Visa, Mastercard, Apple Pay via Stripe</small>
                         </div>
                         <div class="kkiapay-card-logos">
@@ -74,9 +74,9 @@
                 </div>
 
                 <div class="kkiapay-payment-summary">
-                    <div><span>Montant</span><strong>${{ number_format($order->amount, 2, '.', ',') }}</strong></div>
-                    <div><span>Devise</span><strong>USD</strong></div>
-                    <div class="total"><span>Total maintenant</span><strong>${{ number_format($order->amount, 2, '.', ',') }}</strong></div>
+                    <div><span>Montant</span><strong>{{ number_format($order->amount, 2, '.', ',') }}€</strong></div>
+                    <div><span>Devise</span><strong>EUR</strong></div>
+                    <div class="total"><span>Total maintenant</span><strong>{{ number_format($order->amount, 2, '.', ',') }}€</strong></div>
                 </div>
 
                 <div id="paymentFeedback" class="kkiapay-payment-feedback d-none" role="alert"></div>
@@ -86,12 +86,12 @@
                         class="kkiapay-pay-button"
                         @disabled(! $stripeConfigured)>
                     <span><i class="bi bi-lock-fill"></i> Payer avec Stripe</span>
-                    <strong>${{ number_format($order->amount, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($order->amount, 2, '.', ',') }}€</strong>
                 </button>
 
                 <footer>
                     <i class="bi bi-shield-lock"></i>
-                    <span>Le paiement est traité de façon sécurisée par Stripe (USD).</span>
+                    <span>Le paiement est traité de façon sécurisée par Stripe (EUR).</span>
                 </footer>
             </section>
         </div>

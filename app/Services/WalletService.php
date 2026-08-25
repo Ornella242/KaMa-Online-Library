@@ -16,7 +16,7 @@ class WalletService
             ['user_id' => $user->id],
             [
                 'balance' => 0,
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ]
         );
     }
@@ -54,7 +54,7 @@ class WalletService
                 ['user_id' => $authorId],
                 [
                     'balance' => 0,
-                    'currency' => $payment->currency ?: 'USD',
+                    'currency' => $payment->currency ?: 'EUR',
                 ]
             );
 
@@ -67,7 +67,7 @@ class WalletService
             $bookTitle = $payment->book?->title ?: 'Livre #'.$payment->book_id;
 
             $wallet->balance = round((float) $wallet->balance + $amount, 2);
-            $wallet->currency = $payment->currency ?: ($wallet->currency ?: 'USD');
+            $wallet->currency = $payment->currency ?: ($wallet->currency ?: 'EUR');
             $wallet->save();
 
             $wallet->transactions()->create([

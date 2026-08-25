@@ -6,16 +6,10 @@
 CATALOG HERO START
 ======================= -->
 <section class="catalog-hero">
-
     <div class="kama-hero-container">
-
         <div class="catalog-hero-content">
-
-
             <!-- LEFT CONTENT -->
             <div class="catalog-text">
-
-
                 <span class="catalog-badge">
                     <i class="bi bi-book"></i>
                     Bibliothèque africaine numérique
@@ -299,22 +293,22 @@ Title and Tabs START -->
 
 
                             <option value="10-20">
-                                10 - 20 $
+                                10 - 20 €
                             </option>
 
 
                             <option value="30-40">
-                                30 - 40 $
+                                30 - 40 €
                             </option>
 
 
                             <option value="40-50">
-                                40 - 50 $
+                                40 - 50 €
                             </option>
 
 
                             <option value="50+">
-                                Plus de 50 $
+                                Plus de 50 €
                             </option>
 
 
@@ -556,7 +550,7 @@ Book list START -->
 				<div class="book-card-footer">
 
 					<strong>
-						{{ number_format($book->price,2) }}$
+						{{ number_format($book->price,2) }}€
 					</strong>
 
 

@@ -44,7 +44,7 @@
                     <span class="writer-metric-icon red"><i class="bi bi-wallet2"></i></span>
                     <div>
                         <small>Solde disponible</small>
-                        <strong>${{ number_format($wallet->balance, 2, '.', ',') }}</strong>
+                        <strong>{{ number_format($wallet->balance, 2, '.', ',') }}€</strong>
                         <span class="neutral">Maximum retirable</span>
                     </div>
                 </article>
@@ -60,7 +60,7 @@
                     <span class="writer-metric-icon blue"><i class="bi bi-cash-coin"></i></span>
                     <div>
                         <small>Minimum</small>
-                        <strong>${{ number_format($minimumAmount, 2, '.', ',') }}</strong>
+                        <strong>{{ number_format($minimumAmount, 2, '.', ',') }}€</strong>
                         <span class="neutral">Par demande</span>
                     </div>
                 </article>
@@ -114,7 +114,7 @@
 
                 <div class="row g-3 align-items-end">
                     <div class="col-md-4">
-                        <label class="form-label">Montant à retirer (USD)</label>
+                        <label class="form-label">Montant à retirer (EUR)</label>
                         <input type="number"
                                name="amount"
                                id="withdrawalAmount"

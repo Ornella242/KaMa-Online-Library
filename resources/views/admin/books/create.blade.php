@@ -820,7 +820,7 @@ Steps START -->
 														</small>
 
 														<strong id="summary_price">
-															0 $
+															0 €
 														</strong>
 
 													</div>

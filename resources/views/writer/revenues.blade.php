@@ -17,11 +17,11 @@
         <div class="writer-metric-grid">
             <article class="writer-metric">
                 <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
-                <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Achats confirmés</span></div>
+                <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }}€</strong><span class="neutral">Achats confirmés</span></div>
             </article>
             <article class="writer-metric">
                 <span class="writer-metric-icon black"><i class="bi bi-calendar3"></i></span>
-                <div><small>Ce mois</small><strong>{{ number_format($monthlyRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Revenus mensuels</span></div>
+                <div><small>Ce mois</small><strong>{{ number_format($monthlyRevenue, 2, ',', ' ') }}€</strong><span class="neutral">Revenus mensuels</span></div>
             </article>
             <article class="writer-metric">
                 <span class="writer-metric-icon blue"><i class="bi bi-bag-check"></i></span>
@@ -36,19 +36,19 @@
         <div class="writer-finance-summary">
             <div>
                 <span><i class="bi bi-wallet2"></i></span>
-                <div><small>Solde portefeuille</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }} $</strong></div>
+                <div><small>Solde portefeuille</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }}€</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-arrow-up-right"></i></span>
-                <div><small>Retraits approuvés</small><strong>{{ number_format($totalWithdrawn, 2, ',', ' ') }} $</strong></div>
+                <div><small>Retraits approuvés</small><strong>{{ number_format($totalWithdrawn, 2, ',', ' ') }}€</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-hourglass-split"></i></span>
-                <div><small>Retraits en attente</small><strong>{{ number_format($pendingWithdrawals, 2, ',', ' ') }} $</strong></div>
+                <div><small>Retraits en attente</small><strong>{{ number_format($pendingWithdrawals, 2, ',', ' ') }}€</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-clock-history"></i></span>
-                <div><small>Ventes en attente</small><strong>{{ number_format($pendingAmount, 2, ',', ' ') }} $</strong></div>
+                <div><small>Ventes en attente</small><strong>{{ number_format($pendingAmount, 2, ',', ' ') }}€</strong></div>
             </div>
         </div>
 

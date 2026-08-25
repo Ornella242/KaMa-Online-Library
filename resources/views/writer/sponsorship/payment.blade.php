@@ -32,7 +32,7 @@
                     <span><i class="bi bi-wallet2"></i></span>
                     <div>
                         <small>Paiement sécurisé</small>
-                        <h2>Stripe (USD)</h2>
+                        <h2>Stripe (EUR)</h2>
                     </div>
                 </header>
 

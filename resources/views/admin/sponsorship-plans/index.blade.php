@@ -105,7 +105,7 @@
                     <input type="text" name="name" required placeholder="Ex : 1 mois">
                     <label>Durée (jours) *</label>
                     <input type="number" name="duration_days" min="1" max="365" required placeholder="30">
-                    <label>Prix (USD) *</label>
+                    <label>Prix (EUR) *</label>
                     <input type="number" name="price" min="0" step="0.01" required placeholder="29.99">
                 </div>
                 <footer class="categories-overlay-footer">
@@ -134,7 +134,7 @@
                         <input type="text" name="name" value="{{ $plan->name }}" required>
                         <label>Durée (jours) *</label>
                         <input type="number" name="duration_days" value="{{ $plan->duration_days }}" min="1" max="365" required>
-                        <label>Prix (USD) *</label>
+                        <label>Prix (EUR) *</label>
                         <input type="number" name="price" value="{{ number_format((float) $plan->price, 2, '.', '') }}" min="0" step="0.01" required>
                     </div>
                     <footer class="categories-overlay-footer">

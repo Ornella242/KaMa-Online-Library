@@ -33,14 +33,14 @@ class DashboardController extends Controller
 
         $globalRevenue = collect($paymentRevenue);
         if ($advertisingRevenueUsd > 0) {
-            $globalRevenue['USD'] = (float) $globalRevenue->get('USD', 0) + $advertisingRevenueUsd;
+            $globalRevenue['EUR'] = (float) $globalRevenue->get('EUR', 0) + $advertisingRevenueUsd;
         }
 
         $metrics = [
             'sales' => (clone $successfulPayments)->where('type', 'purchase')->count(),
             'global_revenue' => $globalRevenue->all(),
             'subscription_revenue' => $subscriptionRevenue,
-            'advertising_revenue' => ['USD' => $advertisingRevenueUsd],
+            'advertising_revenue' => ['EUR' => $advertisingRevenueUsd],
             'visits' => SiteVisit::query()->count(),
             'converted_visits' => SiteVisit::query()->whereNotNull('converted_at')->count(),
             'users' => User::query()->count(),
@@ -106,7 +106,7 @@ class DashboardController extends Controller
                     'sales_count' => (int) $rows->sum('sales_count'),
                     'amounts' => $rows
                         ->mapWithKeys(fn ($row) => [
-                            strtoupper($row->currency ?: 'USD') => (float) $row->total_amount,
+                            strtoupper($row->currency ?: 'EUR') => (float) $row->total_amount,
                         ])
                         ->all(),
                 ];
@@ -126,7 +126,7 @@ class DashboardController extends Controller
     private function amountsByCurrency($query): array
     {
         return $query
-            ->selectRaw("COALESCE(currency, 'USD') as currency_code, SUM(amount) as total")
+            ->selectRaw("COALESCE(currency, 'EUR') as currency_code, SUM(amount) as total")
             ->groupBy('currency')
             ->pluck('total', 'currency_code')
             ->mapWithKeys(fn ($amount, $currency) => [

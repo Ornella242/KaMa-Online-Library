@@ -101,6 +101,7 @@ class HomeController extends Controller
             'users.firstname',
             'users.lastname',
             'users.avatar',
+            'users.country_id',
         ])
         ->addSelect(DB::raw('COUNT(payments.id) as sales_count'))
         ->join('books', 'books.user_id', '=', 'users.id')
@@ -111,7 +112,8 @@ class HomeController extends Controller
             'users.id',
             'users.firstname',
             'users.lastname',
-            'users.avatar'
+            'users.avatar',
+            'users.country_id'
         )
         ->orderByDesc('sales_count')
         ->take(3)

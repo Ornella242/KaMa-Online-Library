@@ -83,7 +83,7 @@ class PaymentFulfillmentService
                         'guest_email' => $lockedOrder->user_id ? null : $lockedOrder->email,
                         'reference' => $lockedOrder->reference.'-'.$item->book_id,
                         'amount' => $item->unit_price,
-                        'currency' => $lockedOrder->currency ?: 'USD',
+                        'currency' => $lockedOrder->currency ?: 'EUR',
                         'status' => 'success',
                         'payment_method' => $paymentMethod ?: 'stripe',
                         'transaction_id' => $transactionId.'-'.$item->book_id,

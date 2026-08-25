@@ -34,7 +34,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'ebook_amount' => ['required', 'numeric', 'min:0.01', 'max:999999'],
             'audio_amount' => ['required', 'numeric', 'min:0.01', 'max:999999'],
-            'currency' => ['required', 'in:USD'],
+            'currency' => ['required', 'in:EUR'],
         ]);
 
         DB::transaction(function () use ($validated) {

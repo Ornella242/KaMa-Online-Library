@@ -120,7 +120,7 @@ class SponsorshipController extends Controller
             'payment' => [
                 'reference' => $sponsorship->transaction_reference,
                 'amount' => (float) $sponsorship->amount,
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ],
         ]);
     }

@@ -10,7 +10,7 @@
                 </a>
                 <span>Publication KaMa</span>
                 <h1>Finaliser les frais de publication</h1>
-                <p>Payez les frais de dépôt en USD via Stripe pour soumettre votre livre à la vérification.</p>
+                <p>Payez les frais de dépôt en EUR via Stripe pour soumettre votre livre à la vérification.</p>
             </div>
             @if($stripeTestMode)
                 <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Stripe</span>
@@ -44,7 +44,7 @@
                     <span><i class="bi bi-wallet2"></i></span>
                     <div>
                         <small>Paiement sécurisé</small>
-                        <h2>Stripe (USD)</h2>
+                        <h2>Stripe (EUR)</h2>
                     </div>
                 </header>
 
@@ -59,9 +59,9 @@
                 @endunless
 
                 <div class="kkiapay-payment-summary">
-                    <div><span>Montant</span><strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong></div>
-                    <div><span>Devise</span><strong>USD</strong></div>
-                    <div class="total"><span>Total maintenant</span><strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong></div>
+                    <div><span>Montant</span><strong>{{ number_format($fee->amount, 2, '.', ',') }}€</strong></div>
+                    <div><span>Devise</span><strong>EUR</strong></div>
+                    <div class="total"><span>Total maintenant</span><strong>{{ number_format($fee->amount, 2, '.', ',') }}€</strong></div>
                 </div>
 
                 <div id="paymentFeedback" class="kkiapay-payment-feedback d-none" role="alert"></div>
@@ -71,7 +71,7 @@
                         class="kkiapay-pay-button"
                         @disabled(! $stripeConfigured)>
                     <span><i class="bi bi-lock-fill"></i> Payer avec Stripe</span>
-                    <strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($fee->amount, 2, '.', ',') }}€</strong>
                 </button>
 
                 <footer>

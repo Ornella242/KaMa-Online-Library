@@ -79,7 +79,7 @@
                                    step="0.01"
                                    value="{{ old('ebook_amount', data_get($publicationFees, 'ebook.amount', 10)) }}"
                                    required>
-                            <span class="fee-currency-preview">USD</span>
+                            <span class="fee-currency-preview">EUR</span>
                         </div>
                     </div>
                 </label>
@@ -97,7 +97,7 @@
                                    step="0.01"
                                    value="{{ old('audio_amount', data_get($publicationFees, 'audio.amount', 15)) }}"
                                    required>
-                            <span class="fee-currency-preview">USD</span>
+                            <span class="fee-currency-preview">EUR</span>
                         </div>
                     </div>
                 </label>
@@ -110,7 +110,7 @@
                            type="text"
                            name="currency"
                            maxlength="3"
-                           value="{{ old('currency', data_get($publicationFees, 'ebook.currency', 'USD')) }}"
+                           value="{{ old('currency', data_get($publicationFees, 'ebook.currency', 'EUR')) }}"
                            readonly
                            required>
                 </div>
@@ -173,7 +173,7 @@
                                    step="0.01"
                                    value="{{ old('withdrawal_minimum_amount', $withdrawalMinimumAmount) }}"
                                    required>
-                            <span class="fee-currency-preview">USD</span>
+                            <span class="fee-currency-preview">EUR</span>
                         </div>
                     </div>
                 </label>

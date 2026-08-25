@@ -187,7 +187,7 @@ Advertisement END -->
                 </span>
 
                 <strong>
-                    {{ number_format($book->price,2) }} $
+                    {{ number_format($book->price,2) }} €
                 </strong>
 
             </div>
@@ -548,7 +548,7 @@ Advertisement END -->
             </p>
             <!-- PRICE -->
             <div class="end-price">
-                {{ number_format($book->price,2) }} $
+                {{ number_format($book->price,2) }} €
             </div>
 
             <!-- ACTION -->

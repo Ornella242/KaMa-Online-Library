@@ -432,7 +432,7 @@ Livres à la une START-->
                             <div class="d-sm-flex justify-content-sm-between align-items-center flex-wrap">
                                 <div class="hstack gap-2">
                                     <h5 class="fw-normal price mb-0">
-                                        {{ number_format($book->price,2) }}$
+                                        {{ number_format($book->price,2) }}€
                                     </h5>
                                 </div>
 
@@ -1111,70 +1111,12 @@ Authors START
     </div>
 
     <!-- GRID -->
-    <div class="authors-grid">
-
-        <!-- Author 1 -->
-        <div class="author-card">
-
-            <div class="author-flag">
-                🇺🇸
-            </div>
-
-            <div class="author-img">
-                <img src="{{ asset('assets/images/authors/author1.jpg') }}" alt="James Clear">
-            </div>
-
-            <div class="author-info">
-                <h3>James Clear</h3>
-                <p>20 livres publiés</p>
-            </div>
-
-        </div>
-
-        <!-- Author 2 -->
-        <div class="author-card">
-
-            <div class="author-flag">
-                🇺🇸
-            </div>
-
-            <div class="author-img">
-                <img src="{{ asset('assets/images/authors/author2.jpg') }}" alt="Cal Newport">
-            </div>
-
-            <div class="author-info">
-                <h3>Cal Newport</h3>
-                <p>50 livres publiés</p>
-            </div>
-
-        </div>
-
-        <!-- Author 3 -->
-        <div class="author-card">
-
-            <div class="author-flag">
-                🇮🇳
-            </div>
-
-            <div class="author-img">
-                <img src="{{ asset('assets/images/authors/author3.png') }}" alt="Robin Sharma">
-            </div>
-
-            <div class="author-info">
-                <h3>Robin Sharma</h3>
-                <p>15 livres publiés</p>
-            </div>
-
-        </div>
-
-    </div>
-
     {{-- Code donnees reelles --}}
-    {{-- <div class="authors-grid">
+    <div class="authors-grid">
         @foreach($topAuthors as $author)
             <div class="author-card">
                 <div class="author-flag">
-                    🌍
+                    {{ $author->country->flag ?? '🌍' }}
                 </div>
                 <div class="author-img">
                     @if($author->avatar)
@@ -1200,7 +1142,7 @@ Authors START
                 </div>
             </div>
         @endforeach
-    </div> --}}
+    </div>
 
 </section>
 <!-- =======================

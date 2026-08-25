@@ -42,7 +42,7 @@ class StripeService
         abort_unless($this->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
 
         $cents = $this->toCents($amount);
-        abort_if($cents < 50, 422, 'Le montant minimum Stripe est de 0,50 USD.');
+        abort_if($cents < 50, 422, 'Le montant minimum Stripe est de 0,50 EUR.');
 
         $metadata = [];
         foreach (($customer['custom'] ?? []) as $key => $value) {
@@ -59,7 +59,7 @@ class StripeService
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => 'usd',
+                    'currency' => 'EUR',
                     'unit_amount' => $cents,
                     'product_data' => [
                         'name' => $productName ?: 'Paiement KaMa',

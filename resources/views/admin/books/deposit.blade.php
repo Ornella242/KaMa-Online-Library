@@ -13,7 +13,7 @@
                 </a>
                 <span>Publication KaMa</span>
                 <h1>Finaliser les frais de publication</h1>
-                <p>Payez les frais de dépôt en USD via Stripe.</p>
+                <p>Payez les frais de dépôt en EUR via Stripe.</p>
             </div>
             @if($stripeTestMode)
                 <span class="kkiapay-sandbox-badge"><i class="bi bi-shield-check"></i> Mode test — Stripe</span>

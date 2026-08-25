@@ -24,15 +24,15 @@
                 <span class="writer-metric-icon red"><i class="bi bi-wallet2"></i></span>
                 <div>
                     <small>Solde disponible</small>
-                    <strong>${{ number_format($wallet->balance, 2, '.', ',') }}</strong>
-                    <span class="neutral">{{ strtoupper($wallet->currency ?: 'USD') }}</span>
+                    <strong>{{ number_format($wallet->balance, 2, '.', ',') }}€</strong>
+                    <span class="neutral">{{ strtoupper($wallet->currency ?: 'EUR') }}</span>
                 </div>
             </article>
             <article class="writer-metric">
                 <span class="writer-metric-icon black"><i class="bi bi-arrow-down-left"></i></span>
                 <div>
                     <small>Total crédité</small>
-                    <strong>${{ number_format($totalCredited, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($totalCredited, 2, '.', ',') }}€</strong>
                     <span class="neutral">Ventes cumulées</span>
                 </div>
             </article>
@@ -40,7 +40,7 @@
                 <span class="writer-metric-icon blue"><i class="bi bi-calendar3"></i></span>
                 <div>
                     <small>Ce mois</small>
-                    <strong>${{ number_format($salesThisMonth, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($salesThisMonth, 2, '.', ',') }}€</strong>
                     <span class="neutral">Crédits du mois</span>
                 </div>
             </article>
@@ -48,7 +48,7 @@
                 <span class="writer-metric-icon amber"><i class="bi bi-arrow-up-right"></i></span>
                 <div>
                     <small>Retraits</small>
-                    <strong>${{ number_format($totalWithdrawn, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($totalWithdrawn, 2, '.', ',') }}€</strong>
                     <span class="neutral">Débits enregistrés</span>
                 </div>
             </article>

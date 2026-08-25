@@ -104,7 +104,7 @@ class PlatformWalletController extends Controller
                 'party' => $this->buyerLabel($payment),
                 'author' => $this->authorLabel($payment->book?->author),
                 'amount' => (float) $payment->amount,
-                'currency' => strtoupper($payment->currency ?: 'USD'),
+                'currency' => strtoupper($payment->currency ?: 'EUR'),
                 'reference' => $payment->reference,
                 'occurred_at' => $payment->created_at,
             ]);
@@ -124,7 +124,7 @@ class PlatformWalletController extends Controller
                 'party' => $this->authorLabel($payment->user) ?: $this->authorLabel($payment->book?->author),
                 'author' => $this->authorLabel($payment->book?->author),
                 'amount' => (float) $payment->amount,
-                'currency' => strtoupper($payment->currency ?: 'USD'),
+                'currency' => strtoupper($payment->currency ?: 'EUR'),
                 'reference' => $payment->reference,
                 'occurred_at' => $payment->created_at,
             ]);
@@ -143,7 +143,7 @@ class PlatformWalletController extends Controller
                 'party' => $this->authorLabel($sponsorship->writer),
                 'author' => $this->authorLabel($sponsorship->book?->author),
                 'amount' => (float) $sponsorship->amount,
-                'currency' => 'USD',
+                'currency' => 'EUR',
                 'reference' => $sponsorship->transaction_reference,
                 'occurred_at' => $sponsorship->paid_at ?: $sponsorship->updated_at,
             ]);
@@ -163,7 +163,7 @@ class PlatformWalletController extends Controller
                 'party' => $this->authorLabel($ad->user),
                 'author' => $this->authorLabel($ad->book?->author ?? $ad->user),
                 'amount' => (float) $ad->amount,
-                'currency' => 'USD',
+                'currency' => 'EUR',
                 'reference' => 'ad-'.$ad->id,
                 'occurred_at' => $ad->updated_at ?: $ad->created_at,
             ]);

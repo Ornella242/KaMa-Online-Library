@@ -27,7 +27,7 @@
                 <div>
                     <small>Solde disponible</small>
                     <strong class="admin-metric-amount">${{ number_format($wallet->balance, 2, '.', ',') }}</strong>
-                    <span>{{ strtoupper($wallet->currency ?: 'USD') }} — prêt à retirer</span>
+                    <span>{{ strtoupper($wallet->currency ?: 'EUR') }} — prêt à retirer</span>
                 </div>
             </article>
             <article class="admin-metric-card">

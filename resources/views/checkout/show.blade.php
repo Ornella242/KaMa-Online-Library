@@ -8,7 +8,7 @@
                 <i class="bi bi-arrow-left"></i> Retour au panier
             </a>
             <h1>Finaliser ma commande</h1>
-            <p>Renseignez vos informations pour payer en USD via Stripe — aucun compte n’est requis.</p>
+            <p>Renseignez vos informations pour payer en EUR via Stripe — aucun compte n’est requis.</p>
         </div>
 
         @if($errors->any())
@@ -90,16 +90,16 @@
                         @foreach($items as $item)
                             <li>
                                 <span>{{ $item['title'] }}</span>
-                                <strong>${{ number_format($item['price'], 2, '.', ',') }}</strong>
+                                <strong>{{ number_format($item['price'], 2, '.', ',') }}€</strong>
                             </li>
                         @endforeach
                     </ul>
                     <hr>
                     <div class="line total">
                         <span>Total</span>
-                        <strong>${{ number_format($total, 2, '.', ',') }}</strong>
+                        <strong>{{ number_format($total, 2, '.', ',') }}€</strong>
                     </div>
-                    <p class="hint">Paiement sécurisé par carte bancaire via Stripe (USD).</p>
+                    <p class="hint">Paiement sécurisé par carte bancaire via Stripe (EUR).</p>
                 </aside>
             </div>
         </div>

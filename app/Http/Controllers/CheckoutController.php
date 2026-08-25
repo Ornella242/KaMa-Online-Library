@@ -118,7 +118,7 @@ class CheckoutController extends Controller
                 'country_id' => $validated['country_id'],
                 'city' => $validated['city'],
                 'amount' => $amount,
-                'currency' => 'USD',
+                'currency' => 'EUR',
                 'status' => Order::STATUS_PENDING,
                 'payment_method' => 'stripe',
             ]);
@@ -153,9 +153,9 @@ class CheckoutController extends Controller
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
         abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
         abort_unless(
-            strtoupper((string) $order->currency) === 'USD',
+            strtoupper((string) $order->currency) === 'EUR',
             409,
-            'Le paiement Stripe est configuré en USD.'
+            'Le paiement Stripe est configuré en EUR.'
         );
 
         try {
@@ -188,7 +188,7 @@ class CheckoutController extends Controller
             'payment' => [
                 'reference' => $order->reference,
                 'amount' => (float) $order->amount,
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ],
         ]);
     }

@@ -120,7 +120,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 Wallet::create([
                     'user_id'=>$user->id,
                     'balance'=>0,
-                    'currency'=>'USD'
+                    'currency'=>'EUR'
                 ]);
 
             }

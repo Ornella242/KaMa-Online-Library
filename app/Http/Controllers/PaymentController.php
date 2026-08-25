@@ -50,7 +50,7 @@ class PaymentController extends Controller
                     'user_id' => Auth::id(),
                     'reference' => 'KAMA-'.str()->uuid(),
                     'amount' => $fee->amount,
-                    'currency' => 'USD',
+                    'currency' => 'EUR',
                     'payment_method' => 'stripe',
                     'transaction_id' => null,
                 ]
@@ -59,7 +59,7 @@ class PaymentController extends Controller
             if ($payment->transaction_id === null) {
                 $payment->update([
                     'amount' => $fee->amount,
-                    'currency' => 'USD',
+                    'currency' => 'EUR',
                     'payment_method' => 'stripe',
                 ]);
             }
@@ -104,7 +104,7 @@ class PaymentController extends Controller
             'payment' => [
                 'reference' => $payment->reference,
                 'amount' => (float) $payment->amount,
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ],
         ]);
     }
