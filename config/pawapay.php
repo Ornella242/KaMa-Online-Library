@@ -36,31 +36,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Taux par défaut : 1 EUR = X unités de devise locale
+    | Taux de change
     |--------------------------------------------------------------------------
     |
-    | Surchargeables en admin (Setting pawapay_fx_rates) sans redéployer.
-    | XOF/XAF = parité officielle BCEAO/BEAC.
-    | Les autres devises sont indicatives — à ajuster régulièrement.
+    | Les taux 1 EUR → devise locale viennent de CurrencyFreaks
+    | (CURRENCYFREAKS_API_KEY). Plus de référentiel manuel.
     |
     */
-
-    'rates' => [
-        'XOF' => 655.957,
-        'XAF' => 655.957,
-        'GHS' => 16.50,
-        'NGN' => 1600.0,
-        'KES' => 140.0,
-        'UGX' => 4000.0,
-        'TZS' => 2800.0,
-        'RWF' => 1400.0,
-        'ZMW' => 27.0,
-        'MWK' => 1800.0,
-        'MZN' => 70.0,
-        'CDF' => 2900.0,
-        'ETB' => 130.0,
-        'LSL' => 20.0,
-        'SLE' => 25.0,
-    ],
 
 ];

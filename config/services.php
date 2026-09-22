@@ -54,4 +54,13 @@ return [
         'sandbox' => env('PAWAPAY_SANDBOX', true),
     ],
 
+    'currencyfreaks' => [
+        'api_key' => env('CURRENCYFREAKS_API_KEY'),
+        'cache_ttl' => (int) env('CURRENCYFREAKS_CACHE_TTL', 3600),
+        // Codes KaMa → code CurrencyFreaks si différent (ex. nouveau Leone).
+        'aliases' => [
+            'SLE' => 'SLL',
+        ],
+    ],
+
 ];

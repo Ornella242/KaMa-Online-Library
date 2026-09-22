@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\PublicationFee;
 use App\Models\Setting;
+use App\Services\CurrencyFreaksService;
+use App\Services\PawaPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class SettingsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, PawaPayService $pawaPay, CurrencyFreaksService $currencyFreaks)
     {
         $countries = Country::orderBy('name')->get();
         $publicationFees = PublicationFee::query()
@@ -20,9 +23,25 @@ class SettingsController extends Controller
 
         $withdrawalCommissionPercent = (float) Setting::getValue('withdrawal_commission_percent', 5);
         $withdrawalMinimumAmount = (float) Setting::getValue('withdrawal_minimum_amount', 10);
-        $pawaPayRates = app(\App\Services\PawaPayService::class)->rates();
         $pawaPayCurrencyMeta = $this->pawaPayCurrencyMeta();
         $activeTab = $this->resolveSettingsTab($request->query('tab'));
+
+        $pawaPayRates = [];
+        $fxMeta = [
+            'date' => null,
+            'source' => null,
+            'configured' => $currencyFreaks->isConfigured(),
+            'error' => null,
+        ];
+
+        try {
+            $payload = $pawaPay->ratesMeta();
+            $pawaPayRates = (array) ($payload['rates'] ?? []);
+            $fxMeta['date'] = $payload['date'] ?? null;
+            $fxMeta['source'] = $payload['source'] ?? null;
+        } catch (Throwable $exception) {
+            $fxMeta['error'] = $exception->getMessage();
+        }
 
         return view('admin.settings', compact(
             'countries',
@@ -31,7 +50,8 @@ class SettingsController extends Controller
             'withdrawalMinimumAmount',
             'pawaPayRates',
             'pawaPayCurrencyMeta',
-            'activeTab'
+            'activeTab',
+            'fxMeta'
         ));
     }
 
@@ -81,35 +101,19 @@ class SettingsController extends Controller
             ->with('success', 'Les paramètres de retrait ont été mis à jour.');
     }
 
-    public function updatePawaPayRates(Request $request)
+    public function refreshPawaPayRates(PawaPayService $pawaPay)
     {
-        $rates = $request->input('rates', []);
-        if (! is_array($rates)) {
+        try {
+            $pawaPay->ratesMeta(forceRefresh: true);
+        } catch (Throwable $exception) {
             return redirect()
                 ->route('admin.settings', ['tab' => 'momo'])
-                ->withErrors(['rates' => 'Format de taux invalide.']);
+                ->withErrors(['rates' => $exception->getMessage()]);
         }
-
-        $cleaned = [];
-        foreach ($rates as $currency => $rate) {
-            $currency = strtoupper((string) $currency);
-            if (! preg_match('/^[A-Z]{3}$/', $currency)) {
-                continue;
-            }
-            if (! is_numeric($rate) || (float) $rate <= 0) {
-                return redirect()
-                    ->route('admin.settings', ['tab' => 'momo'])
-                    ->withInput()
-                    ->withErrors(['rates' => "Taux invalide pour {$currency}."]);
-            }
-            $cleaned[$currency] = round((float) $rate, 6);
-        }
-
-        Setting::setValue('pawapay_fx_rates', json_encode($cleaned));
 
         return redirect()
             ->route('admin.settings', ['tab' => 'momo'])
-            ->with('success', 'Les taux Mobile Money (EUR → devise locale) ont été mis à jour.');
+            ->with('success', 'Taux CurrencyFreaks rafraîchis.');
     }
 
     /**

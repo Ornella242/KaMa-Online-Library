@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Setting;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -72,32 +71,47 @@ class PawaPayService
     }
 
     /**
-     * Taux 1 EUR → devise locale (admin Setting prioritaire).
+     * Devises locales utilisées par les marchés PawaPay.
      *
-     * @return array<string, float>
+     * @return list<string>
      */
-    public function rates(): array
+    public function marketCurrencies(): array
     {
-        $defaults = (array) config('pawapay.rates', []);
-        $stored = Setting::getValue('pawapay_fx_rates');
-
-        if (! filled($stored)) {
-            return $defaults;
-        }
-
-        $decoded = json_decode((string) $stored, true);
-        if (! is_array($decoded)) {
-            return $defaults;
-        }
-
-        $merged = $defaults;
-        foreach ($decoded as $currency => $rate) {
-            if (is_numeric($rate) && (float) $rate > 0) {
-                $merged[strtoupper((string) $currency)] = (float) $rate;
+        $currencies = [];
+        foreach ($this->markets() as $market) {
+            $code = strtoupper((string) ($market['currency'] ?? ''));
+            if ($code !== '') {
+                $currencies[$code] = $code;
             }
         }
 
-        return $merged;
+        return array_values($currencies);
+    }
+
+    /**
+     * Taux 1 EUR → devise locale via CurrencyFreaks.
+     *
+     * @return array<string, float>
+     */
+    public function rates(bool $forceRefresh = false): array
+    {
+        $payload = app(CurrencyFreaksService::class)->eurRates(
+            $this->marketCurrencies(),
+            $forceRefresh
+        );
+
+        return (array) ($payload['rates'] ?? []);
+    }
+
+    /**
+     * @return array{rates: array<string, float>, date: ?string, source: string}
+     */
+    public function ratesMeta(bool $forceRefresh = false): array
+    {
+        return app(CurrencyFreaksService::class)->eurRates(
+            $this->marketCurrencies(),
+            $forceRefresh
+        );
     }
 
     public function rateFor(string $currency): float
@@ -106,7 +120,9 @@ class PawaPayService
         $rate = $this->rates()[$currency] ?? null;
 
         if (! is_numeric($rate) || (float) $rate <= 0) {
-            throw new RuntimeException("Taux de change EUR → {$currency} manquant. Configurez-le dans les réglages admin.");
+            throw new RuntimeException(
+                "Taux de change EUR → {$currency} indisponible via CurrencyFreaks. Vérifiez CURRENCYFREAKS_API_KEY."
+            );
         }
 
         return (float) $rate;

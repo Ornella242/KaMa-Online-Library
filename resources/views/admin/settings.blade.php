@@ -266,59 +266,71 @@
             <section class="admin-publication-fees admin-momo-rates">
                 <div class="admin-publication-fees-header">
                     <div>
-                        <span>PawaPay</span>
+                        <span>CurrencyFreaks</span>
                         <h4>Taux Mobile Money (1 EUR → devise locale)</h4>
-                        <p>Conversion du prix catalogue EUR vers la devise du pays client. Modifiables sans redéploiement.</p>
+                        <p>Taux live récupérés automatiquement. Plus de saisie manuelle.</p>
                     </div>
                     <span class="admin-publication-fees-lock">
                         <i class="bi bi-currency-exchange"></i> {{ count($pawaPayRates) }} devises
                     </span>
                 </div>
 
-                <form method="POST" action="{{ route('admin.settings.pawapay-rates.update') }}">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="admin-momo-rates-grid">
-                        @foreach($pawaPayRates as $currency => $rate)
-                            @php
-                                $meta = $pawaPayCurrencyMeta[$currency] ?? null;
-                                $isPegged = in_array($currency, ['XOF', 'XAF'], true);
-                            @endphp
-                            <label class="admin-momo-rate-card {{ $isPegged ? 'is-pegged' : '' }}">
-                                <div class="admin-momo-rate-top">
-                                    <strong>{{ $currency }}</strong>
-                                    @if($isPegged)
-                                        <span class="admin-momo-rate-badge">Parité</span>
-                                    @endif
-                                </div>
-                                <span class="admin-momo-rate-name">{{ $meta['label'] ?? $currency }}</span>
-                                @if(!empty($meta['countries']))
-                                    <small class="admin-momo-rate-countries">{{ $meta['countries'] }}</small>
-                                @endif
-                                <div class="admin-publication-fee-input">
-                                    <input type="number"
-                                           name="rates[{{ $currency }}]"
-                                           min="0.000001"
-                                           step="any"
-                                           value="{{ old('rates.'.$currency, $rate) }}"
-                                           required>
-                                    <span class="fee-currency-preview">/ EUR</span>
-                                </div>
-                            </label>
-                        @endforeach
+                @if(!($fxMeta['configured'] ?? false))
+                    <div class="alert alert-warning m-4 mb-0">
+                        <strong>Clé API manquante.</strong>
+                        Ajoutez <code>CURRENCYFREAKS_API_KEY</code> dans le fichier <code>.env</code>
+                        (clé gratuite sur
+                        <a href="https://currencyfreaks.com/signup" target="_blank" rel="noopener">currencyfreaks.com</a>).
                     </div>
+                @elseif(!empty($fxMeta['error']))
+                    <div class="alert alert-danger m-4 mb-0">
+                        {{ $fxMeta['error'] }}
+                    </div>
+                @endif
 
-                    <div class="admin-publication-fees-footer">
-                        <p>
-                            <i class="bi bi-info-circle"></i>
-                            XOF / XAF = parité officielle (~655,957). Les autres devises sont indicatives — mettez-les à jour selon le marché.
-                        </p>
-                        <button type="submit">
-                            <i class="bi bi-check2-circle"></i> Enregistrer les taux
+                <div class="admin-momo-rates-grid">
+                    @forelse($pawaPayRates as $currency => $rate)
+                        @php
+                            $meta = $pawaPayCurrencyMeta[$currency] ?? null;
+                        @endphp
+                        <div class="admin-momo-rate-card">
+                            <div class="admin-momo-rate-top">
+                                <strong>{{ $currency }}</strong>
+                            </div>
+                            <span class="admin-momo-rate-name">{{ $meta['label'] ?? $currency }}</span>
+                            @if(!empty($meta['countries']))
+                                <small class="admin-momo-rate-countries">{{ $meta['countries'] }}</small>
+                            @endif
+                            <div class="admin-momo-rate-value">
+                                <span>{{ number_format((float) $rate, 4, ',', ' ') }}</span>
+                                <small>/ EUR</small>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="admin-momo-rate-empty">
+                            Aucun taux affiché pour le moment.
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="admin-publication-fees-footer">
+                    <p>
+                        <i class="bi bi-info-circle"></i>
+                        Source :
+                        <strong>{{ $fxMeta['source'] ?? '—' }}</strong>
+                        @if(!empty($fxMeta['date']))
+                            · mis à jour {{ $fxMeta['date'] }}
+                        @endif
+                        · cache {{ (int) config('services.currencyfreaks.cache_ttl', 3600) / 60 }} min
+                    </p>
+                    <form method="POST" action="{{ route('admin.settings.pawapay-rates.update') }}">
+                        @csrf
+                        @method('PUT')
+                        <button type="submit" @disabled(!($fxMeta['configured'] ?? false))>
+                            <i class="bi bi-arrow-repeat"></i> Rafraîchir les taux
                         </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </section>
         </div>
 
@@ -653,6 +665,29 @@
 }
 .admin-momo-rate-card .admin-publication-fee-input input {
     font-size: 1.05rem;
+}
+.admin-momo-rate-value {
+    margin-top: auto;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-top: 8px;
+}
+.admin-momo-rate-value span {
+    color: #18181b;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+.admin-momo-rate-value small {
+    color: #71717a;
+    font-size: .72rem;
+    font-weight: 700;
+}
+.admin-momo-rate-empty {
+    grid-column: 1 / -1;
+    padding: 28px;
+    color: #71717a;
+    text-align: center;
 }
 @media (max-width: 700px) {
     .admin-settings-nav .nav-link span { display: none; }

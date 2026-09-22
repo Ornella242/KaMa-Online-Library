@@ -329,7 +329,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
             ->name('settings.publication-fees.update');
         Route::put('/settings/withdrawal', [AdminSettingsController::class, 'updateWithdrawalSettings'])
             ->name('settings.withdrawal.update');
-        Route::put('/settings/pawapay-rates', [AdminSettingsController::class, 'updatePawaPayRates'])
+        Route::put('/settings/pawapay-rates', [AdminSettingsController::class, 'refreshPawaPayRates'])
             ->name('settings.pawapay-rates.update');
         Route::put('/change-password', [UserController::class, 'changePassword'])
             ->name('password.update');
