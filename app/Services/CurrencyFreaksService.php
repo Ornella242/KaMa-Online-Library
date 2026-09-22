@@ -17,6 +17,7 @@ class CurrencyFreaksService
 
     /**
      * Taux 1 EUR → devises demandées (cache TTL configurable).
+     * Aucune marge / markup : taux bruts CurrencyFreaks uniquement.
      *
      * @param  list<string>  $currencies
      * @return array{rates: array<string, float>, date: ?string, source: string}
@@ -30,7 +31,7 @@ class CurrencyFreaksService
         $currencies = array_values(array_filter($currencies, fn ($c) => $c !== '' && $c !== 'EUR'));
 
         sort($currencies);
-        $cacheKey = 'currencyfreaks.eur_rates.'.md5(implode(',', $currencies));
+        $cacheKey = 'currencyfreaks.eur_rates.v2.'.md5(implode(',', $currencies));
         $ttl = max(60, (int) config('services.currencyfreaks.cache_ttl', 3600));
 
         if (! $forceRefresh) {
@@ -42,8 +43,6 @@ class CurrencyFreaksService
 
         $fresh = $this->fetchEurRates($currencies);
         Cache::put($cacheKey, $fresh, $ttl);
-
-        // Dernier bon snapshot (fallback si l’API tombe).
         Cache::forever('currencyfreaks.eur_rates.last_good', $fresh);
 
         return $fresh;
@@ -62,7 +61,7 @@ class CurrencyFreaksService
         }
 
         $aliases = (array) config('services.currencyfreaks.aliases', []);
-        $symbols = ['EUR'];
+        $symbols = [];
 
         foreach ($currencies as $currency) {
             $symbols[] = $currency;
@@ -74,19 +73,30 @@ class CurrencyFreaksService
         $symbols = array_values(array_unique($symbols));
 
         try {
-            $response = Http::acceptJson()
-                ->timeout(20)
-                ->get('https://api.currencyfreaks.com/v2.0/rates/latest', [
-                    'apikey' => (string) config('services.currencyfreaks.api_key'),
-                    'symbols' => implode(',', $symbols),
-                ])
-                ->throw()
-                ->json();
-        } catch (RequestException $exception) {
-            Log::warning('CurrencyFreaks API error', [
-                'message' => $exception->getMessage(),
-                'body' => $exception->response?->json(),
-            ]);
+            // Plans payants : base=EUR = même référentiel que le convertisseur CurrencyFreaks.
+            $direct = $this->requestLatest($symbols, 'EUR');
+
+            if ($direct['ok']) {
+                return $this->mapDirectEurRates($currencies, $direct['json'], $aliases);
+            }
+
+            // Plan gratuit : base USD uniquement → croisement mathématique EUR→devise
+            // (USD→devise) / (USD→EUR). Aucune marge ajoutée.
+            if (($direct['status'] ?? 0) === 402) {
+                $usd = $this->requestLatest(array_values(array_unique(array_merge(['EUR'], $symbols))), null);
+
+                if (! $usd['ok']) {
+                    return $this->fallbackOrFail($usd);
+                }
+
+                return $this->mapUsdCrossRates($currencies, $usd['json'], $aliases);
+            }
+
+            return $this->fallbackOrFail($direct);
+        } catch (RuntimeException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            Log::warning('CurrencyFreaks unexpected error', ['message' => $exception->getMessage()]);
 
             $fallback = Cache::get('currencyfreaks.eur_rates.last_good');
             if (is_array($fallback) && ! empty($fallback['rates'])) {
@@ -95,26 +105,106 @@ class CurrencyFreaksService
                 return $fallback;
             }
 
-            $message = data_get($exception->response?->json(), 'message')
-                ?: 'Impossible de récupérer les taux CurrencyFreaks.';
+            throw new RuntimeException('Impossible de récupérer les taux CurrencyFreaks.');
+        }
+    }
 
-            throw new RuntimeException((string) $message);
+    /**
+     * @param  list<string>  $symbols
+     * @return array{ok:bool,status:int,json:array<string,mixed>,message:?string}
+     */
+    private function requestLatest(array $symbols, ?string $base): array
+    {
+        $query = [
+            'apikey' => (string) config('services.currencyfreaks.api_key'),
+            'symbols' => implode(',', $symbols),
+        ];
+
+        if ($base) {
+            $query['base'] = $base;
         }
 
-        $usdRates = (array) ($response['rates'] ?? []);
-        $usdToEur = (float) ($usdRates['EUR'] ?? 0);
+        try {
+            $response = Http::acceptJson()
+                ->timeout(20)
+                ->get('https://api.currencyfreaks.com/v2.0/rates/latest', $query);
 
-        if ($usdToEur <= 0) {
+            $json = $response->json() ?? [];
+
+            if ($response->successful()) {
+                return ['ok' => true, 'status' => $response->status(), 'json' => $json, 'message' => null];
+            }
+
+            return [
+                'ok' => false,
+                'status' => $response->status(),
+                'json' => $json,
+                'message' => (string) (data_get($json, 'message') ?: 'Erreur CurrencyFreaks HTTP '.$response->status()),
+            ];
+        } catch (RequestException $exception) {
+            $json = $exception->response?->json() ?? [];
+
+            return [
+                'ok' => false,
+                'status' => (int) ($exception->response?->status() ?: 0),
+                'json' => $json,
+                'message' => (string) (data_get($json, 'message') ?: $exception->getMessage()),
+            ];
+        }
+    }
+
+    /**
+     * @param  list<string>  $currencies
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, string>  $aliases
+     * @return array{rates: array<string, float>, date: ?string, source: string}
+     */
+    private function mapDirectEurRates(array $currencies, array $payload, array $aliases): array
+    {
+        $raw = (array) ($payload['rates'] ?? []);
+        $rates = [];
+
+        foreach ($currencies as $currency) {
+            $value = $this->pickRate($currency, $raw, $aliases);
+            if ($value !== null && $value > 0) {
+                $rates[$currency] = $value;
+            }
+        }
+
+        if ($rates === []) {
+            throw new RuntimeException('Aucun taux Mobile Money reçu depuis CurrencyFreaks (base EUR).');
+        }
+
+        return [
+            'rates' => $rates,
+            'date' => isset($payload['date']) ? (string) $payload['date'] : null,
+            'source' => 'currencyfreaks_eur',
+        ];
+    }
+
+    /**
+     * @param  list<string>  $currencies
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, string>  $aliases
+     * @return array{rates: array<string, float>, date: ?string, source: string}
+     */
+    private function mapUsdCrossRates(array $currencies, array $payload, array $aliases): array
+    {
+        $raw = (array) ($payload['rates'] ?? []);
+        $usdToEur = $this->pickRate('EUR', $raw, []);
+
+        if ($usdToEur === null || $usdToEur <= 0) {
             throw new RuntimeException('CurrencyFreaks n’a pas renvoyé le taux EUR.');
         }
 
         $rates = [];
         foreach ($currencies as $currency) {
-            $usdToLocal = $this->usdRateFor($currency, $usdRates, $aliases);
+            $usdToLocal = $this->pickRate($currency, $raw, $aliases);
             if ($usdToLocal === null || $usdToLocal <= 0) {
                 continue;
             }
-            $rates[$currency] = round($usdToLocal / $usdToEur, 6);
+            // Exact float — pas d’arrondi anticipé qui décale le montant.
+            $rates[$currency] = $usdToLocal / $usdToEur;
         }
 
         if ($rates === []) {
@@ -123,24 +213,46 @@ class CurrencyFreaksService
 
         return [
             'rates' => $rates,
-            'date' => isset($response['date']) ? (string) $response['date'] : null,
-            'source' => 'currencyfreaks',
+            'date' => isset($payload['date']) ? (string) $payload['date'] : null,
+            'source' => 'currencyfreaks_usd_cross',
         ];
     }
 
     /**
-     * @param  array<string, mixed>  $usdRates
+     * @param  array{ok:bool,status:int,json:array<string,mixed>,message:?string}  $failed
+     * @return array{rates: array<string, float>, date: ?string, source: string}
+     */
+    private function fallbackOrFail(array $failed): array
+    {
+        Log::warning('CurrencyFreaks API error', [
+            'status' => $failed['status'] ?? null,
+            'message' => $failed['message'] ?? null,
+            'body' => $failed['json'] ?? null,
+        ]);
+
+        $fallback = Cache::get('currencyfreaks.eur_rates.last_good');
+        if (is_array($fallback) && ! empty($fallback['rates'])) {
+            $fallback['source'] = 'cache_fallback';
+
+            return $fallback;
+        }
+
+        throw new RuntimeException((string) ($failed['message'] ?: 'Impossible de récupérer les taux CurrencyFreaks.'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $rates
      * @param  array<string, string>  $aliases
      */
-    private function usdRateFor(string $currency, array $usdRates, array $aliases): ?float
+    private function pickRate(string $currency, array $rates, array $aliases): ?float
     {
-        if (isset($usdRates[$currency]) && is_numeric($usdRates[$currency])) {
-            return (float) $usdRates[$currency];
+        if (isset($rates[$currency]) && is_numeric($rates[$currency])) {
+            return (float) $rates[$currency];
         }
 
         $alias = strtoupper((string) ($aliases[$currency] ?? ''));
-        if ($alias !== '' && isset($usdRates[$alias]) && is_numeric($usdRates[$alias])) {
-            return (float) $usdRates[$alias];
+        if ($alias !== '' && isset($rates[$alias]) && is_numeric($rates[$alias])) {
+            return (float) $rates[$alias];
         }
 
         return null;

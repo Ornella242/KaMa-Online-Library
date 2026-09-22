@@ -319,9 +319,12 @@
                         Source :
                         <strong>{{ $fxMeta['source'] ?? '—' }}</strong>
                         @if(!empty($fxMeta['date']))
-                            · mis à jour {{ $fxMeta['date'] }}
+                            · {{ $fxMeta['date'] }}
                         @endif
-                        · cache {{ (int) config('services.currencyfreaks.cache_ttl', 3600) / 60 }} min
+                        · aucune marge KaMa
+                        @if(($fxMeta['source'] ?? '') === 'currencyfreaks_usd_cross')
+                            · plan gratuit = croisement USD (identique à (USD→devise)/(USD→EUR))
+                        @endif
                     </p>
                     <form method="POST" action="{{ route('admin.settings.pawapay-rates.update') }}">
                         @csrf
