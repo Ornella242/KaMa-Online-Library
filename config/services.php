@@ -49,4 +49,9 @@ return [
         'test_mode' => env('STRIPE_TEST_MODE', true),
     ],
 
+    'pawapay' => [
+        'api_token' => env('PAWAPAY_API_TOKEN'),
+        'sandbox' => env('PAWAPAY_SANDBOX', true),
+    ],
+
 ];

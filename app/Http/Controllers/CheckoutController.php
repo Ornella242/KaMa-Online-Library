@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\CartService;
 use App\Services\PaymentFulfillmentService;
+use App\Services\PawaPayService;
 use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -135,22 +136,48 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.payment', $order);
     }
 
-    public function payment(Order $order, StripeService $stripe)
+    public function payment(Order $order, StripeService $stripe, PawaPayService $pawaPay)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
 
         $order->load(['items.book', 'country']);
 
+        $momoCountry = $pawaPay->resolveCountry($order->country?->code);
+        $momoQuote = $momoCountry
+            ? $pawaPay->convertFromEur(
+                (float) $order->amount,
+                $momoCountry['currency'],
+                $momoCountry['decimals']
+            )
+            : null;
+
         return view('checkout.payment', [
             'order' => $order,
             'stripeConfigured' => $stripe->isConfigured(),
             'stripeTestMode' => $stripe->isTestMode(),
+            'pawaPayConfigured' => $pawaPay->isConfigured(),
+            'pawaPaySandbox' => $pawaPay->isSandbox(),
+            'momoCountry' => $momoCountry,
+            'momoQuote' => $momoQuote,
+            'momoAvailable' => $momoCountry !== null,
         ]);
     }
 
-    public function preparePayment(Order $order, StripeService $stripe)
+    public function preparePayment(Request $request, Order $order, StripeService $stripe, PawaPayService $pawaPay)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
+
+        $method = $request->input('method', 'card');
+
+        if ($method === 'momo' || $method === 'pawapay') {
+            return $this->preparePawaPay($order, $pawaPay);
+        }
+
+        return $this->prepareStripe($order, $stripe);
+    }
+
+    private function prepareStripe(Order $order, StripeService $stripe)
+    {
         abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
         abort_unless(
             strtoupper((string) $order->currency) === 'EUR',
@@ -182,6 +209,8 @@ class CheckoutController extends Controller
             ], 502);
         }
 
+        $order->update(['payment_method' => 'stripe']);
+
         return response()->json([
             'checkout_url' => $checkout['url'],
             'checkout_id' => $checkout['id'],
@@ -193,7 +222,75 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function verify(Order $order, PaymentFulfillmentService $fulfillment)
+    private function preparePawaPay(Order $order, PawaPayService $pawaPay)
+    {
+        abort_unless($pawaPay->isConfigured(), 503, 'PawaPay n’est pas encore configuré.');
+
+        $order->loadMissing('country');
+        $country = $pawaPay->resolveCountry($order->country?->code);
+
+        if (! $country) {
+            return response()->json([
+                'message' => 'Le Mobile Money n’est pas disponible pour le pays de votre commande ('.$order->country?->name.'). Choisissez la carte bancaire.',
+            ], 422);
+        }
+
+        try {
+            $quote = $pawaPay->convertFromEur(
+                (float) $order->amount,
+                $country['currency'],
+                $country['decimals']
+            );
+        } catch (Throwable $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        $depositId = (string) Str::uuid();
+
+        $order->update([
+            'payment_method' => 'pawapay',
+            'transaction_id' => $depositId,
+        ]);
+
+        try {
+            $session = $pawaPay->createPaymentPage(
+                $quote['amount'],
+                $quote['currency'],
+                $country['iso3'],
+                route('checkout.success', $order).'?depositId='.$depositId,
+                'Commande KaMa '.$order->reference,
+                [
+                    'type' => 'order',
+                    'orderId' => $order->reference,
+                    'order_id' => (string) $order->id,
+                    'order_reference' => $order->reference,
+                ],
+                $depositId
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 502);
+        }
+
+        return response()->json([
+            'checkout_url' => $session['redirect_url'],
+            'checkout_id' => $session['deposit_id'],
+            'payment' => [
+                'reference' => $order->reference,
+                'amount' => $quote['numeric'],
+                'currency' => $quote['currency'],
+                'amount_eur' => (float) $order->amount,
+                'label' => $quote['label'],
+            ],
+        ]);
+    }
+
+    public function verify(Order $order, PaymentFulfillmentService $fulfillment, PawaPayService $pawaPay)
     {
         if ($order->status === Order::STATUS_PAID) {
             return response()->json([
@@ -203,6 +300,28 @@ class CheckoutController extends Controller
         }
 
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande ne peut plus être payée.');
+
+        // Soft-poll PawaPay if a deposit was started.
+        if (
+            $order->payment_method === 'pawapay'
+            && filled($order->transaction_id)
+            && $pawaPay->isConfigured()
+        ) {
+            $check = $pawaPay->checkDeposit((string) $order->transaction_id);
+            $depositStatus = strtoupper((string) data_get($check, 'data.status', ''));
+
+            if ($check['status'] === 'FOUND' && $depositStatus === 'COMPLETED') {
+                try {
+                    $fulfillment->handlePaidCheckout([
+                        'type' => 'order',
+                        'order_id' => (string) $order->id,
+                        'order_reference' => $order->reference,
+                    ], (string) $order->transaction_id, 'pawapay');
+                } catch (Throwable $exception) {
+                    report($exception);
+                }
+            }
+        }
 
         $order->refresh();
         if ($order->status === Order::STATUS_PAID) {
@@ -218,9 +337,32 @@ class CheckoutController extends Controller
         ], 202);
     }
 
-    public function success(Order $order)
+    public function success(Order $order, PawaPayService $pawaPay, PaymentFulfillmentService $fulfillment)
     {
         $order->load(['items.book', 'country']);
+
+        if (
+            $order->status === Order::STATUS_PENDING
+            && $order->payment_method === 'pawapay'
+            && filled($order->transaction_id)
+            && $pawaPay->isConfigured()
+        ) {
+            $check = $pawaPay->checkDeposit((string) $order->transaction_id);
+            $depositStatus = strtoupper((string) data_get($check, 'data.status', ''));
+
+            if ($check['status'] === 'FOUND' && $depositStatus === 'COMPLETED') {
+                try {
+                    $fulfillment->handlePaidCheckout([
+                        'type' => 'order',
+                        'order_id' => (string) $order->id,
+                        'order_reference' => $order->reference,
+                    ], (string) $order->transaction_id, 'pawapay');
+                    $order->refresh();
+                } catch (Throwable $exception) {
+                    report($exception);
+                }
+            }
+        }
 
         if ($order->status !== Order::STATUS_PAID) {
             return view('checkout.pending', compact('order'));

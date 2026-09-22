@@ -4,12 +4,15 @@
 @section('page-title', 'Portefeuille KaMa')
 
 @section('admin-content')
+@php
+    $eur = fn ($amount) => number_format((float) $amount, 2, ',', ' ').' €';
+@endphp
 <div class="admin-dashboard">
     <section class="admin-welcome-card">
         <div>
             <span class="admin-welcome-kicker">Activité commerciale</span>
             <h2>Portefeuille plateforme</h2>
-            <p>Vue réelle de ce qui a été encaissé sur KaMa : ventes, frais de publication, sponsoring et publicité.</p>
+            <p>Vue réelle de ce qui a été encaissé sur KaMa : ventes, frais de publication, sponsoring et publicité (montants en EUR).</p>
         </div>
         
     </section>
@@ -19,15 +22,15 @@
             <span class="admin-metric-icon green"><i class="bi bi-safe2-fill"></i></span>
             <div>
                 <small>Total encaissé</small>
-                <strong class="admin-metric-amount">${{ number_format($platformBalance, 2, '.', ',') }}</strong>
-                <span>Tout ce qui est entré via Stripe</span>
+                <strong class="admin-metric-amount">{{ $eur($platformBalance) }}</strong>
+                <span>Tout ce qui est entré (Stripe + PawaPay)</span>
             </div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon amber"><i class="bi bi-wallet2"></i></span>
             <div>
                 <small>Dû aux auteurs</small>
-                <strong class="admin-metric-amount">${{ number_format($authorsOwed, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($authorsOwed) }}</strong>
                 <span>Somme des portefeuilles auteurs</span>
             </div>
         </article>
@@ -35,7 +38,7 @@
             <span class="admin-metric-icon red"><i class="bi bi-piggy-bank-fill"></i></span>
             <div>
                 <small>Net plateforme</small>
-                <strong class="admin-metric-amount">${{ number_format($platformNet, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($platformNet) }}</strong>
                 <span>Encaissé − dû aux auteurs</span>
             </div>
         </article>
@@ -43,7 +46,7 @@
             <span class="admin-metric-icon blue"><i class="bi bi-calendar3"></i></span>
             <div>
                 <small>Ce mois</small>
-                <strong class="admin-metric-amount">${{ number_format($thisMonth, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($thisMonth) }}</strong>
                 <span>Encaissements du mois en cours</span>
             </div>
         </article>
@@ -54,7 +57,7 @@
             <span class="admin-metric-icon dark"><i class="bi bi-bag-check-fill"></i></span>
             <div>
                 <small>Ventes livres</small>
-                <strong class="admin-metric-amount">${{ number_format($salesTotal, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($salesTotal) }}</strong>
                 <span>Achats lecteurs confirmés</span>
             </div>
         </article>
@@ -62,7 +65,7 @@
             <span class="admin-metric-icon violet"><i class="bi bi-file-earmark-text-fill"></i></span>
             <div>
                 <small>Frais de publication</small>
-                <strong class="admin-metric-amount">${{ number_format($publicationTotal, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($publicationTotal) }}</strong>
                 <span>Dépôts auteurs payés</span>
             </div>
         </article>
@@ -70,7 +73,7 @@
             <span class="admin-metric-icon amber"><i class="bi bi-megaphone-fill"></i></span>
             <div>
                 <small>Sponsoring</small>
-                <strong class="admin-metric-amount">${{ number_format($sponsorshipTotal, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($sponsorshipTotal) }}</strong>
                 <span>Mises en avant payées</span>
             </div>
         </article>
@@ -78,7 +81,7 @@
             <span class="admin-metric-icon blue"><i class="bi bi-badge-ad-fill"></i></span>
             <div>
                 <small>Publicité</small>
-                <strong class="admin-metric-amount">${{ number_format($advertisementTotal, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($advertisementTotal) }}</strong>
                 <span>Campagnes enregistrées</span>
             </div>
         </article>
@@ -86,7 +89,7 @@
             <span class="admin-metric-icon green"><i class="bi bi-percent"></i></span>
             <div>
                 <small>Commissions retraits</small>
-                <strong class="admin-metric-amount">${{ number_format($withdrawalCommissionTotal, 2, '.', ',') }}</strong>
+                <strong class="admin-metric-amount">{{ $eur($withdrawalCommissionTotal) }}</strong>
                 <span>Sur retraits terminés</span>
             </div>
         </article>
@@ -107,6 +110,7 @@
                     <tr>
                         <th>Type</th>
                         <th>Description</th>
+                        <th>Paiement</th>
                         <th>Payeur</th>
                         <th>Auteur</th>
                         <th>Montant</th>
@@ -122,6 +126,12 @@
                                 'sponsorship' => ['danger', 'bi-megaphone-fill'],
                                 default => ['secondary', 'bi-badge-ad-fill'],
                             };
+                            $methodBadge = match ($transaction->payment_method) {
+                                'PawaPay' => 'info',
+                                'Stripe' => 'primary',
+                                'Manuel' => 'secondary',
+                                default => 'light',
+                            };
                         @endphp
                         <tr>
                             <td>
@@ -135,11 +145,14 @@
                                     <small class="d-block text-muted">{{ $transaction->reference }}</small>
                                 @endif
                             </td>
+                            <td>
+                                <span class="badge text-bg-{{ $methodBadge }}">{{ $transaction->payment_method }}</span>
+                            </td>
                             <td>{{ $transaction->party }}</td>
                             <td>{{ $transaction->author }}</td>
                             <td>
                                 <strong class="text-success">
-                                    +${{ number_format($transaction->amount, 2, '.', ',') }}
+                                    +{{ $eur($transaction->amount) }}
                                 </strong>
                             </td>
                             <td>
@@ -149,7 +162,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 Aucun encaissement pour le moment.
                             </td>
                         </tr>
@@ -171,7 +184,7 @@
             </div>
         </div>
         <div class="admin-status-list">
-            <div><span><i class="bi bi-safe2-fill text-success"></i> Total encaissé</span><strong>Tout ce qui est entré via Stripe</strong></div>
+            <div><span><i class="bi bi-safe2-fill text-success"></i> Total encaissé</span><strong>Tout ce qui est entré (Stripe + PawaPay), en EUR</strong></div>
             <div><span><i class="bi bi-wallet2 text-warning"></i> Dû aux auteurs</span><strong>Somme des portefeuilles auteurs</strong></div>
             <div><span><i class="bi bi-piggy-bank-fill text-danger"></i> Net plateforme</span><strong>Encaissé − dû aux auteurs</strong></div>
         </div>

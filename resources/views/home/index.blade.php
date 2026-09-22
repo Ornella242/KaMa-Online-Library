@@ -551,7 +551,7 @@ Meilleurs livres START-->
                         </p>
 
                         <p class="featured-description">
-                            {{ Str::limit($bestRatedBook->short_description, 250) }}
+                            {{ Str::limit($bestRatedBook->short_description, 140) }}
                         </p>
 
                         <div class="stars">

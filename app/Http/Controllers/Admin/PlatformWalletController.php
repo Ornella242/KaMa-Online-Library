@@ -105,6 +105,7 @@ class PlatformWalletController extends Controller
                 'author' => $this->authorLabel($payment->book?->author),
                 'amount' => (float) $payment->amount,
                 'currency' => strtoupper($payment->currency ?: 'EUR'),
+                'payment_method' => $this->paymentMethodLabel($payment->payment_method),
                 'reference' => $payment->reference,
                 'occurred_at' => $payment->created_at,
             ]);
@@ -125,6 +126,7 @@ class PlatformWalletController extends Controller
                 'author' => $this->authorLabel($payment->book?->author),
                 'amount' => (float) $payment->amount,
                 'currency' => strtoupper($payment->currency ?: 'EUR'),
+                'payment_method' => $this->paymentMethodLabel($payment->payment_method),
                 'reference' => $payment->reference,
                 'occurred_at' => $payment->created_at,
             ]);
@@ -144,6 +146,7 @@ class PlatformWalletController extends Controller
                 'author' => $this->authorLabel($sponsorship->book?->author),
                 'amount' => (float) $sponsorship->amount,
                 'currency' => 'EUR',
+                'payment_method' => $this->guessMethodFromReference($sponsorship->transaction_reference),
                 'reference' => $sponsorship->transaction_reference,
                 'occurred_at' => $sponsorship->paid_at ?: $sponsorship->updated_at,
             ]);
@@ -164,6 +167,7 @@ class PlatformWalletController extends Controller
                 'author' => $this->authorLabel($ad->book?->author ?? $ad->user),
                 'amount' => (float) $ad->amount,
                 'currency' => 'EUR',
+                'payment_method' => 'Stripe',
                 'reference' => 'ad-'.$ad->id,
                 'occurred_at' => $ad->updated_at ?: $ad->created_at,
             ]);
@@ -209,5 +213,37 @@ class PlatformWalletController extends Controller
         $name = trim(($user->firstname ?? '').' '.($user->lastname ?? ''));
 
         return $name !== '' ? $name : ($user->email ?? '—');
+    }
+
+    private function paymentMethodLabel(?string $method): string
+    {
+        return match (strtolower(trim((string) $method))) {
+            'pawapay', 'momo' => 'PawaPay',
+            'stripe', 'card' => 'Stripe',
+            'manual' => 'Manuel',
+            '' => '—',
+            default => ucfirst((string) $method),
+        };
+    }
+
+    private function guessMethodFromReference(?string $reference): string
+    {
+        $reference = trim((string) $reference);
+
+        if ($reference === '') {
+            return '—';
+        }
+
+        // Stripe Checkout / PaymentIntent IDs
+        if (str_starts_with($reference, 'cs_') || str_starts_with($reference, 'pi_')) {
+            return 'Stripe';
+        }
+
+        // PawaPay depositId = UUID
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $reference)) {
+            return 'PawaPay';
+        }
+
+        return 'Stripe';
     }
 }

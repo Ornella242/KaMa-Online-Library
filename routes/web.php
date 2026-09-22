@@ -329,6 +329,8 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
             ->name('settings.publication-fees.update');
         Route::put('/settings/withdrawal', [AdminSettingsController::class, 'updateWithdrawalSettings'])
             ->name('settings.withdrawal.update');
+        Route::put('/settings/pawapay-rates', [AdminSettingsController::class, 'updatePawaPayRates'])
+            ->name('settings.pawapay-rates.update');
         Route::put('/change-password', [UserController::class, 'changePassword'])
             ->name('password.update');
         Route::put('/account', [UserController::class, 'updateProfile'])
@@ -468,6 +470,9 @@ Route::post('/books/{book}/publication-payment/verify',
 
 Route::post('/webhooks/stripe', \App\Http\Controllers\StripeWebhookController::class)
     ->name('webhooks.stripe');
+
+Route::post('/webhooks/pawapay', \App\Http\Controllers\PawaPayWebhookController::class)
+    ->name('webhooks.pawapay');
 
 
     // routes communes
