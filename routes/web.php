@@ -18,6 +18,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewsController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Writer\DashboardController as WriterDashboardController;
 use App\Http\Controllers\Writer\SettingsController as WriterSettingsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
@@ -282,8 +283,6 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
             [BooksController::class,'resubmit']
         )
         ->name('writer.books.resubmit');
-
-
 });
 
 Route::get('/writer/categories/{category}/subcategories',
@@ -306,155 +305,533 @@ Route::post('/social-profile', [SocialProfileController::class, 'storeOrUpdate']
 
 // admin routes
 
-Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
+// Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
+//      Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+//             ->middleware('admin.permission:dashboard.view')
+//             ->name('dashboard');
+//         Route::get('/platform-wallet', [AdminPlatformWalletController::class, 'index'])
+//             ->name('platform-wallet');
+
+//         Route::get('/withdrawals', [AdminWithdrawalController::class, 'index'])
+//             ->name('withdrawals.index');
+//         Route::get('/withdrawals/{withdrawal}', [AdminWithdrawalController::class, 'show'])
+//             ->name('withdrawals.show');
+//         Route::post('/withdrawals/{withdrawal}/process', [AdminWithdrawalController::class, 'process'])
+//             ->name('withdrawals.process');
+//         Route::post('/withdrawals/{withdrawal}/complete', [AdminWithdrawalController::class, 'complete'])
+//             ->name('withdrawals.complete');
+//         Route::post('/withdrawals/{withdrawal}/reject', [AdminWithdrawalController::class, 'reject'])
+//             ->name('withdrawals.reject');
+
+//         Route::get('/settings', [AdminSettingsController::class, 'index'])
+//             ->name('settings');
+//         Route::resource('roles', RoleController::class)
+//             ->except(['show'])
+//             ->names('roles');
+//         Route::resource('roles', RoleController::class)
+//            ->only(['index', 'store', 'update', 'destroy']);
+//         Route::put('/settings/publication-fees', [AdminSettingsController::class, 'updatePublicationFees'])
+//             ->name('settings.publication-fees.update');
+//         Route::put('/settings/withdrawal', [AdminSettingsController::class, 'updateWithdrawalSettings'])
+//             ->name('settings.withdrawal.update');
+//         Route::put('/settings/pawapay-rates', [AdminSettingsController::class, 'refreshPawaPayRates'])
+//             ->name('settings.pawapay-rates.update');
+//         Route::put('/change-password', [UserController::class, 'changePassword'])
+//             ->name('password.update');
+//         Route::put('/account', [UserController::class, 'updateProfile'])
+//             ->name('account.update');
+//         Route::get('/users', [UserController::class, 'index'])
+//             ->name('users');
+//         Route::get('/users/show/{user}', [UserController::class, 'show'])
+//         ->name('show');
+//         Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+//         ->name('users.edit');
+//         Route::put('/users/{user}', [UserController::class, 'update'])
+//         ->name('users.update');
+//         Route::delete('/users/{user}', [UserController::class, 'destroy'])
+//         ->name('users.destroy');
+//         Route::get('/users/create', [UserController::class, 'create'])
+//             ->name('users.create');
+
+//         Route::post('/users', [UserController::class, 'store'])
+//             ->name('users.store');
+
+//         Route::resource('categories', CategoryController::class);
+
+//         Route::get('/sponsorship-plans', [AdminSponsorshipPlanController::class, 'index'])
+//             ->name('sponsorship-plans.index');
+//         Route::post('/sponsorship-plans', [AdminSponsorshipPlanController::class, 'store'])
+//             ->name('sponsorship-plans.store');
+//         Route::put('/sponsorship-plans/{sponsorship_plan}', [AdminSponsorshipPlanController::class, 'update'])
+//             ->name('sponsorship-plans.update');
+//         Route::delete('/sponsorship-plans/{sponsorship_plan}', [AdminSponsorshipPlanController::class, 'destroy'])
+//             ->name('sponsorship-plans.destroy');
+
+//         Route::get('/sponsorships', [AdminBookSponsorshipController::class, 'index'])
+//             ->name('sponsorships.index');
+//         Route::post('/sponsorships/{sponsorship}/approve', [AdminBookSponsorshipController::class, 'approve'])
+//             ->name('sponsorships.approve');
+//         Route::post('/sponsorships/{sponsorship}/reject', [AdminBookSponsorshipController::class, 'reject'])
+//             ->name('sponsorships.reject');
+
+//         Route::get('/books/create', [AdminBooksController::class, 'create'])
+//             ->name('books.create');
+
+//         Route::post('/books', [AdminBooksController::class, 'store'])
+//             ->name('books.store');
+
+//         Route::get('/books', [AdminBooksController::class, 'listBooks'])
+//             ->name('books.index');
+
+//         Route::get('/author/reviews', [AdminAuthorSpaceController::class, 'reviews'])
+//             ->name('author.reviews');
+//         Route::get('/author/revenues', [AdminAuthorSpaceController::class, 'revenues'])
+//             ->name('author.revenues');
+//         Route::get('/author/wallet', [AdminAuthorSpaceController::class, 'wallet'])
+//             ->name('author.wallet');
+//         Route::get('/author/withdrawals', [AdminAuthorSpaceController::class, 'withdrawals'])
+//             ->name('author.withdrawals.index');
+//         Route::get('/author/withdrawals/create', [AdminAuthorSpaceController::class, 'createWithdrawal'])
+//             ->name('author.withdrawals.create');
+//         Route::post('/author/withdrawals', [AdminAuthorSpaceController::class, 'storeWithdrawal'])
+//             ->name('author.withdrawals.store');
+//         Route::get('/author/activities', [AdminAuthorSpaceController::class, 'activities'])
+//             ->name('author.activities');
+//         Route::delete('/author/activities/{notification}', [AdminAuthorSpaceController::class, 'destroyNotification'])
+//             ->name('author.activities.destroy');
+
+//         Route::get('/books/all', [AdminBooksController::class, 'allBooks'])
+//             ->name('books.all');
+
+//         Route::post(
+//             '/books/{book}/review',
+//             [AdminBooksController::class,'review']
+//         )
+//         ->name('books.review');
+
+//          Route::get('/books/editorial-queue',[AdminBooksController::class,'editorialQueue']
+//         )->name('books.editorial.queue');
+
+//         Route::get('/books/{book}/deposit', [AdminBooksController::class, 'deposit'])
+//             ->name('books.deposit');
+
+//         Route::post('/books/{book}/resubmit', [AdminBooksController::class, 'resubmit'])
+//             ->name('books.resubmit');
+
+//         Route::delete('/books/{book}', [AdminBooksController::class, 'destroy'])
+//             ->name('books.destroy');
+
+//         Route::get('/books/{book}',[AdminBooksController::class, 'show']) 
+//             ->name('books.show');
+
+//         Route::get('/books/{book}/preview-file', 
+//             [AdminBooksController::class, 'previewFile']
+//         )->name('books.preview.file');
+
+//         Route::get('/books/{book}/audio', 
+//             [AdminBooksController::class, 'streamAudio']
+//         )->name('books.audio');
+
+//         Route::get('/books/{book}/edit', [AdminBooksController::class, 'edit'])
+//             ->name('books.edit');
+
+//         Route::put('/books/{book}', [AdminBooksController::class, 'update'])
+//             ->name('books.update');
+        
+//         Route::get('/books/{book}/boost',[AdminBooksController::class,'boost'])
+//            ->name('books.boost');
+        
+//         Route::get('/books/{book}/sponsor',[AdminBookSponsorshipController::class,'create'])
+//           ->name('books.sponsor');
+
+//         Route::post('/books/{book}/sponsor/{plan}',[AdminBookSponsorshipController::class,'sponsor'])
+//           ->name('books.sponsor.store');
+
+//         Route::post('/books/{book}/boost/share',[AdminBooksController::class,'shareBook'])
+//            ->name('books.boost.share');
+
+//         Route::post('/books/{book}/publish',[AdminBooksController::class,'publish'])
+//             ->name('books.publish');
+
+//         Route::post('/books/{book}/reject',[AdminBooksController::class,'reject'])
+//            ->name('books.reject');
+
+//         Route::post('/payments/{payment}/confirm-publication', [PaymentController::class, 'confirmPublication'])
+//             ->name('payments.publication.confirm');
+
+// });
+
+Route::prefix('admin')
+    ->middleware(['auth', 'role:admin'])
+    ->name('admin.')
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->middleware('admin.permission:dashboard.view')
             ->name('dashboard');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Portefeuille KaMa
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/platform-wallet', [AdminPlatformWalletController::class, 'index'])
+            ->middleware('admin.permission:platform_wallet.view')
             ->name('platform-wallet');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Retraits
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/withdrawals', [AdminWithdrawalController::class, 'index'])
+            ->middleware('admin.permission:withdrawals.view')
             ->name('withdrawals.index');
+
         Route::get('/withdrawals/{withdrawal}', [AdminWithdrawalController::class, 'show'])
+            ->middleware('admin.permission:withdrawals.view')
             ->name('withdrawals.show');
+
         Route::post('/withdrawals/{withdrawal}/process', [AdminWithdrawalController::class, 'process'])
+            ->middleware('admin.permission:withdrawals.process')
             ->name('withdrawals.process');
+
         Route::post('/withdrawals/{withdrawal}/complete', [AdminWithdrawalController::class, 'complete'])
+            ->middleware('admin.permission:withdrawals.complete')
             ->name('withdrawals.complete');
+
         Route::post('/withdrawals/{withdrawal}/reject', [AdminWithdrawalController::class, 'reject'])
+            ->middleware('admin.permission:withdrawals.reject')
             ->name('withdrawals.reject');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Paramètres
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/settings', [AdminSettingsController::class, 'index'])
+            ->middleware('admin.permission:settings.profile.view,settings.security.view,settings.commerce.view,settings.mobile_money.view')
             ->name('settings');
-        Route::put('/settings/publication-fees', [AdminSettingsController::class, 'updatePublicationFees'])
-            ->name('settings.publication-fees.update');
-        Route::put('/settings/withdrawal', [AdminSettingsController::class, 'updateWithdrawalSettings'])
-            ->name('settings.withdrawal.update');
-        Route::put('/settings/pawapay-rates', [AdminSettingsController::class, 'refreshPawaPayRates'])
-            ->name('settings.pawapay-rates.update');
-        Route::put('/change-password', [UserController::class, 'changePassword'])
-            ->name('password.update');
+
+        // Profil
         Route::put('/account', [UserController::class, 'updateProfile'])
+            ->middleware('admin.permission:settings.profile.edit')
             ->name('account.update');
+
+        // Mot de passe
+        Route::put('/change-password', [UserController::class, 'changePassword'])
+            ->middleware('admin.permission:settings.security.change_password')
+            ->name('password.update');
+
+        // Paramètres commerce
+        Route::put('/settings/publication-fees', [AdminSettingsController::class, 'updatePublicationFees'])
+            ->middleware('admin.permission:settings.commerce.edit')
+            ->name('settings.publication-fees.update');
+
+        Route::put('/settings/withdrawal', [AdminSettingsController::class, 'updateWithdrawalSettings'])
+            ->middleware('admin.permission:settings.commerce.edit')
+            ->name('settings.withdrawal.update');
+
+        // Mobile Money
+        Route::put('/settings/pawapay-rates', [AdminSettingsController::class, 'refreshPawaPayRates'])
+            ->middleware('admin.permission:settings.mobile_money.refresh_rates')
+            ->name('settings.pawapay-rates.update');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rôles & permissions
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/roles', [RoleController::class, 'index'])
+            ->middleware('admin.permission:roles.view')
+            ->name('roles.index');
+
+        Route::post('/roles', [RoleController::class, 'store'])
+            ->middleware('admin.permission:roles.create')
+            ->name('roles.store');
+
+        Route::put('/roles/{role}', [RoleController::class, 'update'])
+            ->middleware('admin.permission:roles.edit')
+            ->name('roles.update');
+
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+            ->middleware('admin.permission:roles.delete')
+            ->name('roles.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Utilisateurs
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/users', [UserController::class, 'index'])
+            ->middleware('admin.permission:users.view')
             ->name('users');
-        Route::get('/users/show/{user}', [UserController::class, 'show'])
-        ->name('show');
-        Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-        ->name('users.edit');
-        Route::put('/users/{user}', [UserController::class, 'update'])
-        ->name('users.update');
-        Route::delete('/users/{user}', [UserController::class, 'destroy'])
-        ->name('users.destroy');
+
         Route::get('/users/create', [UserController::class, 'create'])
+            ->middleware('admin.permission:users.create')
             ->name('users.create');
 
         Route::post('/users', [UserController::class, 'store'])
+            ->middleware('admin.permission:users.create')
             ->name('users.store');
 
-        Route::resource('categories', CategoryController::class);
+        Route::get('/users/show/{user}', [UserController::class, 'show'])
+            ->middleware('admin.permission:users.show')
+            ->name('show');
+
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+            ->middleware('admin.permission:users.edit')
+            ->name('users.edit');
+
+        Route::put('/users/{user}', [UserController::class, 'update'])
+            ->middleware('admin.permission:users.edit')
+            ->name('users.update');
+
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])
+            ->middleware('admin.permission:users.delete')
+            ->name('users.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Catégories
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/categories', [CategoryController::class, 'index'])
+            ->middleware('admin.permission:categories.view')
+            ->name('categories.index');
+
+        Route::get('/categories/create', [CategoryController::class, 'create'])
+            ->middleware('admin.permission:categories.create')
+            ->name('categories.create');
+
+        Route::post('/categories', [CategoryController::class, 'store'])
+            ->middleware('admin.permission:categories.create')
+            ->name('categories.store');
+
+        Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])
+            ->middleware('admin.permission:categories.edit')
+            ->name('categories.edit');
+
+        Route::put('/categories/{category}', [CategoryController::class, 'update'])
+            ->middleware('admin.permission:categories.edit')
+            ->name('categories.update');
+
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
+            ->middleware('admin.permission:categories.delete')
+            ->name('categories.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Formules de sponsoring
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/sponsorship-plans', [AdminSponsorshipPlanController::class, 'index'])
+            ->middleware('admin.permission:sponsorship_plans.view')
             ->name('sponsorship-plans.index');
+
         Route::post('/sponsorship-plans', [AdminSponsorshipPlanController::class, 'store'])
+            ->middleware('admin.permission:sponsorship_plans.create')
             ->name('sponsorship-plans.store');
+
         Route::put('/sponsorship-plans/{sponsorship_plan}', [AdminSponsorshipPlanController::class, 'update'])
+            ->middleware('admin.permission:sponsorship_plans.edit')
             ->name('sponsorship-plans.update');
+
         Route::delete('/sponsorship-plans/{sponsorship_plan}', [AdminSponsorshipPlanController::class, 'destroy'])
+            ->middleware('admin.permission:sponsorship_plans.delete')
             ->name('sponsorship-plans.destroy');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Demandes de sponsoring
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/sponsorships', [AdminBookSponsorshipController::class, 'index'])
+            ->middleware('admin.permission:sponsorships.view')
             ->name('sponsorships.index');
+
         Route::post('/sponsorships/{sponsorship}/approve', [AdminBookSponsorshipController::class, 'approve'])
+            ->middleware('admin.permission:sponsorships.approve')
             ->name('sponsorships.approve');
+
         Route::post('/sponsorships/{sponsorship}/reject', [AdminBookSponsorshipController::class, 'reject'])
+            ->middleware('admin.permission:sponsorships.reject')
             ->name('sponsorships.reject');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Espace auteur — compte auteur principal
+        |--------------------------------------------------------------------------
+        */
+
+        // Livres
+        Route::get('/books', [AdminBooksController::class, 'listBooks'])
+            ->middleware('admin.permission:author_books.view')
+            ->name('books.index');
+
         Route::get('/books/create', [AdminBooksController::class, 'create'])
+            ->middleware('admin.permission:author_books.create')
             ->name('books.create');
 
         Route::post('/books', [AdminBooksController::class, 'store'])
+            ->middleware('admin.permission:author_books.create')
             ->name('books.store');
 
-        Route::get('/books', [AdminBooksController::class, 'listBooks'])
-            ->name('books.index');
-
         Route::get('/author/reviews', [AdminAuthorSpaceController::class, 'reviews'])
+            ->middleware('admin.permission:author_reviews.view')
             ->name('author.reviews');
+
         Route::get('/author/revenues', [AdminAuthorSpaceController::class, 'revenues'])
+            ->middleware('admin.permission:author_revenues.view')
             ->name('author.revenues');
+
         Route::get('/author/wallet', [AdminAuthorSpaceController::class, 'wallet'])
+            ->middleware('admin.permission:author_wallet.view')
             ->name('author.wallet');
+
         Route::get('/author/withdrawals', [AdminAuthorSpaceController::class, 'withdrawals'])
+            ->middleware('admin.permission:author_wallet.view')
             ->name('author.withdrawals.index');
+
         Route::get('/author/withdrawals/create', [AdminAuthorSpaceController::class, 'createWithdrawal'])
+            ->middleware('admin.permission:author_wallet.view')
             ->name('author.withdrawals.create');
+
         Route::post('/author/withdrawals', [AdminAuthorSpaceController::class, 'storeWithdrawal'])
+            ->middleware('admin.permission:author_wallet.view')
             ->name('author.withdrawals.store');
+
         Route::get('/author/activities', [AdminAuthorSpaceController::class, 'activities'])
+            ->middleware('admin.permission:notifications.view')
             ->name('author.activities');
+
         Route::delete('/author/activities/{notification}', [AdminAuthorSpaceController::class, 'destroyNotification'])
+            ->middleware('admin.permission:notifications.delete')
             ->name('author.activities.destroy');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Catalogue général
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/books/all', [AdminBooksController::class, 'allBooks'])
+            ->middleware('admin.permission:books.view')
             ->name('books.all');
 
-        Route::post(
-            '/books/{book}/review',
-            [AdminBooksController::class,'review']
-        )
-        ->name('books.review');
+        Route::get('/books/editorial-queue', [AdminBooksController::class, 'editorialQueue'])
+            ->middleware('admin.permission:editorial.view')
+            ->name('books.editorial.queue');
 
-         Route::get('/books/editorial-queue',[AdminBooksController::class,'editorialQueue']
-        )->name('books.editorial.queue');
+        Route::post('/books/{book}/review', [AdminBooksController::class, 'review'])
+            ->middleware('admin.permission:books.editorial_review')
+            ->name('books.review');
 
-        Route::get('/books/{book}/deposit', [AdminBooksController::class, 'deposit'])
-            ->name('books.deposit');
+        Route::post('/books/{book}/publish', [AdminBooksController::class, 'publish'])
+            ->middleware('admin.permission:editorial.approve')
+            ->name('books.publish');
+
+        Route::post('/books/{book}/reject', [AdminBooksController::class, 'reject'])
+            ->middleware('admin.permission:editorial.reject')
+            ->name('books.reject');
 
         Route::post('/books/{book}/resubmit', [AdminBooksController::class, 'resubmit'])
+            ->middleware('admin.permission:editorial.resubmit')
             ->name('books.resubmit');
 
-        Route::delete('/books/{book}', [AdminBooksController::class, 'destroy'])
-            ->name('books.destroy');
 
-        Route::get('/books/{book}',[AdminBooksController::class, 'show']) 
-            ->name('books.show');
+        /*
+        |--------------------------------------------------------------------------
+        | Actions sur les livres du compte auteur principal
+        |--------------------------------------------------------------------------
+        */
 
-        Route::get('/books/{book}/preview-file', 
-            [AdminBooksController::class, 'previewFile']
-        )->name('books.preview.file');
+        Route::get('/books/{book}/deposit', [AdminBooksController::class, 'deposit'])
+            ->middleware('admin.permission:author_books.show')
+            ->name('books.deposit');
 
-        Route::get('/books/{book}/audio', 
-            [AdminBooksController::class, 'streamAudio']
-        )->name('books.audio');
+        Route::get('/books/{book}/preview-file', [AdminBooksController::class, 'previewFile'])
+            ->middleware('admin.permission:author_books.show')
+            ->name('books.preview.file');
+
+        Route::get('/books/{book}/audio', [AdminBooksController::class, 'streamAudio'])
+            ->middleware('admin.permission:author_books.show')
+            ->name('books.audio');
 
         Route::get('/books/{book}/edit', [AdminBooksController::class, 'edit'])
+            ->middleware('admin.permission:author_books.edit')
             ->name('books.edit');
 
         Route::put('/books/{book}', [AdminBooksController::class, 'update'])
+            ->middleware('admin.permission:author_books.edit')
             ->name('books.update');
-        
-        Route::get('/books/{book}/boost',[AdminBooksController::class,'boost'])
-           ->name('books.boost');
-        
-        Route::get('/books/{book}/sponsor',[AdminBookSponsorshipController::class,'create'])
-          ->name('books.sponsor');
 
-        Route::post('/books/{book}/sponsor/{plan}',[AdminBookSponsorshipController::class,'sponsor'])
-          ->name('books.sponsor.store');
+        Route::get('/books/{book}/boost', [AdminBooksController::class, 'boost'])
+            ->middleware('admin.permission:author_books.share')
+            ->name('books.boost');
 
-        Route::post('/books/{book}/boost/share',[AdminBooksController::class,'shareBook'])
-           ->name('books.boost.share');
+        Route::post('/books/{book}/boost/share', [AdminBooksController::class, 'shareBook'])
+            ->middleware('admin.permission:author_books.share')
+            ->name('books.boost.share');
 
-        Route::post('/books/{book}/publish',[AdminBooksController::class,'publish'])
-            ->name('books.publish');
+        Route::get('/books/{book}/sponsor', [AdminBookSponsorshipController::class, 'create'])
+            ->middleware('admin.permission:author_books.sponsor')
+            ->name('books.sponsor');
 
-        Route::post('/books/{book}/reject',[AdminBooksController::class,'reject'])
-           ->name('books.reject');
+        Route::post('/books/{book}/sponsor/{plan}', [AdminBookSponsorshipController::class, 'sponsor'])
+            ->middleware('admin.permission:author_books.sponsor')
+            ->name('books.sponsor.store');
+
+        Route::delete('/books/{book}', [AdminBooksController::class, 'destroy'])
+            ->middleware('admin.permission:author_books.delete')
+            ->name('books.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Livre individuel
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/books/{book}', [AdminBooksController::class, 'show'])
+            ->middleware('admin.permission:books.show')
+            ->name('books.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Paiements
+        |--------------------------------------------------------------------------
+        */
 
         Route::post('/payments/{payment}/confirm-publication', [PaymentController::class, 'confirmPublication'])
+            ->middleware('admin.permission:payments.publication.confirm')
             ->name('payments.publication.confirm');
-
-});
+    });
 
 
 Route::post('/books/{book}/publication-payment',

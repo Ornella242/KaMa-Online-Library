@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
                 FaqCategorySeeder::class,
                 FaqSeeder::class,
                 SettingSeeder::class,
+                PermissionSeeder::class,
+                AdminAccountSeeder::class,
             ]);
     }
 }

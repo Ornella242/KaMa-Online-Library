@@ -33,10 +33,15 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'gender',
         'role_id',
+        'is_main_admin',
         'is_writer',
         'avatar',
         'bio',
         'password',
+    ];
+
+    protected $casts = [
+        'is_main_admin' => 'boolean',
     ];
 
     /**
@@ -76,6 +81,108 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role?->name === 'admin';
     }
+
+    public function isMainAdmin(): bool
+    {
+        return $this->isAdmin() && $this->is_main_admin;
+    }
+
+    public function authorAccountUserId(): int
+    {
+        if ($this->isMainAdmin()) {
+            return $this->id;
+        }
+
+        $mainAdminId = User::query()->where('is_main_admin', true)->value('id');
+
+        abort_unless($mainAdminId, 500, 'Le compte administrateur principal n’est pas configuré.');
+
+        return $mainAdminId;
+    }
+
+    public function adminRoles()
+    {
+        return $this->belongsToMany(Role::class, 'user_admin_role');
+    }
+
+    public function hasAdminPermission(string $permission): bool
+    {
+        if (!$this->isAdmin()) {
+            return false;
+        }
+
+        return $this->adminRoles()
+            ->whereHas('permissions', function ($query) use ($permission) {
+                $query->where('name', $permission);
+            })
+            ->exists();
+    }
+
+    public function adminLandingRoute(): ?string
+{
+    if (!$this->isAdmin()) {
+        return null;
+    }
+
+    if ($this->hasAdminPermission('dashboard.view')) {
+        return route('admin.dashboard');
+    }
+
+    if ($this->hasAdminPermission('books.view')) {
+        return route('admin.books.all');
+    }
+
+    if ($this->hasAdminPermission('editorial.view')) {
+        return route('admin.books.editorial.queue');
+    }
+
+    if ($this->hasAdminPermission('categories.view')) {
+        return route('admin.categories.index');
+    }
+
+    if ($this->hasAdminPermission('users.view')) {
+        return route('admin.users');
+    }
+
+    if ($this->hasAdminPermission('author_books.view')) {
+        return route('admin.books.index');
+    }
+
+    if ($this->hasAdminPermission('sponsorship_plans.view')) {
+        return route('admin.sponsorship-plans.index');
+    }
+
+    if ($this->hasAdminPermission('sponsorships.view')) {
+        return route('admin.sponsorships.index');
+    }
+
+    if ($this->hasAdminPermission('notifications.view')) {
+        return route('admin.author.activities');
+    }
+
+    if ($this->hasAdminPermission('platform_wallet.view')) {
+        return route('admin.platform-wallet');
+    }
+
+    if ($this->hasAdminPermission('withdrawals.view')) {
+        return route('admin.withdrawals.index');
+    }
+
+    if (
+        $this->hasAdminPermission('settings.commerce.view') ||
+        $this->hasAdminPermission('settings.mobile_money.view') ||
+        $this->hasAdminPermission('settings.profile.view') ||
+        $this->hasAdminPermission('settings.security.view')
+    ) {
+        return route('admin.settings');
+    }
+
+    if ($this->hasAdminPermission('roles.view')) {
+        return route('admin.roles.index');
+    }
+
+    return null;
+}
 
     /**
      * Accès à l’espace auteur (écrivain ou admin publiant ses propres livres).

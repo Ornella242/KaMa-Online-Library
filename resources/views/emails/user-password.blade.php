@@ -19,7 +19,7 @@
                 <!-- Header -->
                 <tr>
                     <td align="center"
-                        style="background:#4f46e5;padding:35px 20px;">
+                        style="background:#000000;padding:35px 20px;">
 
                         <img src="{{ asset('assets/images/logo-light.svg') }}"
                              alt="KaMa"

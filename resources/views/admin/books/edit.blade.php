@@ -128,7 +128,7 @@
                                                         <label class="form-label">Auteur</label>
                                                         <div class="author-box">
                                                             <i class="bi bi-person-circle"></i>
-                                                            <span>{{ Auth::user()->firstname }} {{ Auth::user()->lastname }}</span>
+                                                            <span>{{ $author->firstname }} {{ $author->lastname }}</span>
                                                         </div>
                                                     </div>
 

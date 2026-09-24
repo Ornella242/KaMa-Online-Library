@@ -41,19 +41,6 @@
                         </button>
                     </form>
                 </nav>
-
-                {{-- @unless(auth()->user()->isWriter())
-                    <div class="reader-become-writer">
-                        <button type="button" id="openBecomeWriterOverlay">
-                            <i class="bi bi-pen"></i> Devenir écrivain
-                        </button>
-                    </div>
-                    @if($errors->hasAny(['accept_fees', 'accept_rights', 'accept_terms', 'confirm_text']))
-                        <div class="alert alert-danger mt-2 mb-0 py-2 px-3 small">
-                            Veuillez compléter la confirmation pour devenir écrivain.
-                        </div>
-                    @endif
-                @endunless --}}
             </aside>
         </div>
     </div>

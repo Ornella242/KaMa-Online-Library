@@ -70,25 +70,39 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
         $remember = $request->boolean('remember');
 
-
         if (Auth::attempt($credentials, $remember)) {
-            
+
             $request->session()->regenerate();
 
             $user = Auth::user();
+
             app(PurchaseClaimService::class)->claimFor($user);
 
-            if ($user->role->name === 'admin') {
-                return redirect('/admin/dashboard');
+            if ($user->isAdmin()) {
+
+                $landingRoute = $user->adminLandingRoute();
+
+                if ($landingRoute) {
+                    return redirect()->to($landingRoute);
+                }
+
+                Auth::logout();
+
+                return redirect()
+                    ->route('login')
+                    ->withErrors([
+                        'email' =>
+                            'Votre compte administrateur ne dispose d’aucun accès.',
+                    ]);
             }
 
-            if ($user->role->name === 'writer') {
-                return redirect('/writer/dashboard');
+            if ($user->isWriter()) {
+                return redirect()->route('writer.dashboard');
             }
 
             return redirect()->route('reader.account');
@@ -98,7 +112,6 @@ class AuthController extends Controller
             'email' => 'Identifiants incorrects.',
         ])->onlyInput('email');
     }
-
 
     public function logout(Request $request)
     {

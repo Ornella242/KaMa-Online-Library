@@ -17,7 +17,7 @@
         
     </section>
 
-    <section class="admin-metric-grid">
+    <div class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon green"><i class="bi bi-safe2-fill"></i></span>
             <div>
@@ -50,9 +50,9 @@
                 <span>Encaissements du mois en cours</span>
             </div>
         </article>
-    </section>
+    </div>
 
-    <section class="admin-metric-grid">
+    <div class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon dark"><i class="bi bi-bag-check-fill"></i></span>
             <div>
@@ -93,7 +93,7 @@
                 <span>Sur retraits terminés</span>
             </div>
         </article>
-    </section>
+    </div>
 
     <section class="admin-panel">
         <div class="admin-panel-header">

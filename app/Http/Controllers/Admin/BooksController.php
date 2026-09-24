@@ -26,8 +26,7 @@ class BooksController extends Controller
 
     public function listBooks(Request $request)
     {
-        $userId = Auth::id();
-
+        $userId = Auth::user()->authorAccountUserId();
         $query = Book::query()->where('user_id', $userId)
             ->with([
                 'category',
@@ -119,7 +118,7 @@ class BooksController extends Controller
         return response()->json($subcategories);
     }
 
-      public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -154,7 +153,12 @@ class BooksController extends Controller
 
             'language' => 'required|string|max:50',
 
-            'publication_year' => 'required|digits:4',
+            'publication_year' => [
+                'required',
+                'integer',
+                'min:1000',
+                'max:' . now()->year,
+            ],
 
             'cover_image' => [
                 'required',
@@ -262,7 +266,7 @@ class BooksController extends Controller
        $fileSize = $file->getSize();
 
         $book = Book::create([
-            'user_id' => Auth::id(),
+            'user_id' => Auth::user()->authorAccountUserId(),
             'category_id' => $request->category_id,
             'subcategory_id' => $request->subcategory_id,
             'title' => $request->title,
@@ -358,7 +362,7 @@ class BooksController extends Controller
 
         $categories = Category::all();
         $subcategories = $book->category->subcategories;
-
+        $author = $book->author;
         $isAudioBook = $book->type === 'audio';
         $existingFileName = $book->original_file_name
             ?: ($book->file_path ? basename($book->file_path) : null);
@@ -378,7 +382,8 @@ class BooksController extends Controller
             'isAudioBook',
             'existingFileName',
             'existingPreviewUrl',
-            'existingFileSize'
+            'existingFileSize',
+            'author'
         ));
     }
 
@@ -1174,7 +1179,11 @@ class BooksController extends Controller
 
     public function boost(Book $book)
     {
-        abort_if($book->user_id !== Auth::id(), 403);
+        abort_unless(
+            $this->isOwnBook($book),
+            403,
+            'Vous ne pouvez promouvoir que les livres de votre espace auteur.'
+        );
 
         $social = Auth::user()->socialProfile;
 
@@ -1320,31 +1329,31 @@ class BooksController extends Controller
      $year = now()->year;
 
 
-    $waitingReviewBooks = Book::query()
-        ->where('status','waiting_review')
-        ->whereMonth('created_at', $month)
-        ->whereYear('created_at', $year)
-        ->count();
+        $waitingReviewBooks = Book::query()
+            ->where('status','waiting_review')
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->count();
 
 
 
-    $reviewBooks = Book::query()
-        ->where('status','under_review')
-        ->whereMonth('updated_at', $month)
-        ->whereYear('updated_at', $year)
-        ->count();
+        $reviewBooks = Book::query()
+            ->where('status','under_review')
+            ->whereMonth('updated_at', $month)
+            ->whereYear('updated_at', $year)
+            ->count();
 
 
 
-    $publishedBooks = Book::query()
-        ->where('status','published')
-        ->whereMonth('updated_at', $month)
-        ->whereYear('updated_at', $year)
-        ->count();
+        $publishedBooks = Book::query()
+            ->where('status','published')
+            ->whereMonth('updated_at', $month)
+            ->whereYear('updated_at', $year)
+            ->count();
 
 
 
-    $rejectedBooks = Book::query()
+        $rejectedBooks = Book::query()
         ->where('status','revision_required')
         ->whereMonth('updated_at', $month)
         ->whereYear('updated_at', $year)
@@ -1426,9 +1435,18 @@ class BooksController extends Controller
         );
     }
 
+
     private function isOwnBook(Book $book): bool
     {
-        return (int) $book->user_id === (int) Auth::id();
+        $user = Auth::user();
+
+        if (!$user || !$user->isAdmin()) {
+            return false;
+        }
+
+        $authorAccountUserId = $user->authorAccountUserId();
+
+        return (int) $book->user_id === (int) $authorAccountUserId;
     }
 
     private function notifyAuthorSafely(Book $book, object $notification): void
