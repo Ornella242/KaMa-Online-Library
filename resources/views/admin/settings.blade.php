@@ -174,8 +174,8 @@
                 <div class="admin-publication-fees-header">
                     <div>
                         <span>Configuration commerciale</span>
-                        <h4>Retraits auteurs</h4>
-                        <p>Commission prélevée sur chaque demande de retrait et montant minimum autorisé.</p>
+                        <h4>Commissions et retraits</h4>
+                        <p>Part KaMa prélevée sur chaque vente, frais de versement et montant minimum de retrait.</p>
                     </div>
                     <span class="admin-publication-fees-lock">
                         <i class="bi bi-percent"></i> Appliqué à chaque nouvelle demande
@@ -188,10 +188,28 @@
 
                     <div class="admin-publication-fees-grid">
                         <label>
+                            <span class="admin-publication-fee-icon"><i class="bi bi-pie-chart"></i></span>
+                            <div>
+                                <strong>Part plateforme sur les ventes</strong>
+                                <small>Prélevée à chaque achat. Le portefeuille auteur ne reçoit que le reste.</small>
+                                <div class="admin-publication-fee-input">
+                                    <input type="number"
+                                           name="sale_platform_percent"
+                                           min="0"
+                                           max="90"
+                                           step="0.01"
+                                           value="{{ old('sale_platform_percent', $salePlatformPercent) }}"
+                                           required>
+                                    <span class="fee-currency-preview">%</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label>
                             <span class="admin-publication-fee-icon"><i class="bi bi-percent"></i></span>
                             <div>
-                                <strong>Commission de retrait</strong>
-                                <small>Pourcentage prélevé par KaMa sur le montant demandé.</small>
+                                <strong>Frais de retrait</strong>
+                                <small>Pourcentage prélevé au moment du versement, sur le montant demandé.</small>
                                 <div class="admin-publication-fee-input">
                                     <input type="number"
                                            name="withdrawal_commission_percent"
@@ -227,7 +245,7 @@
                     <div class="admin-publication-fees-footer">
                         <p>
                             <i class="bi bi-info-circle"></i>
-                            Exemple : 100 € demandés avec 5 % → commission 5 €, net versé 95 €.
+                            Exemple : vente 10 € avec 30 % KaMa → 7 € au portefeuille auteur. Retrait de 7 € avec 5 % de frais → 6,65 € versés.
                         </p>
                         <button type="submit">
                             <i class="bi bi-check2-circle"></i> Enregistrer les retraits

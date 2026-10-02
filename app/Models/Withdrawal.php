@@ -14,6 +14,7 @@ class Withdrawal extends Model
 
     public const METHOD_MOBILE_MONEY = 'mobile_money';
     public const METHOD_BANK = 'bank_transfer';
+    public const METHOD_WESTERN_UNION = 'western_union';
     public const METHOD_PAYPAL = 'paypal';
 
     protected $fillable = [
@@ -27,6 +28,7 @@ class Withdrawal extends Model
         'account_number',
         'payout_details',
         'admin_note',
+        'payout_reference',
         'processing_at',
         'completed_at',
         'rejected_at',
@@ -44,19 +46,12 @@ class Withdrawal extends Model
         'rejected_at' => 'datetime',
     ];
 
+    /**
+     * Canaux proposés pour une nouvelle demande.
+     */
     public static function paymentMethods(): array
     {
         return [
-            self::METHOD_MOBILE_MONEY => [
-                'label' => 'Mobile Money',
-                'icon' => 'bi-phone',
-                'hint' => 'MTN, Moov, Orange Money, Wave…',
-                'fields' => [
-                    'operator' => ['label' => 'Opérateur', 'type' => 'select', 'options' => ['MTN', 'Moov', 'Orange', 'Wave', 'Autre']],
-                    'phone' => ['label' => 'Numéro Mobile Money', 'type' => 'tel', 'placeholder' => '+229 01 00 00 00'],
-                    'account_name' => ['label' => 'Nom du titulaire', 'type' => 'text', 'placeholder' => 'Nom et prénom'],
-                ],
-            ],
             self::METHOD_BANK => [
                 'label' => 'Virement bancaire',
                 'icon' => 'bi-bank',
@@ -69,6 +64,17 @@ class Withdrawal extends Model
                     'country' => ['label' => 'Pays de la banque', 'type' => 'text', 'placeholder' => 'Ex. Bénin'],
                 ],
             ],
+            self::METHOD_WESTERN_UNION => [
+                'label' => 'Western Union',
+                'icon' => 'bi-globe2',
+                'hint' => 'Nom, adresse, date de naissance et téléphone du bénéficiaire',
+                'fields' => [
+                    'full_name' => ['label' => 'Nom', 'type' => 'text', 'placeholder' => 'Nom complet du bénéficiaire'],
+                    'address' => ['label' => 'Adresse', 'type' => 'text', 'placeholder' => 'Rue, code postal, ville, pays'],
+                    'birth_date' => ['label' => 'Date de naissance', 'type' => 'date'],
+                    'phone' => ['label' => 'Téléphone', 'type' => 'tel', 'placeholder' => '+33 …'],
+                ],
+            ],
             self::METHOD_PAYPAL => [
                 'label' => 'PayPal',
                 'icon' => 'bi-paypal',
@@ -76,6 +82,27 @@ class Withdrawal extends Model
                 'fields' => [
                     'email' => ['label' => 'E-mail PayPal', 'type' => 'email', 'placeholder' => 'vous@email.com'],
                     'account_name' => ['label' => 'Nom du compte', 'type' => 'text', 'placeholder' => 'Nom affiché'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Anciens canaux, conservés pour l’affichage des demandes déjà créées.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function methodCatalog(): array
+    {
+        return self::paymentMethods() + [
+            self::METHOD_MOBILE_MONEY => [
+                'label' => 'Mobile Money',
+                'icon' => 'bi-phone',
+                'hint' => 'Ancien canal',
+                'fields' => [
+                    'operator' => ['label' => 'Opérateur', 'type' => 'text'],
+                    'phone' => ['label' => 'Numéro Mobile Money', 'type' => 'tel'],
+                    'account_name' => ['label' => 'Nom du titulaire', 'type' => 'text'],
                 ],
             ],
         ];
@@ -104,7 +131,7 @@ class Withdrawal extends Model
 
     public function methodLabel(): string
     {
-        return self::paymentMethods()[$this->payment_method]['label'] ?? (string) $this->payment_method;
+        return self::methodCatalog()[$this->payment_method]['label'] ?? (string) $this->payment_method;
     }
 
     public function isOpen(): bool

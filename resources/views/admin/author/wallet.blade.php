@@ -26,7 +26,7 @@
                 <span class="admin-metric-icon green"><i class="bi bi-wallet2"></i></span>
                 <div>
                     <small>Solde disponible</small>
-                    <strong class="admin-metric-amount">${{ number_format($wallet->balance, 2, '.', ',') }}</strong>
+                    <strong class="admin-metric-amount">{{ number_format($wallet->balance, 2, '.', ',') }} €</strong>
                     <span>{{ strtoupper($wallet->currency ?: 'EUR') }} — prêt à retirer</span>
                 </div>
             </article>
@@ -34,7 +34,7 @@
                 <span class="admin-metric-icon dark"><i class="bi bi-arrow-down-left"></i></span>
                 <div>
                     <small>Total crédité</small>
-                    <strong class="admin-metric-amount">${{ number_format($totalCredited, 2, '.', ',') }}</strong>
+                    <strong class="admin-metric-amount">{{ number_format($totalCredited, 2, '.', ',') }} €</strong>
                     <span>Ventes cumulées</span>
                 </div>
             </article>
@@ -42,7 +42,7 @@
                 <span class="admin-metric-icon blue"><i class="bi bi-calendar3"></i></span>
                 <div>
                     <small>Ce mois</small>
-                    <strong class="admin-metric-amount">${{ number_format($salesThisMonth, 2, '.', ',') }}</strong>
+                    <strong class="admin-metric-amount">{{ number_format($salesThisMonth, 2, '.', ',') }} €</strong>
                     <span>Crédits du mois en cours</span>
                 </div>
             </article>
@@ -50,7 +50,7 @@
                 <span class="admin-metric-icon amber"><i class="bi bi-arrow-up-right"></i></span>
                 <div>
                     <small>Retraits</small>
-                    <strong class="admin-metric-amount">${{ number_format($totalWithdrawn, 2, '.', ',') }}</strong>
+                    <strong class="admin-metric-amount">{{ number_format($totalWithdrawn, 2, '.', ',') }} €</strong>
                     <span>Débits enregistrés</span>
                 </div>
             </article>
@@ -79,18 +79,23 @@
                     <tbody>
                         @forelse($transactions as $transaction)
                             @php
-                                $isSale = $transaction->type === 'sale';
+                                $isCredit = in_array($transaction->type, ['sale', 'refund'], true);
+                                $typeLabel = match ($transaction->type) {
+                                    'sale' => 'Vente',
+                                    'refund' => 'Remboursement',
+                                    default => 'Retrait',
+                                };
                                 $book = $transaction->payment?->book;
                             @endphp
                             <tr>
                                 <td>
-                                    <span class="badge text-bg-{{ $isSale ? 'success' : 'warning' }}">
-                                        <i class="bi {{ $isSale ? 'bi-plus-circle-fill' : 'bi-dash-circle-fill' }} me-1"></i>
-                                        {{ $isSale ? 'Vente' : 'Retrait' }}
+                                    <span class="badge text-bg-{{ $isCredit ? 'success' : 'warning' }}">
+                                        <i class="bi {{ $isCredit ? 'bi-plus-circle-fill' : 'bi-dash-circle-fill' }} me-1"></i>
+                                        {{ $typeLabel }}
                                     </span>
                                 </td>
                                 <td>
-                                    <strong>{{ $transaction->description ?: ($isSale ? 'Crédit vente' : 'Retrait') }}</strong>
+                                    <strong>{{ $transaction->description ?: $typeLabel }}</strong>
                                     @if($transaction->reference)
                                         <small class="d-block text-muted">{{ $transaction->reference }}</small>
                                     @endif
@@ -110,8 +115,8 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <strong class="{{ $isSale ? 'text-success' : 'text-danger' }}">
-                                        {{ $isSale ? '+' : '−' }}${{ number_format(abs($transaction->amount), 2, '.', ',') }}
+                                    <strong class="{{ $isCredit ? 'text-success' : 'text-danger' }}">
+                                        {{ $isCredit ? '+' : '−' }}{{ number_format(abs($transaction->amount), 2, ',', ' ') }} €
                                     </strong>
                                 </td>
                                 <td>

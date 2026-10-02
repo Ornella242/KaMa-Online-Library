@@ -189,6 +189,9 @@
 			const category = document.getElementById('category_id');
 			const subcategory = document.getElementById('subcategory_id');
 
+			if (!category || !subcategory) {
+				return;
+			}
 
 			category.addEventListener('change', function () {
 

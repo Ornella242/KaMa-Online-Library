@@ -687,6 +687,10 @@ Route::prefix('admin')
         |--------------------------------------------------------------------------
         */
 
+        Route::get('/author', [AdminAuthorSpaceController::class, 'overview'])
+            ->middleware('admin.permission:author_books.view')
+            ->name('author.overview');
+
         // Livres
         Route::get('/books', [AdminBooksController::class, 'listBooks'])
             ->middleware('admin.permission:author_books.view')

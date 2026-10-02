@@ -40,11 +40,11 @@
                             @endphp
                             <tr>
                                 <td><strong>#{{ $withdrawal->id }}</strong></td>
-                                <td>${{ number_format($withdrawal->amount, 2, '.', ',') }}</td>
-                                <td>${{ number_format($withdrawal->commission_amount, 2, '.', ',') }}
+                                <td>{{ number_format($withdrawal->amount, 2, '.', ',') }} €</td>
+                                <td>{{ number_format($withdrawal->commission_amount, 2, '.', ',') }} €
                                     <small class="d-block text-muted">{{ number_format($withdrawal->commission_percent, 2, '.', ',') }}%</small>
                                 </td>
-                                <td><strong class="writer-money-positive">${{ number_format($withdrawal->net_amount, 2, '.', ',') }}</strong></td>
+                                <td><strong class="writer-money-positive">{{ number_format($withdrawal->net_amount, 2, '.', ',') }} €</strong></td>
                                 <td>{{ $withdrawal->methodLabel() }}</td>
                                 <td><span class="writer-status {{ $statusClass }}">{{ $withdrawal->statusLabel() }}</span></td>
                                 <td>{{ $withdrawal->created_at?->format('d/m/Y H:i') }}</td>

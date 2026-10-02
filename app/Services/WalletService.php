@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
@@ -39,13 +40,18 @@ class WalletService
         }
 
         $reference = 'sale-payment-'.$payment->id;
-        $amount = round((float) $payment->amount, 2);
+        $gross = round((float) $payment->amount, 2);
 
-        if ($amount <= 0) {
+        if ($gross <= 0) {
             return false;
         }
 
-        return DB::transaction(function () use ($authorId, $payment, $reference, $amount) {
+        $platformPercent = round((float) Setting::getValue('sale_platform_percent', 30), 2);
+        $platformPercent = min(90, max(0, $platformPercent));
+        $authorPercent = round(100 - $platformPercent, 2);
+        $authorShare = round($gross * ($authorPercent / 100), 2);
+
+        return DB::transaction(function () use ($authorId, $payment, $reference, $authorShare, $authorPercent) {
             if (WalletTransaction::query()->where('reference', $reference)->exists()) {
                 return false;
             }
@@ -66,14 +72,16 @@ class WalletService
 
             $bookTitle = $payment->book?->title ?: 'Livre #'.$payment->book_id;
 
-            $wallet->balance = round((float) $wallet->balance + $amount, 2);
-            $wallet->currency = $payment->currency ?: ($wallet->currency ?: 'EUR');
-            $wallet->save();
+            if ($authorShare > 0) {
+                $wallet->balance = round((float) $wallet->balance + $authorShare, 2);
+                $wallet->currency = $payment->currency ?: ($wallet->currency ?: 'EUR');
+                $wallet->save();
+            }
 
             $wallet->transactions()->create([
-                'amount' => $amount,
+                'amount' => $authorShare,
                 'type' => 'sale',
-                'description' => 'Vente — '.$bookTitle,
+                'description' => 'Vente — '.$bookTitle.' · part auteur '.$authorPercent.' %',
                 'reference' => $reference,
                 'payment_id' => $payment->id,
             ]);
@@ -174,7 +182,7 @@ class WalletService
 
             $wallet->transactions()->create([
                 'amount' => $amount,
-                'type' => 'sale',
+                'type' => 'refund',
                 'description' => 'Remboursement — retrait #'.$withdrawalId,
                 'reference' => $refundReference,
             ]);

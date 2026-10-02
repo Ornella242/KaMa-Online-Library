@@ -78,18 +78,23 @@
                     <tbody>
                         @forelse($transactions as $transaction)
                             @php
-                                $isSale = $transaction->type === 'sale';
+                                $isCredit = in_array($transaction->type, ['sale', 'refund'], true);
+                                $typeLabel = match ($transaction->type) {
+                                    'sale' => 'Vente',
+                                    'refund' => 'Remboursement',
+                                    default => 'Retrait',
+                                };
                                 $book = $transaction->payment?->book;
                             @endphp
                             <tr>
                                 <td>
-                                    <span class="writer-status {{ $isSale ? 'success' : 'pending' }}">
-                                        <i class="bi {{ $isSale ? 'bi-plus-circle-fill' : 'bi-dash-circle-fill' }}"></i>
-                                        {{ $isSale ? 'Vente' : 'Retrait' }}
+                                    <span class="writer-status {{ $isCredit ? 'success' : 'pending' }}">
+                                        <i class="bi {{ $isCredit ? 'bi-plus-circle-fill' : 'bi-dash-circle-fill' }}"></i>
+                                        {{ $typeLabel }}
                                     </span>
                                 </td>
                                 <td>
-                                    <strong>{{ $transaction->description ?: ($isSale ? 'Crédit vente' : 'Retrait') }}</strong>
+                                    <strong>{{ $transaction->description ?: $typeLabel }}</strong>
                                     @if($transaction->reference)
                                         <small class="d-block text-muted">{{ $transaction->reference }}</small>
                                     @endif
@@ -108,8 +113,8 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <strong class="{{ $isSale ? 'writer-money-positive' : 'writer-money-negative' }}">
-                                        {{ $isSale ? '+' : '−' }}${{ number_format(abs($transaction->amount), 2, '.', ',') }}
+                                    <strong class="{{ $isCredit ? 'writer-money-positive' : 'writer-money-negative' }}">
+                                        {{ $isCredit ? '+' : '−' }}{{ number_format(abs($transaction->amount), 2, ',', ' ') }} €
                                     </strong>
                                 </td>
                                 <td>{{ $transaction->created_at?->format('d/m/Y H:i') }}</td>

@@ -174,6 +174,21 @@
         @endif
 
 
+        {{-- Vue d'ensemble --}}
+        @if(auth()->user()->hasAdminPermission('author_books.view'))
+
+            <a href="{{ route('admin.author.overview') }}"
+               class="kama-admin-nav-link {{ request()->routeIs('admin.author.overview') ? 'active' : '' }}">
+
+                <i class="bi bi-grid-1x2-fill"></i>
+
+                <span>Vue d’ensemble</span>
+
+            </a>
+
+        @endif
+
+
         {{-- Mes livres --}}
         @if(auth()->user()->hasAdminPermission('author_books.view'))
 
@@ -223,11 +238,20 @@
         @if(auth()->user()->hasAdminPermission('author_wallet.view'))
 
             <a href="{{ route('admin.author.wallet') }}"
-               class="kama-admin-nav-link {{ request()->routeIs('admin.author.wallet', 'admin.author.withdrawals.*') ? 'active' : '' }}">
+               class="kama-admin-nav-link {{ request()->routeIs('admin.author.wallet') ? 'active' : '' }}">
 
                 <i class="bi bi-wallet2"></i>
 
                 <span>Mon portefeuille</span>
+
+            </a>
+
+            <a href="{{ route('admin.author.withdrawals.index') }}"
+               class="kama-admin-nav-link {{ request()->routeIs('admin.author.withdrawals.*') ? 'active' : '' }}">
+
+                <i class="bi bi-cash-coin"></i>
+
+                <span>Retraits</span>
 
             </a>
 

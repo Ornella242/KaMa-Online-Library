@@ -68,6 +68,16 @@
                     </div>
                 @endif
 
+                @if($errors->any())
+                    <div class="alert alert-danger" role="alert">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="login-header">
 
                     <h2>Connexion</h2>
@@ -95,6 +105,7 @@
                             <input
                                 type="email"
                                 name="email"
+                                value="{{ old('email') }}"
                                 placeholder="votre@email.com"
                                 required>
 

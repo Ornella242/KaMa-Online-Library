@@ -61,12 +61,17 @@ class WithdrawalController extends Controller
     public function complete(Request $request, Withdrawal $withdrawal, WithdrawalService $withdrawalService)
     {
         $validated = $request->validate([
+            'payout_reference' => ['required', 'string', 'max:120'],
             'admin_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $withdrawalService->markCompleted($withdrawal, $validated['admin_note'] ?? null);
+        $withdrawalService->markCompleted(
+            $withdrawal,
+            $validated['admin_note'] ?? null,
+            $validated['payout_reference']
+        );
 
-        return back()->with('success', 'Retrait marqué comme terminé. Le versement net a été effectué hors plateforme.');
+        return back()->with('success', 'Retrait marqué comme terminé. Référence de versement enregistrée.');
     }
 
     public function reject(Request $request, Withdrawal $withdrawal, WithdrawalService $withdrawalService)

@@ -10,7 +10,7 @@
             <div>
                 <span class="writer-page-eyebrow">Finances</span>
                 <h1>Demande de retrait</h1>
-                <p>Choisissez comment recevoir vos fonds, puis indiquez le montant à retirer.</p>
+                <p>Indiquez où recevoir l’argent. KaMa fait le versement ensuite.</p>
             </div>
             <a href="{{ route('admin.author.wallet') }}" class="writer-primary-action">
                 <i class="bi bi-wallet2"></i> Retour au portefeuille
@@ -73,7 +73,7 @@
                     <div>
                         <span>Étape 1</span>
                         <h2>Mode de versement</h2>
-                        <p>Sélectionnez le canal sur lequel l’argent vous sera envoyé.</p>
+                        <p>Virement bancaire, Western Union ou PayPal.</p>
                     </div>
                 </header>
 
@@ -83,7 +83,7 @@
                             <input type="radio"
                                    name="payment_method"
                                    value="{{ $key }}"
-                                   @checked(old('payment_method', 'mobile_money') === $key)
+                                   @checked(old('payment_method', 'bank_transfer') === $key)
                                    required>
                             <span class="method-body">
                                 <i class="bi {{ $method['icon'] }}"></i>
@@ -127,8 +127,8 @@
                     </div>
                     <div class="col-md-8">
                         <div class="withdrawal-summary">
-                            <div><span>Commission ({{ number_format($commissionPercent, 2, '.', ',') }} %)</span><strong id="commissionPreview">$0.00</strong></div>
-                            <div><span>Vous recevrez</span><strong id="netPreview" class="text-success">$0.00</strong></div>
+                            <div><span>Commission ({{ number_format($commissionPercent, 2, '.', ',') }} %)</span><strong id="commissionPreview">0,00 €</strong></div>
+                            <div><span>Vous recevrez</span><strong id="netPreview" class="text-success">0,00 €</strong></div>
                         </div>
                     </div>
                 </div>
@@ -306,8 +306,8 @@ function updatePreview() {
     const amount = parseFloat(amountInput?.value || '0') || 0;
     const commission = Math.round((amount * commissionPercent / 100) * 100) / 100;
     const net = Math.round((amount - commission) * 100) / 100;
-    if (commissionPreview) commissionPreview.textContent = `$${commission.toFixed(2)}`;
-    if (netPreview) netPreview.textContent = `$${Math.max(net, 0).toFixed(2)}`;
+    if (commissionPreview) commissionPreview.textContent = `${commission.toFixed(2)} €`;
+    if (netPreview) netPreview.textContent = `${Math.max(net, 0).toFixed(2)} €`;
 }
 
 document.querySelectorAll('input[name="payment_method"]').forEach(input => {
@@ -316,7 +316,7 @@ document.querySelectorAll('input[name="payment_method"]').forEach(input => {
 
 amountInput?.addEventListener('input', updatePreview);
 
-const selected = document.querySelector('input[name="payment_method"]:checked')?.value || 'mobile_money';
+const selected = document.querySelector('input[name="payment_method"]:checked')?.value || 'bank_transfer';
 renderFields(selected);
 updatePreview();
 </script>

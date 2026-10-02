@@ -28,11 +28,11 @@
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon green"><i class="bi bi-check2-circle"></i></span>
-            <div><small>Terminés</small><strong>{{ $stats['completed'] }}</strong><span>Commission gagnée : ${{ number_format($stats['commission_earned'], 2, '.', ',') }}</span></div>
+            <div><small>Terminés</small><strong>{{ $stats['completed'] }}</strong><span>Commission gagnée : {{ number_format($stats['commission_earned'], 2, '.', ',') }} €</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon red"><i class="bi bi-cash-stack"></i></span>
-            <div><small>Net à verser</small><strong class="admin-metric-amount">${{ number_format($stats['pending_amount'], 2, '.', ',') }}</strong><span>Demandes ouvertes</span></div>
+            <div><small>Net à verser</small><strong class="admin-metric-amount">{{ number_format($stats['pending_amount'], 2, '.', ',') }} €</strong><span>Demandes ouvertes</span></div>
         </article>
     </section>
 
@@ -80,9 +80,9 @@
                         <tr>
                             <td><strong>#{{ $withdrawal->id }}</strong></td>
                             <td>{{ $author }}</td>
-                            <td>${{ number_format($withdrawal->amount, 2, '.', ',') }}</td>
-                            <td>${{ number_format($withdrawal->commission_amount, 2, '.', ',') }}</td>
-                            <td><strong>${{ number_format($withdrawal->net_amount, 2, '.', ',') }}</strong></td>
+                            <td>{{ number_format($withdrawal->amount, 2, '.', ',') }} €</td>
+                            <td>{{ number_format($withdrawal->commission_amount, 2, '.', ',') }} €</td>
+                            <td><strong>{{ number_format($withdrawal->net_amount, 2, '.', ',') }} €</strong></td>
                             <td>{{ $withdrawal->methodLabel() }}</td>
                             <td><span class="badge text-bg-{{ $badge }}">{{ $withdrawal->statusLabel() }}</span></td>
                             <td>{{ $withdrawal->created_at?->format('d/m/Y H:i') }}</td>

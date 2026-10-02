@@ -23,6 +23,7 @@ class SettingsController extends Controller
 
         $withdrawalCommissionPercent = (float) Setting::getValue('withdrawal_commission_percent', 5);
         $withdrawalMinimumAmount = (float) Setting::getValue('withdrawal_minimum_amount', 10);
+        $salePlatformPercent = (float) Setting::getValue('sale_platform_percent', 30);
         $pawaPayCurrencyMeta = $this->pawaPayCurrencyMeta();
         $activeTab = $this->resolveSettingsTab($request->query('tab'));
 
@@ -48,6 +49,7 @@ class SettingsController extends Controller
             'publicationFees',
             'withdrawalCommissionPercent',
             'withdrawalMinimumAmount',
+            'salePlatformPercent',
             'pawaPayRates',
             'pawaPayCurrencyMeta',
             'activeTab',
@@ -83,10 +85,15 @@ class SettingsController extends Controller
     public function updateWithdrawalSettings(Request $request)
     {
         $validated = $request->validate([
+            'sale_platform_percent' => ['required', 'numeric', 'min:0', 'max:90'],
             'withdrawal_commission_percent' => ['required', 'numeric', 'min:0', 'max:50'],
             'withdrawal_minimum_amount' => ['required', 'numeric', 'min:1', 'max:999999'],
         ]);
 
+        Setting::setValue(
+            'sale_platform_percent',
+            round((float) $validated['sale_platform_percent'], 2)
+        );
         Setting::setValue(
             'withdrawal_commission_percent',
             round((float) $validated['withdrawal_commission_percent'], 2)

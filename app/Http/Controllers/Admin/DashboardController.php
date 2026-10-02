@@ -7,9 +7,11 @@ use App\Models\Advertisement;
 use App\Models\Book;
 use App\Models\BookSponsorship;
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\SiteVisit;
 use App\Models\User;
+use App\Models\Withdrawal;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,30 +21,37 @@ class DashboardController extends Controller
     public function index()
     {
         $successfulPayments = Payment::query()->where('status', 'success');
-        $paymentRevenue = $this->amountsByCurrency(clone $successfulPayments);
-        $subscriptionRevenue = $this->amountsByCurrency(
-            (clone $successfulPayments)->where('type', 'subscription')
+        $purchaseRevenue = $this->amountsByCurrency(
+            (clone $successfulPayments)->where('type', 'purchase')
+        );
+        $publicationRevenue = $this->amountsByCurrency(
+            (clone $successfulPayments)->where('type', 'publication')
         );
 
-        $advertisingRevenueUsd = (float) BookSponsorship::query()
+        $sponsorshipRevenue = (float) BookSponsorship::query()
             ->where('status', 'paid')
-            ->sum('amount')
-            + (float) Advertisement::query()
-                ->whereIn('status', ['active', 'expired'])
-                ->sum('amount');
+            ->sum('amount');
+        $advertisementRevenue = (float) Advertisement::query()
+            ->whereIn('status', ['active', 'expired'])
+            ->sum('amount');
+        $promotionRevenue = ['EUR' => $sponsorshipRevenue + $advertisementRevenue];
 
-        $globalRevenue = collect($paymentRevenue);
-        if ($advertisingRevenueUsd > 0) {
-            $globalRevenue['EUR'] = (float) $globalRevenue->get('EUR', 0) + $advertisingRevenueUsd;
-        }
+        $globalRevenue = $this->mergeAmounts($purchaseRevenue, $publicationRevenue, $promotionRevenue);
+
+        $sessions = $this->countSessions();
+        $paidOrders = Order::query()->where('status', Order::STATUS_PAID)->count();
 
         $metrics = [
             'sales' => (clone $successfulPayments)->where('type', 'purchase')->count(),
-            'global_revenue' => $globalRevenue->all(),
-            'subscription_revenue' => $subscriptionRevenue,
-            'advertising_revenue' => ['EUR' => $advertisingRevenueUsd],
-            'visits' => SiteVisit::query()->count(),
-            'converted_visits' => SiteVisit::query()->whereNotNull('converted_at')->count(),
+            'paid_orders' => $paidOrders,
+            'global_revenue' => $globalRevenue,
+            'publication_revenue' => $publicationRevenue,
+            'advertising_revenue' => $promotionRevenue,
+            'pending_payout' => (float) Withdrawal::query()
+                ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
+                ->sum('net_amount'),
+            'sessions' => $sessions,
+            'conversion_rate' => $sessions > 0 ? ($paidOrders / $sessions) * 100 : 0,
             'users' => User::query()->count(),
             'writers' => User::query()
                 ->whereHas('role', fn ($query) => $query->where('name', 'writer'))
@@ -79,25 +88,23 @@ class DashboardController extends Controller
                         ->where('status', 'success')
                         ->whereBetween('created_at', [$start, $end])
                         ->count(),
-                    'visits' => SiteVisit::query()
-                        ->whereBetween('created_at', [$start, $end])
-                        ->count(),
+                    'visits' => $this->countSessions($start, $end),
                 ];
             })
             ->values();
 
-        $salesByCountry = Payment::query()
-            ->join('users', 'users.id', '=', 'payments.user_id')
-            ->leftJoin('countries', 'countries.id', '=', 'users.country_id')
-            ->where('payments.type', 'purchase')
-            ->where('payments.status', 'success')
-            ->groupBy('countries.name', 'payments.currency')
-            ->orderByDesc(DB::raw('COUNT(payments.id)'))
+        $countryName = "COALESCE(countries.name, 'Non renseigné')";
+
+        $salesByCountry = Order::query()
+            ->leftJoin('countries', 'countries.id', '=', 'orders.country_id')
+            ->where('orders.status', Order::STATUS_PAID)
+            ->groupBy(DB::raw($countryName), 'orders.currency')
+            ->orderByDesc(DB::raw('COUNT(orders.id)'))
             ->get([
-                DB::raw("COALESCE(countries.name, 'Non renseigné') as country"),
-                'payments.currency',
-                DB::raw('COUNT(payments.id) as sales_count'),
-                DB::raw('SUM(payments.amount) as total_amount'),
+                DB::raw($countryName.' as country'),
+                'orders.currency',
+                DB::raw('COUNT(orders.id) as sales_count'),
+                DB::raw('SUM(orders.amount) as total_amount'),
             ])
             ->groupBy('country')
             ->map(function (Collection $rows, string $country) {
@@ -126,12 +133,44 @@ class DashboardController extends Controller
     private function amountsByCurrency($query): array
     {
         return $query
-            ->selectRaw("COALESCE(currency, 'EUR') as currency_code, SUM(amount) as total")
-            ->groupBy('currency')
+            ->selectRaw("UPPER(COALESCE(NULLIF(currency, ''), 'EUR')) as currency_code, SUM(amount) as total")
+            ->groupBy('currency_code')
             ->pluck('total', 'currency_code')
             ->mapWithKeys(fn ($amount, $currency) => [
                 strtoupper((string) $currency) => (float) $amount,
             ])
             ->all();
+    }
+
+    /**
+     * @param  array<string, float>  ...$groups
+     * @return array<string, float>
+     */
+    private function mergeAmounts(array ...$groups): array
+    {
+        $merged = [];
+
+        foreach ($groups as $group) {
+            foreach ($group as $currency => $amount) {
+                if ((float) $amount == 0.0) {
+                    continue;
+                }
+                $code = strtoupper((string) $currency);
+                $merged[$code] = ($merged[$code] ?? 0) + (float) $amount;
+            }
+        }
+
+        return $merged;
+    }
+
+    private function countSessions(?Carbon $start = null, ?Carbon $end = null): int
+    {
+        $query = SiteVisit::query();
+
+        if ($start && $end) {
+            $query->whereBetween('created_at', [$start, $end]);
+        }
+
+        return (int) $query->distinct()->count('session_id');
     }
 }

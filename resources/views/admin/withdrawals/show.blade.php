@@ -12,7 +12,7 @@
         'rejected' => 'danger',
         default => 'warning',
     };
-    $methods = \App\Models\Withdrawal::paymentMethods();
+    $methods = \App\Models\Withdrawal::methodCatalog();
     $fieldLabels = $methods[$withdrawal->payment_method]['fields'] ?? [];
 @endphp
 <div class="admin-dashboard">
@@ -32,19 +32,28 @@
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <section class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon dark"><i class="bi bi-cash"></i></span>
-            <div><small>Montant demandé</small><strong class="admin-metric-amount">${{ number_format($withdrawal->amount, 2, '.', ',') }}</strong><span>Débité du portefeuille auteur</span></div>
+            <div><small>Montant demandé</small><strong class="admin-metric-amount">{{ number_format($withdrawal->amount, 2, ',', ' ') }} €</strong><span>Débité du portefeuille auteur</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon amber"><i class="bi bi-percent"></i></span>
-            <div><small>Commission KaMa</small><strong class="admin-metric-amount">${{ number_format($withdrawal->commission_amount, 2, '.', ',') }}</strong><span>{{ number_format($withdrawal->commission_percent, 2, '.', ',') }} %</span></div>
+            <div><small>Frais de retrait</small><strong class="admin-metric-amount">{{ number_format($withdrawal->commission_amount, 2, ',', ' ') }} €</strong><span>{{ number_format($withdrawal->commission_percent, 2, '.', ',') }} %</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon green"><i class="bi bi-send-check"></i></span>
-            <div><small>Net à verser</small><strong class="admin-metric-amount">${{ number_format($withdrawal->net_amount, 2, '.', ',') }}</strong><span>Montant à envoyer à l’auteur</span></div>
+            <div><small>Net à verser</small><strong class="admin-metric-amount">{{ number_format($withdrawal->net_amount, 2, ',', ' ') }} €</strong><span>Montant à envoyer à l’auteur</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon blue"><i class="bi bi-flag"></i></span>
@@ -86,8 +95,12 @@
             @if(in_array($withdrawal->status, ['initiated', 'processing'], true))
                 <form method="POST" action="{{ route('admin.withdrawals.complete', $withdrawal) }}" class="mb-3">
                     @csrf
+                    <label class="form-label">Référence du versement</label>
+                    <input type="text" name="payout_reference" class="form-control mb-2" required maxlength="120"
+                           value="{{ old('payout_reference', $withdrawal->payout_reference) }}"
+                           placeholder="Ex. virement Ecobank du 02/10, reçu MoMo…">
                     <label class="form-label">Note (optionnel)</label>
-                    <textarea name="admin_note" class="form-control mb-2" rows="2" placeholder="Référence du virement, opérateur…">{{ old('admin_note', $withdrawal->admin_note) }}</textarea>
+                    <textarea name="admin_note" class="form-control mb-2" rows="2" placeholder="Précision interne">{{ old('admin_note', $withdrawal->admin_note) }}</textarea>
                     <button class="btn btn-success w-100" type="submit"
                             onclick="return confirm('Confirmer que le versement net a bien été envoyé à l’auteur ?')">
                         <i class="bi bi-check2-circle me-1"></i> Marquer comme terminé
@@ -106,6 +119,9 @@
             @else
                 <div class="alert alert-secondary mb-0">
                     Cette demande est clôturée.
+                    @if($withdrawal->payout_reference)
+                        <div class="mt-2"><strong>Référence :</strong> {{ $withdrawal->payout_reference }}</div>
+                    @endif
                     @if($withdrawal->admin_note)
                         <div class="mt-2"><strong>Note :</strong> {{ $withdrawal->admin_note }}</div>
                     @endif

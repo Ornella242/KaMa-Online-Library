@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
+use App\Models\BookSponsorship;
 use App\Models\Payment;
 use App\Models\Review;
+use App\Models\User;
 use App\Models\Withdrawal;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
@@ -14,6 +17,111 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthorSpaceController extends Controller
 {
+    public function overview(WalletService $walletService)
+    {
+        $author = $this->authorAccount();
+        $userId = $author->id;
+
+        $publishedBooks = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', 'published')
+            ->count();
+
+        $booksGrowth = $this->growth(
+            Book::query()
+                ->where('user_id', $userId)
+                ->where('status', 'published')
+                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                ->count(),
+            Book::query()
+                ->where('user_id', $userId)
+                ->where('status', 'published')
+                ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+                ->count()
+        );
+
+        $purchases = Payment::query()
+            ->whereHas('book', fn ($query) => $query->where('user_id', $userId))
+            ->where('status', 'success')
+            ->where('type', 'purchase');
+
+        $totalRevenue = (float) (clone $purchases)->sum('amount');
+        $revenueGrowth = $this->growth(
+            (float) (clone $purchases)->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('amount'),
+            (float) (clone $purchases)->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->sum('amount')
+        );
+
+        $totalReaders = (int) (clone $purchases)->distinct('user_id')->count('user_id');
+        $readersGrowth = $this->growth(
+            (int) (clone $purchases)->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->distinct('user_id')->count('user_id'),
+            (int) (clone $purchases)->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->distinct('user_id')->count('user_id')
+        );
+
+        $reviewBase = Review::query()->whereHas('book', fn ($query) => $query->where('user_id', $userId));
+        $averageRating = (clone $reviewBase)->avg('rating');
+        $totalReviews = (clone $reviewBase)->count();
+
+        $bestBooks = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', 'published')
+            ->withCount([
+                'payments as sales_count' => function ($query) {
+                    $query->where('status', 'success')->where('type', 'purchase');
+                },
+            ])
+            ->withAvg('reviews', 'rating')
+            ->having('sales_count', '>', 0)
+            ->orderByDesc('sales_count')
+            ->take(5)
+            ->get();
+
+        $bookPerformance = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', 'published')
+            ->get()
+            ->map(function (Book $book) {
+                $publicationFee = (float) Payment::query()
+                    ->where('book_id', $book->id)
+                    ->where('status', 'success')
+                    ->where('type', 'publication')
+                    ->sum('amount');
+
+                $sponsorshipAmount = (float) BookSponsorship::query()
+                    ->where('book_id', $book->id)
+                    ->where('status', 'success')
+                    ->sum('amount');
+
+                $salesAmount = (float) Payment::query()
+                    ->where('book_id', $book->id)
+                    ->where('status', 'success')
+                    ->where('type', 'purchase')
+                    ->sum('amount');
+
+                return [
+                    'label' => $book->title,
+                    'investment' => round($publicationFee + $sponsorshipAmount, 2),
+                    'sales' => round($salesAmount, 2),
+                ];
+            })
+            ->values();
+
+        $wallet = $walletService->ensureWallet($author);
+
+        return view('admin.author.overview', compact(
+            'publishedBooks',
+            'booksGrowth',
+            'totalRevenue',
+            'revenueGrowth',
+            'totalReaders',
+            'readersGrowth',
+            'averageRating',
+            'totalReviews',
+            'bestBooks',
+            'bookPerformance',
+            'wallet',
+        ));
+    }
+
     public function reviews()
     {
         $userId = Auth::id();
@@ -223,8 +331,29 @@ class AuthorSpaceController extends Controller
         );
 
         return redirect()
-            ->route('admin.author.wallet')
-            ->with('success', 'Demande de retrait #'.$withdrawal->id.' initiée. Net à recevoir : $'
-                .number_format((float) $withdrawal->net_amount, 2, '.', ','));
+            ->route('admin.author.withdrawals.index')
+            ->with('success', 'Demande de retrait #'.$withdrawal->id.' initiée. Net à recevoir : '
+                .number_format((float) $withdrawal->net_amount, 2, ',', ' ').' €');
+    }
+
+    private function authorAccount(): User
+    {
+        $user = Auth::user();
+        $authorId = $user->authorAccountUserId();
+
+        if ((int) $authorId === (int) $user->id) {
+            return $user;
+        }
+
+        return User::query()->findOrFail($authorId);
+    }
+
+    private function growth(float|int $current, float|int $previous): int
+    {
+        if ((float) $previous == 0.0) {
+            return $current > 0 ? 100 : 0;
+        }
+
+        return (int) round((((float) $current - (float) $previous) / (float) $previous) * 100);
     }
 }

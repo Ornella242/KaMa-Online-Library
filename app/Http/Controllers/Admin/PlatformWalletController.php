@@ -39,8 +39,20 @@ class PlatformWalletController extends Controller
             ->where('status', Withdrawal::STATUS_COMPLETED)
             ->sum('commission_amount');
 
-        $authorsOwed = (float) Wallet::query()->sum('balance');
-        $platformNet = max(0, $platformBalance - $authorsOwed);
+        $walletBalances = (float) Wallet::query()->sum('balance');
+        $openWithdrawals = Withdrawal::query()
+            ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING]);
+        $pendingPayout = (float) (clone $openWithdrawals)->sum('net_amount');
+        $openGross = (float) (clone $openWithdrawals)->sum('amount');
+        $paidToAuthors = (float) Withdrawal::query()
+            ->where('status', Withdrawal::STATUS_COMPLETED)
+            ->sum('net_amount');
+
+        // Soldes encore disponibles + nets pas encore versés.
+        $authorsOwed = $walletBalances + $pendingPayout;
+        // La commission de retrait ne compte qu'une fois le versement terminé
+        // (écart entre le brut débité et le net versé).
+        $platformNet = max(0, $platformBalance - $walletBalances - $openGross - $paidToAuthors);
 
         $monthStart = now()->copy()->startOfMonth();
         $monthEnd = now()->copy()->endOfMonth();
@@ -71,6 +83,8 @@ class PlatformWalletController extends Controller
             'platformBalance',
             'platformNet',
             'authorsOwed',
+            'pendingPayout',
+            'paidToAuthors',
             'salesTotal',
             'publicationTotal',
             'sponsorshipTotal',

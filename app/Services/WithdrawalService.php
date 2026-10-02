@@ -42,7 +42,7 @@ class WithdrawalService
         $min = $this->minimumAmount();
         if ($amount < $min) {
             throw ValidationException::withMessages([
-                'amount' => "Le montant minimum de retrait est de {$min} $.",
+                'amount' => "Le montant minimum de retrait est de {$min} €.",
             ]);
         }
 
@@ -66,7 +66,7 @@ class WithdrawalService
 
             if ((float) $wallet->balance + 0.0001 < $amount) {
                 throw ValidationException::withMessages([
-                    'amount' => 'Solde insuffisant. Disponible : $'.number_format((float) $wallet->balance, 2, '.', ','),
+                    'amount' => 'Solde insuffisant. Disponible : '.number_format((float) $wallet->balance, 2, ',', ' ').' €',
                 ]);
             }
 
@@ -118,7 +118,7 @@ class WithdrawalService
         return $withdrawal->fresh();
     }
 
-    public function markCompleted(Withdrawal $withdrawal, ?string $note = null): Withdrawal
+    public function markCompleted(Withdrawal $withdrawal, ?string $note = null, ?string $payoutReference = null): Withdrawal
     {
         abort_unless(
             in_array($withdrawal->status, [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING], true),
@@ -132,6 +132,7 @@ class WithdrawalService
             'completed_at' => now(),
             'processed_by' => Auth::id(),
             'admin_note' => $note ?: $withdrawal->admin_note,
+            'payout_reference' => $payoutReference ?: $withdrawal->payout_reference,
         ]);
 
         return $withdrawal->fresh();
@@ -189,9 +190,10 @@ class WithdrawalService
      */
     private function primaryAccountIdentifier(string $method, array $details): string
     {
-                return match ($method) {
+        return match ($method) {
             Withdrawal::METHOD_MOBILE_MONEY => (string) ($details['phone'] ?? ''),
             Withdrawal::METHOD_BANK => (string) ($details['iban_or_account'] ?? ''),
+            Withdrawal::METHOD_WESTERN_UNION => (string) ($details['full_name'] ?? ''),
             Withdrawal::METHOD_PAYPAL => (string) ($details['email'] ?? ''),
             default => '',
         };

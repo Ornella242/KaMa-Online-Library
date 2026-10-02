@@ -12,7 +12,7 @@
         <div>
             <span class="admin-welcome-kicker">Activité commerciale</span>
             <h2>Portefeuille plateforme</h2>
-            <p>Vue réelle de ce qui a été encaissé sur KaMa : ventes, frais de publication, sponsoring et publicité (montants en EUR).</p>
+            <p>Encaissements, part encore due aux auteurs et ce que KaMa conserve après versement (montants en EUR).</p>
         </div>
         
     </section>
@@ -31,7 +31,23 @@
             <div>
                 <small>Dû aux auteurs</small>
                 <strong class="admin-metric-amount">{{ $eur($authorsOwed) }}</strong>
-                <span>Somme des portefeuilles auteurs</span>
+                <span>Soldes + nets pas encore versés</span>
+            </div>
+        </article>
+        <article class="admin-metric-card">
+            <span class="admin-metric-icon amber"><i class="bi bi-hourglass-split"></i></span>
+            <div>
+                <small>À verser</small>
+                <strong class="admin-metric-amount">{{ $eur($pendingPayout) }}</strong>
+                <span>Nets des demandes ouvertes</span>
+            </div>
+        </article>
+        <article class="admin-metric-card">
+            <span class="admin-metric-icon dark"><i class="bi bi-send-check"></i></span>
+            <div>
+                <small>Déjà versé</small>
+                <strong class="admin-metric-amount">{{ $eur($paidToAuthors) }}</strong>
+                <span>Nets des retraits terminés</span>
             </div>
         </article>
         <article class="admin-metric-card">
@@ -39,7 +55,7 @@
             <div>
                 <small>Net plateforme</small>
                 <strong class="admin-metric-amount">{{ $eur($platformNet) }}</strong>
-                <span>Encaissé − dû aux auteurs</span>
+                <span>Ce que KaMa conserve</span>
             </div>
         </article>
         <article class="admin-metric-card">
@@ -90,7 +106,7 @@
             <div>
                 <small>Commissions retraits</small>
                 <strong class="admin-metric-amount">{{ $eur($withdrawalCommissionTotal) }}</strong>
-                <span>Sur retraits terminés</span>
+                <span>Comptées seulement une fois le versement terminé</span>
             </div>
         </article>
     </div>
@@ -185,8 +201,9 @@
         </div>
         <div class="admin-status-list">
             <div><span><i class="bi bi-safe2-fill text-success"></i> Total encaissé</span><strong>Tout ce qui est entré (Stripe + PawaPay), en EUR</strong></div>
-            <div><span><i class="bi bi-wallet2 text-warning"></i> Dû aux auteurs</span><strong>Somme des portefeuilles auteurs</strong></div>
-            <div><span><i class="bi bi-piggy-bank-fill text-danger"></i> Net plateforme</span><strong>Encaissé − dû aux auteurs</strong></div>
+            <div><span><i class="bi bi-wallet2 text-warning"></i> Dû aux auteurs</span><strong>Soldes des portefeuilles + nets des retraits pas encore versés</strong></div>
+            <div><span><i class="bi bi-hourglass-split text-warning"></i> À verser</span><strong>Argent déjà sorti du portefeuille, encore à envoyer à l’auteur</strong></div>
+            <div><span><i class="bi bi-piggy-bank-fill text-danger"></i> Net plateforme</span><strong>Encaissé − soldes − retraits ouverts − nets déjà versés</strong></div>
         </div>
     </section>
 </div>

@@ -35,34 +35,34 @@
     <section class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon red"><i class="bi bi-bag-check-fill"></i></span>
-            <div><small>Nombre de ventes</small><strong>{{ number_format($metrics['sales']) }}</strong><span>Achats de livres validés</span></div>
+            <div><small>Livres vendus</small><strong>{{ number_format($metrics['sales']) }}</strong><span>{{ number_format($metrics['paid_orders']) }} commande(s) payée(s)</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon green"><i class="bi bi-cash-stack"></i></span>
-            <div><small>Revenus globaux</small><strong class="admin-metric-amount">{{ $formatAmounts($metrics['global_revenue']) }}</strong><span>Tous revenus encaissés, par devise</span></div>
+            <div><small>Encaissé</small><strong class="admin-metric-amount">{{ $formatAmounts($metrics['global_revenue']) }}</strong><span>Ventes, publications, sponsoring et publicité</span></div>
         </article>
         <article class="admin-metric-card">
-            <span class="admin-metric-icon violet"><i class="bi bi-arrow-repeat"></i></span>
-            <div><small>Revenus abonnements</small><strong class="admin-metric-amount">{{ $formatAmounts($metrics['subscription_revenue']) }}</strong><span>Abonnements validés</span></div>
+            <span class="admin-metric-icon violet"><i class="bi bi-file-earmark-text-fill"></i></span>
+            <div><small>Frais de publication</small><strong class="admin-metric-amount">{{ $formatAmounts($metrics['publication_revenue']) }}</strong><span>Dépôts auteurs payés</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon amber"><i class="bi bi-megaphone-fill"></i></span>
-            <div><small>Revenus publicité</small><strong class="admin-metric-amount">{{ $formatAmounts($metrics['advertising_revenue']) }}</strong><span>Campagnes et mises en avant payées</span></div>
+            <div><small>Sponsoring et publicité</small><strong class="admin-metric-amount">{{ $formatAmounts($metrics['advertising_revenue']) }}</strong><span>Mises en avant et campagnes payées</span></div>
         </article>
         <article class="admin-metric-card">
             <span class="admin-metric-icon blue"><i class="bi bi-eye-fill"></i></span>
-            <div><small>Visites sur le site</small><strong>{{ number_format($metrics['visits']) }}</strong><span>Pages publiques consultées</span></div>
+            <div><small>Sessions</small><strong>{{ number_format($metrics['sessions']) }}</strong><span>{{ $metrics['sessions'] > 0 ? number_format($metrics['conversion_rate'], 1, ',', ' ').' % aboutissent à une commande payée' : 'Visiteurs distincts' }}</span></div>
         </article>
         <article class="admin-metric-card">
-            <span class="admin-metric-icon dark"><i class="bi bi-cart-check-fill"></i></span>
-            <div><small>Visites avec achat</small><strong>{{ number_format($metrics['converted_visits']) }}</strong><span>{{ $metrics['visits'] > 0 ? number_format(($metrics['converted_visits'] / $metrics['visits']) * 100, 1, ',', ' ').' % de conversion' : 'Aucune conversion enregistrée' }}</span></div>
+            <span class="admin-metric-icon dark"><i class="bi bi-send-check"></i></span>
+            <div><small>À verser aux auteurs</small><strong class="admin-metric-amount">{{ number_format($metrics['pending_payout'], 2, ',', ' ') }} €</strong><span>Retraits ouverts, pas encore envoyés</span></div>
         </article>
     </section>
 
     <div class="admin-dashboard-grid">
         <section class="admin-panel">
             <div class="admin-panel-header">
-                <div><span>Performance</span><h3>Ventes et visites des 6 derniers mois</h3></div>
+                <div><span>Performance</span><h3>Livres vendus et sessions des 6 derniers mois</h3></div>
                 <span class="admin-panel-badge">Données réelles</span>
             </div>
             <div id="adminActivityChart"></div>
@@ -76,6 +76,8 @@
                 <a href="{{ route('admin.books.editorial.queue') }}"><span><i class="bi bi-search text-primary"></i> En vérification</span><strong>{{ $metrics['under_review'] }}</strong></a>
                 <a href="{{ route('admin.books.all') }}"><span><i class="bi bi-arrow-counterclockwise text-danger"></i> À corriger</span><strong>{{ $metrics['revision_required'] }}</strong></a>
                 <a href="{{ route('admin.categories.index') }}"><span><i class="bi bi-tags-fill text-secondary"></i> Catégories</span><strong>{{ $metrics['categories'] }}</strong></a>
+                <a href="{{ route('admin.users') }}"><span><i class="bi bi-people-fill text-dark"></i> Comptes</span><strong>{{ $metrics['users'] }}</strong></a>
+                <a href="{{ route('admin.users') }}"><span><i class="bi bi-pen-fill text-danger"></i> Écrivains</span><strong>{{ $metrics['writers'] }}</strong></a>
             </div>
         </section>
     </div>
@@ -120,7 +122,7 @@
 
         <section class="admin-panel admin-country-sales-panel">
             <div class="admin-panel-header">
-                <div><span>Répartition géographique</span><h3>Ventes par pays et montant</h3></div>
+                <div><span>Répartition géographique</span><h3>Commandes payées par pays</h3></div>
             </div>
             <div class="admin-country-sales">
                 <div class="admin-country-sales-head">
@@ -135,7 +137,7 @@
                 @empty
                     <div class="admin-country-sales-empty">
                         <i class="bi bi-globe2"></i>
-                        <p>Les ventes apparaîtront ici avec le pays renseigné par l’acheteur.</p>
+                        <p>Les commandes payées apparaîtront ici avec le pays choisi au paiement.</p>
                     </div>
                 @endforelse
             </div>
@@ -182,7 +184,7 @@ if (activityElement && typeof ApexCharts !== 'undefined') {
         chart: {type: 'area', height: 285, toolbar: {show: false}, fontFamily: 'DM Sans, sans-serif'},
         series: [
             {name: 'Ventes', data: @json($monthlyPerformance->pluck('sales'))},
-            {name: 'Visites', data: @json($monthlyPerformance->pluck('visits'))}
+            {name: 'Sessions', data: @json($monthlyPerformance->pluck('visits'))}
         ],
         colors: ['#b30000', '#18191c'],
         dataLabels: {enabled: false},
