@@ -192,6 +192,12 @@
                                         <a href="{{ route('admin.books.sponsor', $book) }}" class="primary" title="Sponsoriser" aria-label="Sponsoriser">
                                             <i class="bi bi-megaphone"></i>
                                         </a>
+                                        <a href="{{ route('admin.books.audiobook', $book) }}"
+                                            title="Audiobook"
+                                            aria-label="Audiobook"
+                                            class="audio">
+                                                <i class="bi bi-headphones"></i>
+                                         </a>
                                     @elseif($book->status === 'revision_required')
                                         <form action="{{ route('admin.books.resubmit', $book) }}" method="POST">
                                             @csrf

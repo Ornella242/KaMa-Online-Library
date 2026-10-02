@@ -62,5 +62,17 @@ return [
             'SLE' => 'SLL',
         ],
     ],
+   'elevenlabs' => [
+        'api_key' => env('ELEVENLABS_API_KEY'),
+
+        'voice_id' => env(
+            'ELEVENLABS_VOICE_ID'
+        ),
+
+        'model' => env(
+            'ELEVENLABS_MODEL',
+            'eleven_v3'
+        ),
+    ],
 
 ];

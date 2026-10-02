@@ -20,6 +20,9 @@ use App\Notifications\BookRejectedNotification;
 use App\Notifications\BookRevisionRequiredNotification;
 use App\Models\User;
 use Imagick;
+use App\Services\Audiobook\AudiobookAnalyzer;
+use App\Models\Audiobook;
+use App\Models\AudiobookChunk;
 
 class BooksController extends Controller
 {
@@ -1460,5 +1463,251 @@ class BooksController extends Controller
         } catch (\Throwable $exception) {
             report($exception);
         }
+    }
+
+
+    public function audio($book)
+    {
+        $book = Book::findOrFail($book);
+
+        $result = app(AudiobookAnalyzer::class)
+            ->analyze($book->file_path);
+
+        $statistics = $result['statistics'];
+        $sections = $result['sections'];
+
+        return view('admin.books.audiobook', [
+            'book' => $book,
+            'statistics' => $statistics,
+            'sections' => $sections,
+        ]);
+    }
+
+    public function testAudiobookVoice()
+    {
+        $book = \App\Models\Book::findOrFail(11);
+
+        $result = app(\App\Services\Audiobook\AudiobookAnalyzer::class)
+            ->analyze($book->file_path);
+
+        $section = $result['sections'][0] ?? null;
+
+        if (!$section) {
+            abort(404, 'Aucune section détectée.');
+        }
+
+        $text = $section['narration_text'] ?? '';
+
+        // Test limité à 1 000 caractères
+        $text = mb_substr($text, 0, 1000);
+
+        $audio = app(\App\Services\Audiobook\ElevenLabsService::class)
+            ->generateSpeech(
+                $text,
+                'JBFqnCBsd6RMkjVDRZzb'
+            );
+
+        return response($audio)
+            ->header('Content-Type', 'audio/mpeg')
+            ->header(
+                'Content-Disposition',
+                'inline; filename="kama-real-chapter-test.mp3"'
+            );
+    }
+
+
+    public function testFreeVoices()
+    {
+        $voices = app(\App\Services\Audiobook\ElevenLabsService::class)
+            ->getFreeSharedVoices([
+                'language' => 'fr',
+            ]);
+
+        return response()->json([
+            'count' => count($voices),
+            'voices' => collect($voices)->map(function ($voice) {
+                return [
+                    'name' => $voice['name'] ?? null,
+                    'voice_id' => $voice['voice_id'] ?? null,
+                    'language' => $voice['language'] ?? null,
+                    'accent' => $voice['accent'] ?? null,
+                    'gender' => $voice['gender'] ?? null,
+                    'age' => $voice['age'] ?? null,
+                    'description' => $voice['description'] ?? null,
+                    'free_users_allowed' =>
+                        $voice['free_users_allowed'] ?? false,
+                    'preview_url' => $voice['preview_url'] ?? null,
+                ];
+            })->values(),
+        ]);
+    }
+
+
+public function testAudiobookChunks()
+{
+    $book = \App\Models\Book::findOrFail(11);
+
+    $result = app(
+        \App\Services\Audiobook\AudiobookAnalyzer::class
+    )->analyze($book->file_path);
+
+    $sections = $result['sections'] ?? [];
+
+    if (empty($sections)) {
+        abort(404, 'Aucune section détectée.');
+    }
+
+    $totalCharacters = 0;
+    $totalChunks = 0;
+
+    $analysis = collect($sections)
+        ->map(function ($section) use (
+            &$totalCharacters,
+            &$totalChunks
+        ) {
+            $text = $section['narration_text'] ?? '';
+
+            $characters = mb_strlen($text);
+
+            if ($text === '') {
+                return [
+                    'position' => $section['position'] ?? null,
+                    'type' => $section['type'] ?? null,
+                    'number' => $section['number'] ?? null,
+                    'title' => $section['title'] ?? null,
+                    'characters' => 0,
+                    'chunk_count' => 0,
+                    'chunks' => [],
+                ];
+            }
+
+            $chunks = app(
+                \App\Services\Audiobook\AudiobookTextChunker::class
+            )->chunk($text);
+
+            $chunkData = collect($chunks)
+                ->map(function ($chunk, $index) {
+                    return [
+                        'chunk' => $index + 1,
+                        'characters' => mb_strlen($chunk),
+                        'words' => str_word_count($chunk),
+                        'start' => mb_substr($chunk, 0, 100),
+                        'end' => mb_substr($chunk, -100),
+                    ];
+                })
+                ->values()
+                ->all();
+
+            $chunkCount = count($chunks);
+
+            $totalCharacters += $characters;
+            $totalChunks += $chunkCount;
+
+            return [
+                'position' => $section['position'] ?? null,
+                'type' => $section['type'] ?? null,
+                'number' => $section['number'] ?? null,
+                'title' => $section['title'] ?? null,
+
+                'characters' => $characters,
+
+                'chunk_count' => $chunkCount,
+
+                'chunks' => $chunkData,
+            ];
+        })
+        ->values();
+
+    return response()->json([
+        'book_id' => $book->id,
+
+        'summary' => [
+            'sections' => $analysis->count(),
+            'total_characters' => $totalCharacters,
+            'total_chunks' => $totalChunks,
+        ],
+
+        'sections' => $analysis,
+    ]);
+}
+
+
+    public function testElevenLabsQuota()
+    {
+        $subscription = app(
+            \App\Services\Audiobook\ElevenLabsService::class
+        )->getSubscription();
+
+        return response()->json($subscription);
+    }
+
+    public function testPrepareAudiobook(Book $book)
+    {
+        $audiobook = app(
+            \App\Services\Audiobook\AudiobookGenerationService::class
+        )->prepare($book);
+
+        return response()->json([
+            'audiobook_id' => $audiobook->id,
+
+            'status' => $audiobook->status,
+
+            'book_id' => $audiobook->book_id,
+
+            'voice_id' => $audiobook->voice_id,
+
+            'model' => $audiobook->model,
+
+            'total_characters' =>
+                $audiobook->total_characters,
+
+            'total_chunks' =>
+                $audiobook->total_chunks,
+
+            'estimated_cost' =>
+                $audiobook->estimated_cost,
+
+            'sections' =>
+                $audiobook->sections->map(
+                    function ($section) {
+                        return [
+                            'id' => $section->id,
+                            'position' => $section->position,
+                            'type' => $section->type,
+                            'number' => $section->number,
+                            'title' => $section->title,
+                            'characters' => $section->characters,
+                            'chunks' => $section->chunks->count(),
+                        ];
+                    }
+                ),
+        ]);
+    }
+
+    public function testGenerateAudiobookChunk(
+        Audiobook $audiobook,
+        AudiobookChunk $chunk
+    ) {
+        if (
+            $chunk->audiobook_section_id !== null &&
+            $chunk->section->audiobook_id !== $audiobook->id
+        ) {
+            abort(404);
+        }
+
+        app(
+            \App\Services\Audiobook\AudiobookGenerationService::class
+        )->generateOneChunk(
+            $audiobook,
+            $chunk->id
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Le chunk a été envoyé dans la queue.',
+            'audiobook_id' => $audiobook->id,
+            'chunk_id' => $chunk->id,
+            'chunk_status' => $chunk->fresh()->status,
+        ]);
     }
 }

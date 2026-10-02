@@ -700,6 +700,45 @@ Route::prefix('admin')
             ->middleware('admin.permission:author_books.create')
             ->name('books.store');
 
+        // Audiobook
+       Route::get('/books/{book}/audiobook', [AdminBooksController::class, 'audio'])
+            ->middleware('admin.permission:books.audio.generate')
+            ->name('books.audiobook');
+
+        Route::get('/books/{book}/audio/download', [AdminBooksController::class, 'downloadAudio'])
+            ->middleware('admin.permission:books.audio.download')
+            ->name('books.audiobook.download');
+
+        Route::delete('/books/{book}/audio', [AdminBooksController::class, 'deleteAudio'])
+            ->middleware('admin.permission:books.audio.delete')
+            ->name('books.audiobook.delete');
+        
+            // Test audiobook voice generation
+            Route::get('/audiobook/test-voice', [
+                AdminBooksController::class,
+                'testAudiobookVoice'
+            ])->name('audiobook.test.voice');
+
+            Route::get('/audiobook/test-free-voices', [
+            AdminBooksController::class,
+            'testFreeVoices'
+            ])->name('audiobook.test.free.voices');
+
+            Route::get('/audiobook/test-chunks', [
+                AdminBooksController::class,
+                'testAudiobookChunks'
+            ])->name('audiobook.test.chunks');
+
+            Route::get('/audiobook/test-quota', [
+                AdminBooksController::class,
+                'testElevenLabsQuota'
+            ])->name('audiobook.test.quota');
+
+            Route::post(
+                '/audiobook/test-generate-chunk/{audiobook}/{chunk}',
+                [AdminBooksController::class, 'testGenerateAudiobookChunk']
+            )->name('audiobook.test-generate-chunk');
+
         Route::get('/author/reviews', [AdminAuthorSpaceController::class, 'reviews'])
             ->middleware('admin.permission:author_reviews.view')
             ->name('author.reviews');
