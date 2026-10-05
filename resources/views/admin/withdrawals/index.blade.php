@@ -17,7 +17,7 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <section class="admin-metric-grid">
+    <div class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon amber"><i class="bi bi-hourglass-split"></i></span>
             <div><small>Initiés</small><strong>{{ $stats['initiated'] }}</strong><span>En attente de traitement</span></div>
@@ -34,7 +34,7 @@
             <span class="admin-metric-icon red"><i class="bi bi-cash-stack"></i></span>
             <div><small>Net à verser</small><strong class="admin-metric-amount">${{ number_format($stats['pending_amount'], 2, '.', ',') }}</strong><span>Demandes ouvertes</span></div>
         </article>
-    </section>
+    </div>
 
     <section class="admin-panel">
         <div class="admin-panel-header">

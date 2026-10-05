@@ -37,7 +37,79 @@ class AudiobookSectionBuilder
             $documentPages[] = $page;
         }
 
+        /*
+        * Aucun chapitre / aucune section explicite détectée.
+        *
+        * Dans ce cas, tout le document devient une seule
+        * section audio.
+        *
+        * Cela permet notamment de gérer :
+        * - les documents courts ;
+        * - les ebooks sans chapitres explicites ;
+        * - les PDFs de test ;
+        * - les documents dont la structure n'a pas pu être détectée.
+        */
+        if (empty($sections)) {
+
+            $text = $this->extractDocumentText($documentPages);
+
+            $text = trim($text);
+
+            if ($text === '') {
+                return [];
+            }
+
+            return [
+                [
+                    'position' => 1,
+                    'type' => 'document',
+                    'number' => null,
+                    'title' => null,
+                    'text' => $text,
+                    'characters' => mb_strlen($text),
+                    'words' => str_word_count($text),
+                    'detection_method' => 'document_fallback',
+                    'confidence' => 1.0,
+                    'start_page' => $documentPages[0]['page'] ?? null,
+                    'end_page' => $documentPages[count($documentPages) - 1]['page'] ?? null,
+                ],
+            ];
+        }
+
         $result = [];
+
+        /*
+        * Aucun chapitre / aucune section explicite détectée.
+        *
+        * Dans ce cas, tout le document devient une seule
+        * section audio.
+        */
+        if (empty($sections)) {
+
+            $text = $this->extractDocumentText($documentPages);
+
+            $text = trim($text);
+
+            if ($text === '') {
+                return [];
+            }
+
+            return [
+                [
+                    'position' => 1,
+                    'type' => 'document',
+                    'number' => null,
+                    'title' => null,
+                    'text' => $text,
+                    'characters' => mb_strlen($text),
+                    'words' => str_word_count($text),
+                    'detection_method' => 'document_fallback',
+                    'confidence' => 1.0,
+                    'start_page' => $documentPages[0]['page'] ?? null,
+                    'end_page' => $documentPages[count($documentPages) - 1]['page'] ?? null,
+                ],
+            ];
+        }
 
         foreach ($sections as $sectionIndex => $section) {
 
@@ -100,6 +172,45 @@ class AudiobookSectionBuilder
         }
 
         return $result;
+    }
+
+    /**
+     * Extrait tout le texte du document lorsque
+     * aucune section explicite n'a été détectée.
+     */
+    private function extractDocumentText(array $pages): string
+    {
+        $parts = [];
+
+        foreach ($pages as $page) {
+
+            if (!isset($page['lines'])) {
+                continue;
+            }
+
+            $pageLines = [];
+
+            foreach ($page['lines'] as $lineIndex => $line) {
+
+                if ($this->isPaginationLine($page, $lineIndex)) {
+                    continue;
+                }
+
+                $line = trim($line);
+
+                if ($line === '') {
+                    continue;
+                }
+
+                $pageLines[] = $line;
+            }
+
+            if (!empty($pageLines)) {
+                $parts[] = implode("\n", $pageLines);
+            }
+        }
+
+        return implode("\n\n", $parts);
     }
 
     /**

@@ -24,7 +24,7 @@
             </button>
         </header>
 
-        <section class="users-stats">
+        <div class="users-stats">
             <article>
                 <span class="total"><i class="bi bi-people-fill"></i></span>
                 <div><small>Utilisateurs</small><strong>{{ number_format($totalUsers) }}</strong></div>
@@ -41,7 +41,7 @@
                 <span class="admins"><i class="bi bi-shield-lock-fill"></i></span>
                 <div><small>Administrateurs</small><strong>{{ number_format($totalAdmins) }}</strong></div>
             </article>
-        </section>
+        </div>
 
         <div class="users-panel">
             <form method="GET" action="{{ route('admin.users') }}" class="users-toolbar">

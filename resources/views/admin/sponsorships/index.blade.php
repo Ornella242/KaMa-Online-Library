@@ -16,7 +16,7 @@
         </a>
     </header>
 
-    <section class="categories-stats">
+    <div class="categories-stats">
         <article>
             <span class="empty"><i class="bi bi-hourglass-split"></i></span>
             <div><small>En attente</small><strong>{{ number_format($stats['pending']) }}</strong></div>
@@ -29,7 +29,7 @@
             <span class="books"><i class="bi bi-cash-coin"></i></span>
             <div><small>Revenus payés</small><strong>${{ number_format($stats['revenue'], 2, '.', ',') }}</strong></div>
         </article>
-    </section>
+    </div>
 
     <section class="categories-panel">
         <div class="sponsorship-tabs mb-3">

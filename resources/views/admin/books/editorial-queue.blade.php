@@ -16,7 +16,7 @@
             </a>
         </header>
 
-        <section class="editorial-stats">
+        <div class="editorial-stats">
             <article>
                 <span class="waiting"><i class="bi bi-clock-history"></i></span>
                 <div><small>En attente ce mois</small><strong>{{ number_format($waitingReviewBooks) }}</strong></div>
@@ -33,7 +33,7 @@
                 <span class="revision"><i class="bi bi-arrow-counterclockwise"></i></span>
                 <div><small>Retournés ce mois</small><strong>{{ number_format($rejectedBooks) }}</strong></div>
             </article>
-        </section>
+        </div>
 
         <div class="editorial-panel">
             <header>

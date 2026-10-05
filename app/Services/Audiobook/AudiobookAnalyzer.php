@@ -54,15 +54,26 @@ class AudiobookAnalyzer
             $sections
         );
 
-        /*
+       /*
         * 7. Statistiques globales
+        *
+        * Les statistiques doivent représenter l'ensemble du contenu
+        * narrable du document, même lorsqu'aucun chapitre/section
+        * n'a été détecté.
         */
         $characters = 0;
         $words = 0;
 
-        foreach ($sections as $section) {
-            $characters += $section['narration_characters'] ?? 0;
-            $words += $section['narration_words'] ?? 0;
+        if (!empty($sections)) {
+            foreach ($sections as $section) {
+                $characters += $section['narration_characters'] ?? 0;
+                $words += $section['narration_words'] ?? 0;
+            }
+        } else {
+            foreach ($pages as $page) {
+                $characters += $page['characters'] ?? 0;
+                $words += $page['words'] ?? 0;
+            }
         }
 
         /*

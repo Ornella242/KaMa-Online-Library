@@ -11,6 +11,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Jobs\AssembleAudiobookJob;
 use RuntimeException;
 use Throwable;
 
@@ -30,6 +32,7 @@ class GenerateAudiobookChunkJob implements ShouldQueue
      * ensuite une erreur.
      */
     public int $tries = 1;
+    public int $timeout = 180;
 
     public function __construct(
         public int $chunkId
@@ -47,7 +50,7 @@ class GenerateAudiobookChunkJob implements ShouldQueue
         */
 
         $chunk = AudiobookChunk::with([
-            'section.audiobook',
+            'section.audiobook.book',
         ])->find($this->chunkId);
 
         if (!$chunk) {
@@ -152,9 +155,15 @@ class GenerateAudiobookChunkJob implements ShouldQueue
             |--------------------------------------------------------------------------
             */
 
+            $bookSlug = Str::limit(
+                Str::slug($audiobook->book->title),
+                80,
+                ''
+            );
+
             $path = sprintf(
-                'audiobooks/%d/sections/%d/chunks/%d.mp3',
-                $audiobook->id,
+                'elevenlabs-audiobooks/%s/sections/chapitre-%d/chunks/morceau-%d.mp3',
+                $bookSlug,
                 $section->position,
                 $chunk->position
             );
@@ -270,46 +279,46 @@ class GenerateAudiobookChunkJob implements ShouldQueue
      * Met à jour le statut de la section.
      */
     private function updateSectionStatus(
-        $section
+    $section
     ): void {
 
-        $totalChunks =
-            $section->chunks()->count();
+    $totalChunks =
+        $section->chunks()->count();
 
-        $completedChunks =
-            $section->chunks()
-                ->where('status', 'completed')
-                ->count();
+    $completedChunks =
+        $section->chunks()
+            ->where('audiobook_chunks.status', 'completed')
+            ->count();
 
-        $failedChunks =
-            $section->chunks()
-                ->where('status', 'failed')
-                ->count();
+    $failedChunks =
+        $section->chunks()
+            ->where('audiobook_chunks.status', 'failed')
+            ->count();
 
-        if (
-            $totalChunks > 0 &&
-            $completedChunks === $totalChunks
-        ) {
-
-            $section->update([
-                'status' => 'completed',
-            ]);
-
-            return;
-        }
-
-        if ($failedChunks > 0) {
-
-            $section->update([
-                'status' => 'failed',
-            ]);
-
-            return;
-        }
+    if (
+        $totalChunks > 0 &&
+        $completedChunks === $totalChunks
+    ) {
 
         $section->update([
-            'status' => 'generating',
+            'status' => 'completed',
         ]);
+
+        return;
+    }
+
+    if ($failedChunks > 0) {
+
+        $section->update([
+            'status' => 'failed',
+        ]);
+
+        return;
+    }
+
+    $section->update([
+        'status' => 'generating',
+    ]);
     }
 
     /**
@@ -317,19 +326,19 @@ class GenerateAudiobookChunkJob implements ShouldQueue
      */
     private function updateAudiobookStatus(
         $audiobook
-    ): void {
+        ): void {
 
         $totalChunks =
             $audiobook->chunks()->count();
 
         $completedChunks =
             $audiobook->chunks()
-                ->where('status', 'completed')
+                ->where('audiobook_chunks.status', 'completed')
                 ->count();
 
         $failedChunks =
             $audiobook->chunks()
-                ->where('status', 'failed')
+                ->where('audiobook_chunks.status', 'failed')
                 ->count();
 
         if (
@@ -337,12 +346,25 @@ class GenerateAudiobookChunkJob implements ShouldQueue
             $completedChunks === $totalChunks
         ) {
 
-            $audiobook->update([
-                'status' => 'completed',
-                'actual_cost' =>
-                    $audiobook->generated_characters / 1000 * 0.10,
-                'completed_at' => now(),
-            ]);
+            /*
+            * Tous les chunks sont prêts.
+            * On passe à l'assemblage du fichier final.
+            */
+            $shouldAssemble =
+                $audiobook->status !== 'assembling'
+                && $audiobook->status !== 'completed';
+
+            if ($shouldAssemble) {
+
+                $audiobook->update([
+                    'status' => 'assembling',
+                    'error_message' => null,
+                ]);
+
+                AssembleAudiobookJob::dispatch(
+                    $audiobook->id
+                );
+            }
 
             return;
         }
@@ -404,7 +426,7 @@ class GenerateAudiobookChunkJob implements ShouldQueue
     ): void {
 
         $chunk = AudiobookChunk::with(
-            'section.audiobook'
+            'section.audiobook.book'
         )->find($this->chunkId);
 
         if (!$chunk) {

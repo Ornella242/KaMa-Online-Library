@@ -148,7 +148,60 @@
                                 <i class="bi bi-megaphone"></i>
                                 Sponsoriser
                             </a>
-                        @endif
+                            @if($book->type === 'ebook')
+                                    @php
+                                        $audiobookRequest = $book->audiobookRequests()
+                                            ->where('author_id', auth()->id())
+                                            ->latest()
+                                            ->first();
+
+                                        $audiobookAvailable = $audiobookRequest
+                                            && $audiobookRequest->status === \App\Models\AudiobookRequest::STATUS_COMPLETED
+                                            && $audiobookRequest->published_book_id;
+
+                                        $audiobookInProgress = $audiobookRequest
+                                            && in_array($audiobookRequest->status, [
+                                                \App\Models\AudiobookRequest::STATUS_PENDING_PAYMENT,
+                                                \App\Models\AudiobookRequest::STATUS_PAID,
+                                                \App\Models\AudiobookRequest::STATUS_QUEUED,
+                                                \App\Models\AudiobookRequest::STATUS_GENERATING,
+                                                \App\Models\AudiobookRequest::STATUS_ASSEMBLING,
+                                            ], true);
+                                    @endphp
+
+                                    @if($audiobookAvailable)
+                                        <button
+                                            type="button"
+                                            class="btn-primary-action"
+                                            disabled
+                                            style="opacity: .6; cursor: not-allowed;"
+                                        >
+                                            <i class="bi bi-headphones"></i>
+                                            Audiobook disponible
+                                        </button>
+
+                                    @elseif($audiobookInProgress)
+                                        <button
+                                            type="button"
+                                            class="btn-primary-action"
+                                            disabled
+                                            style="opacity: .6; cursor: not-allowed;"
+                                        >
+                                            <i class="bi bi-hourglass-split"></i>
+                                            Demande en cours de traitement
+                                        </button>
+
+                                    @else
+                                        <a
+                                            href="{{ route('writer.books.audiobook', $book) }}"
+                                            class="btn-primary-action"
+                                        >
+                                            <i class="bi bi-headset"></i>
+                                            Commander l'audiobook
+                                        </a>
+                                    @endif
+                                @endif
+                           @endif
                     </div>
                 </div>
             </div>
@@ -483,7 +536,17 @@
     border: 1px solid rgba(255,255,255,.35);
 }
 .btn-secondary-action:hover { background: rgba(255,255,255,.12); color: #fff; }
-.writer-book-audio audio { width: min(100%, 360px); }
+.writer-book-audio {
+    display: block !important;
+    width: 100% !important;
+    min-height: 54px;
+}
+
+.writer-book-audio audio {
+    display: block !important;
+    width: min(100%, 260px) !important;
+    height: 54px !important;
+}
 
 .writer-book-alert {
     display: flex; gap: 14px; align-items: flex-start;

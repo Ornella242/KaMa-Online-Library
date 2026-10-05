@@ -110,6 +110,19 @@
 
         @endif
 
+        @if(auth()->user()->hasAdminPermission('books.audio.generate'))
+
+            <a href="{{ route('admin.audiobooks.requests') }}"
+            class="kama-admin-nav-link {{ request()->routeIs('admin.audiobooks.*') ? 'active' : '' }}">
+
+                <i class="bi bi-headphones"></i>
+
+                <span>Demandes audiobooks</span>
+
+            </a>
+
+        @endif
+
 
         {{-- Catégories --}}
         @if(auth()->user()->hasAdminPermission('categories.view'))

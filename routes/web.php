@@ -29,12 +29,14 @@ use App\Http\Controllers\Writer\WalletController as WriterWalletController;
 use App\Http\Controllers\Writer\WithdrawalController as WriterWithdrawalController;
 use App\Http\Controllers\Writer\ActivityController as WriterActivityController;
 use App\Http\Controllers\SponsorshipController;
+use App\Http\Controllers\Writer\AudiobookController;
 use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SocialProfileController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\AudiobookRequestController;
 
 use App\Http\Controllers\Reader\SettingsController as ReaderSettingsController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -257,6 +259,21 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
                 '/books/{book}/sponsor',
                 [SponsorshipController::class,'create']
             )->name('writer.books.sponsor');
+
+        Route::get(
+                '/books/{book}/audiobook',
+                [AudiobookController::class,'index']
+            )->name('writer.books.audiobook');
+
+        Route::post(
+            '/books/{book}/audiobook',
+            [AudiobookController::class, 'store']
+        )->name('writer.books.audiobook.store');
+
+        Route::post(
+            'writer/books/{book}/audiobook/pay',
+            [AudiobookController::class, 'pay']
+        )->name('writer.books.audiobook.pay');
         
         Route::post(
             '/books/{book}/sponsorship/{plan}',
@@ -712,6 +729,45 @@ Route::prefix('admin')
         Route::delete('/books/{book}/audio', [AdminBooksController::class, 'deleteAudio'])
             ->middleware('admin.permission:books.audio.delete')
             ->name('books.audiobook.delete');
+
+        Route::post('/audiobooks/{audiobook}/generate',[AdminBooksController::class, 'generateAudiobook'])
+           ->name('audiobooks.generate');
+
+        Route::post('/audiobooks/{audiobook}/voice',[AdminBooksController::class, 'saveAudiobookVoice']
+           )->name('audiobooks.voice.save');
+
+        Route::get('/audiobooks/{audiobook}/status',[AdminBooksController::class, 'audiobookStatus']
+            )->name('audiobooks.status');
+
+        Route::get(
+                '/audiobooks/{audiobook}/stream',
+                [AdminBooksController::class, 'streamAudiobook']
+            )->name('audiobooks.stream');
+
+        Route::get(
+                '/audiobooks/{audiobook}/download',
+                [AdminBooksController::class, 'downloadAudiobook']
+            )->name('audiobooks.download');
+
+        Route::get(
+            'audiobooks/requests',
+            [AudiobookRequestController::class, 'index']
+        )->name('audiobooks.requests');
+
+        Route::get(
+            'admin/audiobooks/requests/{audiobookRequest}',
+            [AudiobookRequestController::class, 'show']
+        )->name('audiobooks.requests.show');
+
+        Route::post(
+            'admin/audiobooks/requests/{audiobookRequest}/generate',
+            [AudiobookRequestController::class, 'generate']
+        )->name('audiobooks.requests.generate');
+
+        Route::post(
+            'audiobooks/requests/{audiobookRequest}/publish',
+            [AudiobookRequestController::class, 'publish']
+        )->name('audiobooks.requests.publish');
         
             // Test audiobook voice generation
             Route::get('/audiobook/test-voice', [
@@ -738,6 +794,26 @@ Route::prefix('admin')
                 '/audiobook/test-generate-chunk/{audiobook}/{chunk}',
                 [AdminBooksController::class, 'testGenerateAudiobookChunk']
             )->name('audiobook.test-generate-chunk');
+
+            Route::get(
+                '/books/{book}/test-audiobook',
+                [AdminBooksController::class, 'testPrepareAudiobook']
+            )->name('admin.books.test.audiobook');
+
+            Route::get(
+                'audiobooks/{audiobook}/inspect',
+                [AdminBooksController::class, 'inspectAudiobook']
+            )->name('admin.audiobooks.inspect');
+
+            Route::get(
+                '/audiobooks/{audiobook}/chunks/{chunk}/test',
+                [AdminBooksController::class, 'testGenerateAudiobookChunk']
+            )->name('admin.audiobooks.test-chunk');
+
+            Route::get(
+                '/test/audiobooks/{audiobook}/chunks/{chunk}/recover',
+                [AdminBooksController::class, 'testRecoverAudiobookChunk']
+            )->name('admin.test.audiobook.recover');
 
         Route::get('/author/reviews', [AdminAuthorSpaceController::class, 'reviews'])
             ->middleware('admin.permission:author_reviews.view')

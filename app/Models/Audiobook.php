@@ -48,6 +48,11 @@ class Audiobook extends Model
         return $this->belongsTo(Book::class);
     }
 
+    public function request()
+    {
+        return $this->belongsTo(AudiobookRequest::class, 'audiobook_request_id');
+    }
+
     /**
      * Sections de l'audiobook.
      */
@@ -77,10 +82,10 @@ class Audiobook extends Model
     }
 
     public function chunks(): HasManyThrough
-{
-    return $this->hasManyThrough(
-        AudiobookChunk::class,
-        AudiobookSection::class
-    );
-}
+    {
+        return $this->hasManyThrough(
+            AudiobookChunk::class,
+            AudiobookSection::class
+        );
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Subcategory;
 use App\Models\Category;
+use App\Models\AudiobookRequest;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Book extends Model
@@ -111,5 +112,18 @@ class Book extends Model
     public function audiobook(): HasOne
     {
         return $this->hasOne(Audiobook::class);
+    }
+
+    public function audiobookRequests()
+    {
+        return $this->hasMany(AudiobookRequest::class);
+    }
+
+    public function publishedAudiobookRequest(): HasOne
+    {
+        return $this->hasOne(
+            AudiobookRequest::class,
+            'published_book_id'
+        );
     }
 }

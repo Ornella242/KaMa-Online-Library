@@ -446,9 +446,6 @@
 @push('styles')
 <style>
 .writer-book-show {
-    background:
-        radial-gradient(circle at top left, rgba(179,0,0,.06), transparent 40%),
-        linear-gradient(180deg, #faf8f7 0%, #f3f1f0 100%);
     border-radius: 18px;
     padding: 8px 4px 24px;
 }

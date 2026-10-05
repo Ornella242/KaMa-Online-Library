@@ -61,7 +61,7 @@ class ElevenLabsService
             'eleven_v3'
         );
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(120)->withHeaders([
             'xi-api-key' => config('services.elevenlabs.api_key'),
             'Content-Type' => 'application/json',
         ])->post(
@@ -275,5 +275,68 @@ class ElevenLabsService
             'Bonjour, ceci est un test de génération audio pour KaMa.',
             $voiceId
         );
+    }
+
+    public function downloadHistoryAudio(
+            string $historyItemId
+        ): string {
+        $response = Http::timeout(120)
+            ->withHeaders([
+                'xi-api-key' => config('services.elevenlabs.api_key'),
+            ])
+            ->get(
+                $this->baseUrl
+                . '/history/'
+                . $historyItemId
+                . '/audio'
+            );
+
+        if ($response->failed()) {
+            throw new RuntimeException(
+                'Impossible de récupérer l’audio ElevenLabs : '
+                . $response->body()
+            );
+        }
+
+        return $response->body();
+    }
+
+    public function getVoices(
+        ?string $language = null,
+        ?string $search = null,
+        int $pageSize = 100
+        ): array {
+        $query = [
+            'page_size' => min($pageSize, 100),
+        ];
+
+        if ($language) {
+            $query['language'] = $language;
+        }
+
+        if ($search) {
+            $query['search'] = $search;
+        }
+
+        $response = Http::timeout(30)
+            ->withHeaders([
+                'xi-api-key' => config(
+                    'services.elevenlabs.api_key'
+                ),
+                'Accept' => 'application/json',
+            ])
+            ->get(
+                'https://api.elevenlabs.io/v2/voices',
+                $query
+            );
+
+        if ($response->failed()) {
+            throw new RuntimeException(
+                'Impossible de récupérer les voix ElevenLabs. '
+                . $response->body()
+            );
+        }
+
+     return $response->json();
     }
 }

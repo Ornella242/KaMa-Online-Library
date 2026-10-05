@@ -16,7 +16,7 @@
             </button>
         </header>
 
-        <section class="categories-stats">
+        <div class="categories-stats">
             <article>
                 <span class="total"><i class="bi bi-tags-fill"></i></span>
                 <div><small>Catégories</small><strong>{{ number_format($totalCategories) }}</strong></div>
@@ -33,7 +33,7 @@
                 <span class="empty"><i class="bi bi-inbox"></i></span>
                 <div><small>Sans livre</small><strong>{{ number_format($emptyCategories) }}</strong></div>
             </article>
-        </section>
+        </div>
 
         <div class="categories-panel">
             <form method="GET" action="{{ route('admin.categories.index') }}" class="categories-toolbar">
