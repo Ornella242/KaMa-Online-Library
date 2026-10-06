@@ -747,27 +747,37 @@ Route::prefix('admin')
         Route::get(
                 '/audiobooks/{audiobook}/download',
                 [AdminBooksController::class, 'downloadAudiobook']
-            )->name('audiobooks.download');
+            )
+                ->middleware('admin.permission:audiobooks.download')
+                ->name('audiobooks.download');
 
         Route::get(
             'audiobooks/requests',
             [AudiobookRequestController::class, 'index']
-        )->name('audiobooks.requests');
+        )
+            ->middleware('admin.permission:audiobook_requests.view')
+            ->name('audiobooks.requests');
 
         Route::get(
             'admin/audiobooks/requests/{audiobookRequest}',
             [AudiobookRequestController::class, 'show']
-        )->name('audiobooks.requests.show');
+        )
+            ->middleware('admin.permission:audiobook_requests.show')
+            ->name('audiobooks.requests.show');
 
         Route::post(
             'admin/audiobooks/requests/{audiobookRequest}/generate',
             [AudiobookRequestController::class, 'generate']
-        )->name('audiobooks.requests.generate');
+        )
+            ->middleware('admin.permission:audiobook_requests.generate')
+            ->name('audiobooks.requests.generate');
 
         Route::post(
             'audiobooks/requests/{audiobookRequest}/publish',
             [AudiobookRequestController::class, 'publish']
-        )->name('audiobooks.requests.publish');
+        )
+            ->middleware('admin.permission:audiobook_requests.publish')
+            ->name('audiobooks.requests.publish');
         
             // Test audiobook voice generation
             Route::get('/audiobook/test-voice', [

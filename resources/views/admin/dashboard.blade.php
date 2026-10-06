@@ -32,7 +32,7 @@
         </div>
     </section>
 
-    <section class="admin-metric-grid">
+    <div class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon red"><i class="bi bi-bag-check-fill"></i></span>
             <div><small>Nombre de ventes</small><strong>{{ number_format($metrics['sales']) }}</strong><span>Achats de livres validés</span></div>
@@ -57,7 +57,7 @@
             <span class="admin-metric-icon dark"><i class="bi bi-cart-check-fill"></i></span>
             <div><small>Visites avec achat</small><strong>{{ number_format($metrics['converted_visits']) }}</strong><span>{{ $metrics['visits'] > 0 ? number_format(($metrics['converted_visits'] / $metrics['visits']) * 100, 1, ',', ' ').' % de conversion' : 'Aucune conversion enregistrée' }}</span></div>
         </article>
-    </section>
+    </div>
 
     <div class="admin-dashboard-grid">
         <section class="admin-panel">

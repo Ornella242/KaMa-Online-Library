@@ -112,19 +112,30 @@
                             @if($tab === 'pending')
                                 <td>
                                     <div class="categories-row-actions">
-                                        <form method="POST" action="{{ route('admin.sponsorships.approve', $item) }}">
-                                            @csrf
-                                            <button type="submit" class="edit">
-                                                <i class="bi bi-check-lg"></i> Valider
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ route('admin.sponsorships.reject', $item) }}"
-                                              onsubmit="return confirm('Refuser cette demande ?')">
-                                            @csrf
-                                            <button type="submit" class="delete">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </form>
+
+                                        @if(auth()->user()->hasAdminPermission('sponsorships.approve'))
+                                            <form method="POST" action="{{ route('admin.sponsorships.approve', $item) }}">
+                                                @csrf
+                                                <button type="submit" class="edit">
+                                                    <i class="bi bi-check-lg"></i>
+                                                    Valider
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('sponsorships.reject'))
+                                            <form
+                                                method="POST"
+                                                action="{{ route('admin.sponsorships.reject', $item) }}"
+                                                onsubmit="return confirm('Refuser cette demande ?')"
+                                            >
+                                                @csrf
+                                                <button type="submit" class="delete">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
                                     </div>
                                 </td>
                             @endif

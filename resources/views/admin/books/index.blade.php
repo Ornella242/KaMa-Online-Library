@@ -11,10 +11,15 @@
             <h2>Mes livres</h2>
             <p>Gérez vos ouvrages, sponsorisez-les gratuitement et suivez leur visibilité.</p>
         </div>
-        <a href="{{ route('admin.books.create') }}" class="admin-books-add">
-            <i class="bi bi-plus-lg"></i>
-            Ajouter un livre
-        </a>
+        @if(auth()->user()->hasAdminPermission('author_books.create'))
+            <a
+                href="{{ route('admin.books.create') }}"
+                class="admin-books-add"
+            >
+                <i class="bi bi-plus-lg"></i>
+                Ajouter un livre
+            </a>
+        @endif
     </div>
 
     @if(session('book_created'))
@@ -177,44 +182,100 @@
                             </td>
                             <td>
                                 <div class="admin-books-actions">
-                                    <a href="{{ route('admin.books.show', $book) }}" title="Voir" aria-label="Voir">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
 
-                                    <a href="{{ route('admin.books.edit', $book) }}" title="Modifier" aria-label="Modifier">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    @if(auth()->user()->hasAdminPermission('author_books.show'))
+                                        <a
+                                            href="{{ route('admin.books.show', $book) }}"
+                                            title="Voir"
+                                            aria-label="Voir"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    @endif
+
+                                    @if(auth()->user()->hasAdminPermission('author_books.edit'))
+                                        <a
+                                            href="{{ route('admin.books.edit', $book) }}"
+                                            title="Modifier"
+                                            aria-label="Modifier"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    @endif
 
                                     @if($book->status === 'published')
-                                        <a href="{{ route('admin.books.boost', $book) }}" title="Booster" aria-label="Booster">
-                                            <i class="bi bi-share"></i>
-                                        </a>
-                                        <a href="{{ route('admin.books.sponsor', $book) }}" class="primary" title="Sponsoriser" aria-label="Sponsoriser">
-                                            <i class="bi bi-megaphone"></i>
-                                        </a>
-                                        <a href="{{ route('admin.books.audiobook', $book) }}"
-                                            title="Audiobook"
-                                            aria-label="Audiobook"
-                                            class="audio">
+
+                                        @if(auth()->user()->hasAdminPermission('author_books.share'))
+                                            <a
+                                                href="{{ route('admin.books.boost', $book) }}"
+                                                title="Booster"
+                                                aria-label="Booster"
+                                            >
+                                                <i class="bi bi-share"></i>
+                                            </a>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('author_books.sponsor'))
+                                            <a
+                                                href="{{ route('admin.books.sponsor', $book) }}"
+                                                class="primary"
+                                                title="Sponsoriser"
+                                                aria-label="Sponsoriser"
+                                            >
+                                                <i class="bi bi-megaphone"></i>
+                                            </a>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('author_books.show'))
+                                            <a
+                                                href="{{ route('admin.books.audiobook', $book) }}"
+                                                title="Audiobook"
+                                                aria-label="Audiobook"
+                                                class="audio"
+                                            >
                                                 <i class="bi bi-headphones"></i>
-                                         </a>
+                                            </a>
+                                        @endif
+
                                     @elseif($book->status === 'revision_required')
-                                        <form action="{{ route('admin.books.resubmit', $book) }}" method="POST">
+
+                                        @if(auth()->user()->hasAdminPermission('editorial.resubmit'))
+                                            <form
+                                                action="{{ route('admin.books.resubmit', $book) }}"
+                                                method="POST"
+                                            >
+                                                @csrf
+                                                <button
+                                                    type="submit"
+                                                    title="Renvoyer"
+                                                    aria-label="Renvoyer"
+                                                >
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                    @endif
+
+                                    @if(auth()->user()->hasAdminPermission('author_books.delete'))
+                                        <form
+                                            action="{{ route('admin.books.destroy', $book) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Supprimer ce livre ?');"
+                                        >
                                             @csrf
-                                            <button type="submit" title="Renvoyer" aria-label="Renvoyer">
-                                                <i class="bi bi-arrow-repeat"></i>
+                                            @method('DELETE')
+
+                                            <button
+                                                type="submit"
+                                                title="Supprimer"
+                                                aria-label="Supprimer"
+                                            >
+                                                <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
                                     @endif
 
-                                    <form action="{{ route('admin.books.destroy', $book) }}" method="POST"
-                                          onsubmit="return confirm('Supprimer ce livre ?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" title="Supprimer" aria-label="Supprimer">
-                                            <i class="bi bi-trash3"></i>
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>

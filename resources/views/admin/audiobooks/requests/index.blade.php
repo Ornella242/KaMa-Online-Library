@@ -381,20 +381,17 @@
                                 {{-- Actions --}}
                                 <td>
 
-                                    <div class="audiobook-row-actions">
-
-                                        <a
-                                            href="{{ route(
-                                                'admin.audiobooks.requests.show',
-                                                $request
-                                            ) }}"
-                                            class="view"
-                                            title="Voir la demande"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-
-                                    </div>
+                                   @if(auth()->user()->hasAdminPermission('audiobook_requests.show'))
+                                        <div class="audiobook-row-actions">
+                                            <a
+                                                href="{{ route('admin.audiobooks.requests.show', $request) }}"
+                                                class="view"
+                                                title="Voir la demande"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    @endif
 
                                 </td>
 

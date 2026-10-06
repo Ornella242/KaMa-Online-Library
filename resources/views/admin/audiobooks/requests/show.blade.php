@@ -921,17 +921,16 @@
 
                         @csrf
 
-                        <button
-                            type="submit"
-                            class="audiobook-generate-btn">
-
-                            <i class="bi bi-headphones"></i>
-
-                            <span>
-                                Générer l’audiobook
-                            </span>
-
-                        </button>
+                        @if(auth()->user()->hasAdminPermission('audiobook_requests.generate'))
+                            <button
+                                type="submit"
+                                class="audiobook-generate-btn">
+                                <i class="bi bi-headphones"></i>
+                                <span>
+                                    Générer l’audiobook
+                                </span>
+                            </button>
+                        @endif
 
                     </form>
 
@@ -1582,19 +1581,17 @@
             {{-- Actions --}}
             <div class="audiobook-final-actions">
 
-                <a
-                    href="{{ route(
-                        'admin.audiobooks.download',
-                        $audiobook
-                    ) }}"
-                    class="audiobook-secondary-action">
-
-                    <i class="bi bi-download"></i>
-
-                    Télécharger
-
-                </a>
-
+                @if(auth()->user()->hasAdminPermission('audiobooks.download'))
+                    <a
+                        href="{{ route(
+                            'admin.audiobooks.download',
+                            $audiobook
+                        ) }}"
+                        class="audiobook-secondary-action">
+                            <i class="bi bi-download"></i>
+                            Télécharger
+                    </a>
+                @endif
 
                 @if ($audiobookRequest->published_book_id)
 
@@ -1617,15 +1614,17 @@
 
                 @else
 
-                   <button
-                        type="button"
-                        class="audiobook-publish-action"
-                        data-bs-toggle="modal"
-                        data-bs-target="#publishAudiobookModal"
-                    >
-                        <i class="bi bi-cloud-arrow-up"></i>
-                        Publier sur KaMa
-                    </button>
+                    @if(auth()->user()->hasAdminPermission('audiobook_requests.publish'))
+                        <button
+                            type="button"
+                            class="audiobook-publish-action"
+                            data-bs-toggle="modal"
+                            data-bs-target="#publishAudiobookModal"
+                        >
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            Publier sur KaMa
+                        </button>
+                    @endif
 
                 @endif
 

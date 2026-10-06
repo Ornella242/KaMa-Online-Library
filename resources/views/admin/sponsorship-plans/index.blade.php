@@ -11,9 +11,16 @@
             <h2>Formules de sponsoring</h2>
             <p>Définissez les offres proposées aux auteurs pour mettre leurs livres en avant.</p>
         </div>
-        <button type="button" class="categories-add js-categories-open" data-overlay-target="createPlanOverlay">
-            <i class="bi bi-plus-lg"></i> Ajouter une formule
-        </button>
+        @if(auth()->user()->hasAdminPermission('sponsorship_plans.create'))
+            <button
+                type="button"
+                class="categories-add js-categories-open"
+                data-overlay-target="createPlanOverlay"
+            >
+                <i class="bi bi-plus-lg"></i>
+                Ajouter une formule
+            </button>
+        @endif
     </header>
 
     @if(session('error'))
@@ -57,12 +64,28 @@
                             <td>{{ number_format($plan->sponsorships_count) }}</td>
                             <td>
                                 <div class="categories-row-actions">
-                                    <button type="button" class="edit js-categories-open" data-overlay-target="editPlan-{{ $plan->id }}">
-                                        <i class="bi bi-pencil"></i> Modifier
-                                    </button>
-                                    <button type="button" class="delete js-categories-open" data-overlay-target="deletePlan-{{ $plan->id }}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+
+                                    @if(auth()->user()->hasAdminPermission('sponsorship_plans.edit'))
+                                        <button
+                                            type="button"
+                                            class="edit js-categories-open"
+                                            data-overlay-target="editPlan-{{ $plan->id }}"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                            Modifier
+                                        </button>
+                                    @endif
+
+                                    @if(auth()->user()->hasAdminPermission('sponsorship_plans.delete'))
+                                        <button
+                                            type="button"
+                                            class="delete js-categories-open"
+                                            data-overlay-target="deletePlan-{{ $plan->id }}"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    @endif
+
                                 </div>
                             </td>
                         </tr>

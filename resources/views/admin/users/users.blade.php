@@ -19,9 +19,16 @@
                 <h2>Gestion des utilisateurs</h2>
                 <p>Gérez les lecteurs, écrivains et administrateurs de la plateforme KaMa.</p>
             </div>
-            <button type="button" class="users-add js-users-open" data-overlay-target="createUserOverlay">
-                <i class="bi bi-person-plus"></i> Ajouter un utilisateur
-            </button>
+            @if(auth()->user()->hasAdminPermission('users.create'))
+                <button
+                    type="button"
+                    class="users-add js-users-open"
+                    data-overlay-target="createUserOverlay"
+                >
+                    <i class="bi bi-person-plus"></i>
+                    Ajouter un utilisateur
+                </button>
+            @endif
         </header>
 
         <div class="users-stats">
@@ -141,23 +148,41 @@
                                     </td>
                                     <td>
                                         <div class="users-row-actions">
-                                            <a href="{{ route('admin.show', $user) }}" class="view" title="Voir le profil">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <button type="button"
+                                           @if(auth()->user()->hasAdminPermission('users.show'))
+                                                <a
+                                                    href="{{ route('admin.show', $user) }}"
+                                                    class="view"
+                                                    title="Voir le profil"
+                                                >
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            @endif
+
+                                            @if(auth()->user()->hasAdminPermission('users.edit'))
+                                                <button
+                                                    type="button"
                                                     class="edit js-users-open"
                                                     data-overlay-target="editUser-{{ $user->id }}"
-                                                    title="Modifier">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            @if($user->id !== auth()->id())
-                                                <button type="button"
-                                                        class="delete js-users-open"
-                                                        data-overlay-target="deleteUser-{{ $user->id }}"
-                                                        title="Supprimer">
+                                                    title="Modifier"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            @endif
+
+                                            @if(
+                                                $user->id !== auth()->id()
+                                                && auth()->user()->hasAdminPermission('users.delete')
+                                            )
+                                                <button
+                                                    type="button"
+                                                    class="delete js-users-open"
+                                                    data-overlay-target="deleteUser-{{ $user->id }}"
+                                                    title="Supprimer"
+                                                >
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             @endif
+                                            
                                         </div>
                                     </td>
                                 </tr>

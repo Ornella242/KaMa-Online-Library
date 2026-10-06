@@ -11,9 +11,16 @@
                 <h2>Gestion des catégories</h2>
                 <p>Structurez la bibliothèque en catégories et sous-catégories pour faciliter la découverte des livres.</p>
             </div>
-            <button type="button" class="categories-add js-categories-open" data-overlay-target="createCategoryOverlay">
-                <i class="bi bi-plus-lg"></i> Ajouter une catégorie
-            </button>
+            @if(auth()->user()->hasAdminPermission('categories.create'))
+                <button
+                    type="button"
+                    class="categories-add js-categories-open"
+                    data-overlay-target="createCategoryOverlay"
+                >
+                    <i class="bi bi-plus-lg"></i>
+                    Ajouter une catégorie
+                </button>
+            @endif
         </header>
 
         <div class="categories-stats">
@@ -116,18 +123,28 @@
                                 </td>
                                 <td>
                                     <div class="categories-row-actions">
-                                        <button type="button"
+                                        @if(auth()->user()->hasAdminPermission('categories.edit'))
+                                            <button
+                                                type="button"
                                                 class="edit js-categories-open"
                                                 data-overlay-target="editCategory-{{ $category->id }}"
-                                                title="Modifier la catégorie">
-                                            <i class="bi bi-pencil"></i> Modifier
-                                        </button>
-                                        <button type="button"
+                                                title="Modifier la catégorie"
+                                            >
+                                                <i class="bi bi-pencil"></i>
+                                                Modifier
+                                            </button>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('categories.delete'))
+                                            <button
+                                                type="button"
                                                 class="delete js-categories-open"
                                                 data-overlay-target="deleteCategory-{{ $category->id }}"
-                                                title="Supprimer la catégorie">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                                title="Supprimer la catégorie"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

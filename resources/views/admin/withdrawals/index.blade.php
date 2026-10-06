@@ -87,9 +87,15 @@
                             <td><span class="badge text-bg-{{ $badge }}">{{ $withdrawal->statusLabel() }}</span></td>
                             <td>{{ $withdrawal->created_at?->format('d/m/Y H:i') }}</td>
                             <td>
-                                <a href="{{ route('admin.withdrawals.show', $withdrawal) }}" class="admin-row-action" title="Traiter">
-                                    <i class="bi bi-arrow-up-right"></i>
-                                </a>
+                                @if(auth()->user()->hasAdminPermission('withdrawals.view'))
+                                    <a
+                                        href="{{ route('admin.withdrawals.show', $withdrawal) }}"
+                                        class="admin-row-action"
+                                        title="Traiter"
+                                    >
+                                        <i class="bi bi-arrow-up-right"></i>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @empty
