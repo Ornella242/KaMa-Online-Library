@@ -48,7 +48,7 @@
         {{-- ==========================================
              STATISTIQUES
         =========================================== --}}
-        <section class="roles-stats">
+        <div class="roles-stats">
 
             <article>
                 <span class="total">
@@ -94,7 +94,7 @@
                 </div>
             </article>
 
-        </section>
+        </div>
 
 
         {{-- ==========================================

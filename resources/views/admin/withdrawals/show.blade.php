@@ -84,12 +84,20 @@
             </div>
 
             @if($withdrawal->status === 'initiated')
-                <form method="POST" action="{{ route('admin.withdrawals.process', $withdrawal) }}" class="mb-3">
-                    @csrf
-                    <button class="btn btn-primary w-100" type="submit">
-                        <i class="bi bi-play-circle me-1"></i> Passer en cours
-                    </button>
-                </form>
+                @if(auth()->user()->hasAdminPermission('withdrawals.process'))
+                    <form
+                        method="POST"
+                        action="{{ route('admin.withdrawals.process', $withdrawal) }}"
+                        class="mb-3"
+                    >
+                        @csrf
+
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="bi bi-play-circle me-1"></i>
+                            Passer en cours
+                        </button>
+                    </form>
+                @endif
             @endif
 
             @if(in_array($withdrawal->status, ['initiated', 'processing'], true))
@@ -100,21 +108,29 @@
                            value="{{ old('payout_reference', $withdrawal->payout_reference) }}"
                            placeholder="Ex. virement Ecobank du 02/10, reçu MoMo…">
                     <label class="form-label">Note (optionnel)</label>
-                    <textarea name="admin_note" class="form-control mb-2" rows="2" placeholder="Précision interne">{{ old('admin_note', $withdrawal->admin_note) }}</textarea>
-                    <button class="btn btn-success w-100" type="submit"
-                            onclick="return confirm('Confirmer que le versement net a bien été envoyé à l’auteur ?')">
-                        <i class="bi bi-check2-circle me-1"></i> Marquer comme terminé
-                    </button>
+                    <textarea name="admin_note" class="form-control mb-2" rows="2" placeholder="Référence du virement, opérateur…">{{ old('admin_note', $withdrawal->admin_note) }}</textarea>
+                    @if(auth()->user()->hasAdminPermission('withdrawals.complete'))
+                        <button
+                            class="btn btn-success w-100"
+                            type="submit"
+                            onclick="return confirm('Confirmer que le versement net a bien été envoyé à l’auteur ?')"
+                        >
+                            <i class="bi bi-check2-circle me-1"></i>
+                            Marquer comme terminé
+                        </button>
+                    @endif
                 </form>
 
                 <form method="POST" action="{{ route('admin.withdrawals.reject', $withdrawal) }}">
                     @csrf
                     <label class="form-label">Motif du refus (optionnel)</label>
                     <textarea name="admin_note" class="form-control mb-2" rows="2" placeholder="Ex. coordonnées invalides">{{ old('admin_note') }}</textarea>
-                    <button class="btn btn-outline-danger w-100" type="submit"
-                            onclick="return confirm('Refuser cette demande ? Le montant sera recrédité au portefeuille auteur.')">
-                        <i class="bi bi-x-circle me-1"></i> Refuser et rembourser
-                    </button>
+                    @if(auth()->user()->hasAdminPermission('withdrawals.reject'))
+                        <button class="btn btn-outline-danger w-100" type="submit"
+                                onclick="return confirm('Refuser cette demande ? Le montant sera recrédité au portefeuille auteur.')">
+                            <i class="bi bi-x-circle me-1"></i> Refuser et rembourser
+                        </button>
+                    @endif
                 </form>
             @else
                 <div class="alert alert-secondary mb-0">

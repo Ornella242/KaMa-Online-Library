@@ -17,7 +17,7 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <section class="admin-metric-grid">
+    <div class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon amber"><i class="bi bi-hourglass-split"></i></span>
             <div><small>Initiés</small><strong>{{ $stats['initiated'] }}</strong><span>En attente de traitement</span></div>
@@ -34,7 +34,7 @@
             <span class="admin-metric-icon red"><i class="bi bi-cash-stack"></i></span>
             <div><small>Net à verser</small><strong class="admin-metric-amount">{{ number_format($stats['pending_amount'], 2, '.', ',') }} €</strong><span>Demandes ouvertes</span></div>
         </article>
-    </section>
+    </div>
 
     <section class="admin-panel">
         <div class="admin-panel-header">
@@ -87,9 +87,15 @@
                             <td><span class="badge text-bg-{{ $badge }}">{{ $withdrawal->statusLabel() }}</span></td>
                             <td>{{ $withdrawal->created_at?->format('d/m/Y H:i') }}</td>
                             <td>
-                                <a href="{{ route('admin.withdrawals.show', $withdrawal) }}" class="admin-row-action" title="Traiter">
-                                    <i class="bi bi-arrow-up-right"></i>
-                                </a>
+                                @if(auth()->user()->hasAdminPermission('withdrawals.view'))
+                                    <a
+                                        href="{{ route('admin.withdrawals.show', $withdrawal) }}"
+                                        class="admin-row-action"
+                                        title="Traiter"
+                                    >
+                                        <i class="bi bi-arrow-up-right"></i>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @empty

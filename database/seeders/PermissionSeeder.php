@@ -59,6 +59,38 @@ class PermissionSeeder extends Seeder
                 'label' => 'Rejeter un livre',
                 'description' => 'Permet de rejeter un livre soumis à la vérification éditoriale.',
             ],
+            [
+                'name' => 'editorial.resubmit',
+                'label' => 'Renvoyer un livre',
+                'description' => 'Permet de renvoyer un livre nécessitant des corrections après une vérification éditoriale.',
+            ],
+
+            // Auiobooks
+            [
+                'name' => 'audiobook_requests.view',
+                'label' => 'Voir les demandes d’audiobook',
+                'description' => 'Permet de consulter la liste des demandes d’audiobook.',
+            ],
+            [
+                'name' => 'audiobook_requests.show',
+                'label' => 'Voir une demande d’audiobook',
+                'description' => 'Permet de consulter les détails d’une demande d’audiobook.',
+            ],
+            [
+                'name' => 'audiobook_requests.generate',
+                'label' => 'Générer un audiobook',
+                'description' => 'Permet de lancer la génération d’un audiobook à partir d’une demande.',
+            ],
+            [
+                'name' => 'audiobook_requests.publish',
+                'label' => 'Publier un audiobook',
+                'description' => 'Permet de publier un audiobook sur KaMa.',
+            ],
+            [
+                'name' => 'audiobooks.download',
+                'label' => 'Télécharger un audiobook',
+                'description' => 'Permet de télécharger un audiobook généré.',
+            ],
 
             // ==========================================
             // CATÉGORIES

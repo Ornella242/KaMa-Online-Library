@@ -21,7 +21,7 @@
             </div>
         </section>
 
-        <section class="admin-metric-grid">
+        <div class="admin-metric-grid">
             <article class="admin-metric-card">
                 <span class="admin-metric-icon green"><i class="bi bi-wallet2"></i></span>
                 <div>
@@ -54,7 +54,7 @@
                     <span>Débits enregistrés</span>
                 </div>
             </article>
-        </section>
+        </div>
 
         <section class="admin-panel">
             <div class="admin-panel-header">

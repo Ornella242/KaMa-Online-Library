@@ -16,7 +16,7 @@
             </a>
         </header>
 
-        <section class="editorial-stats">
+        <div class="editorial-stats">
             <article>
                 <span class="waiting"><i class="bi bi-clock-history"></i></span>
                 <div><small>En attente ce mois</small><strong>{{ number_format($waitingReviewBooks) }}</strong></div>
@@ -33,7 +33,7 @@
                 <span class="revision"><i class="bi bi-arrow-counterclockwise"></i></span>
                 <div><small>Retournés ce mois</small><strong>{{ number_format($rejectedBooks) }}</strong></div>
             </article>
-        </section>
+        </div>
 
         <div class="editorial-panel">
             <header>
@@ -110,19 +110,40 @@
                                 </td>
                                 <td>
                                     <div class="editorial-row-actions">
-                                        <button type="button" class="view js-editorial-open"
-                                            data-overlay-target="editorialDetail-{{ $book->id }}"
-                                            title="Voir toutes les informations">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        <button type="button" class="publish js-editorial-open"
-                                            data-overlay-target="publishBook-{{ $book->id }}">
-                                            <i class="bi bi-check2-circle"></i> Publier
-                                        </button>
-                                        <button type="button" class="revision js-editorial-open"
-                                            data-overlay-target="revisionBook-{{ $book->id }}">
-                                            <i class="bi bi-arrow-counterclockwise"></i> À corriger
-                                        </button>
+
+                                        @if(auth()->user()->hasAdminPermission('editorial.view'))
+                                            <button
+                                                type="button"
+                                                class="view js-editorial-open"
+                                                data-overlay-target="editorialDetail-{{ $book->id }}"
+                                                title="Voir toutes les informations"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('editorial.approve'))
+                                            <button
+                                                type="button"
+                                                class="publish js-editorial-open"
+                                                data-overlay-target="publishBook-{{ $book->id }}"
+                                            >
+                                                <i class="bi bi-check2-circle"></i>
+                                                Publier
+                                            </button>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('editorial.reject'))
+                                            <button
+                                                type="button"
+                                                class="revision js-editorial-open"
+                                                data-overlay-target="revisionBook-{{ $book->id }}"
+                                            >
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                À corriger
+                                            </button>
+                                        @endif
+
                                     </div>
                                 </td>
                             </tr>

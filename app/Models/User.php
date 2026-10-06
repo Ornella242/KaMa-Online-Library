@@ -111,6 +111,11 @@ class User extends Authenticatable implements MustVerifyEmail
             return false;
         }
 
+        // Le main admin a accès à toutes les permissions
+        if ($this->is_main_admin) {
+            return true;
+        }
+
         return $this->adminRoles()
             ->whereHas('permissions', function ($query) use ($permission) {
                 $query->where('name', $permission);
@@ -119,70 +124,70 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function adminLandingRoute(): ?string
-{
-    if (!$this->isAdmin()) {
+    {
+        if (!$this->isAdmin()) {
+            return null;
+        }
+
+        if ($this->hasAdminPermission('dashboard.view')) {
+            return route('admin.dashboard');
+        }
+
+        if ($this->hasAdminPermission('books.view')) {
+            return route('admin.books.all');
+        }
+
+        if ($this->hasAdminPermission('editorial.view')) {
+            return route('admin.books.editorial.queue');
+        }
+
+        if ($this->hasAdminPermission('categories.view')) {
+            return route('admin.categories.index');
+        }
+
+        if ($this->hasAdminPermission('users.view')) {
+            return route('admin.users');
+        }
+
+        if ($this->hasAdminPermission('author_books.view')) {
+            return route('admin.books.index');
+        }
+
+        if ($this->hasAdminPermission('sponsorship_plans.view')) {
+            return route('admin.sponsorship-plans.index');
+        }
+
+        if ($this->hasAdminPermission('sponsorships.view')) {
+            return route('admin.sponsorships.index');
+        }
+
+        if ($this->hasAdminPermission('notifications.view')) {
+            return route('admin.author.activities');
+        }
+
+        if ($this->hasAdminPermission('platform_wallet.view')) {
+            return route('admin.platform-wallet');
+        }
+
+        if ($this->hasAdminPermission('withdrawals.view')) {
+            return route('admin.withdrawals.index');
+        }
+
+        if (
+            $this->hasAdminPermission('settings.commerce.view') ||
+            $this->hasAdminPermission('settings.mobile_money.view') ||
+            $this->hasAdminPermission('settings.profile.view') ||
+            $this->hasAdminPermission('settings.security.view')
+        ) {
+            return route('admin.settings');
+        }
+
+        if ($this->hasAdminPermission('roles.view')) {
+            return route('admin.roles.index');
+        }
+
         return null;
     }
-
-    if ($this->hasAdminPermission('dashboard.view')) {
-        return route('admin.dashboard');
-    }
-
-    if ($this->hasAdminPermission('books.view')) {
-        return route('admin.books.all');
-    }
-
-    if ($this->hasAdminPermission('editorial.view')) {
-        return route('admin.books.editorial.queue');
-    }
-
-    if ($this->hasAdminPermission('categories.view')) {
-        return route('admin.categories.index');
-    }
-
-    if ($this->hasAdminPermission('users.view')) {
-        return route('admin.users');
-    }
-
-    if ($this->hasAdminPermission('author_books.view')) {
-        return route('admin.books.index');
-    }
-
-    if ($this->hasAdminPermission('sponsorship_plans.view')) {
-        return route('admin.sponsorship-plans.index');
-    }
-
-    if ($this->hasAdminPermission('sponsorships.view')) {
-        return route('admin.sponsorships.index');
-    }
-
-    if ($this->hasAdminPermission('notifications.view')) {
-        return route('admin.author.activities');
-    }
-
-    if ($this->hasAdminPermission('platform_wallet.view')) {
-        return route('admin.platform-wallet');
-    }
-
-    if ($this->hasAdminPermission('withdrawals.view')) {
-        return route('admin.withdrawals.index');
-    }
-
-    if (
-        $this->hasAdminPermission('settings.commerce.view') ||
-        $this->hasAdminPermission('settings.mobile_money.view') ||
-        $this->hasAdminPermission('settings.profile.view') ||
-        $this->hasAdminPermission('settings.security.view')
-    ) {
-        return route('admin.settings');
-    }
-
-    if ($this->hasAdminPermission('roles.view')) {
-        return route('admin.roles.index');
-    }
-
-    return null;
-}
 
     /**
      * Accès à l’espace auteur (écrivain ou admin publiant ses propres livres).

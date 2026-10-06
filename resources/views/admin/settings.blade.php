@@ -28,218 +28,280 @@
 
     <ul class="nav nav-pills admin-settings-nav mb-4" id="adminSettingsTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link {{ $activeTab === 'commerce' ? 'active' : '' }}"
-                    id="tab-commerce-btn"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-commerce"
-                    data-settings-tab="commerce"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-commerce"
-                    aria-selected="{{ $activeTab === 'commerce' ? 'true' : 'false' }}">
-                <i class="bi bi-cash-stack"></i>
-                <span>Commerce</span>
-            </button>
+            @if(auth()->user()->hasAdminPermission('settings.commerce.view'))
+                <button class="nav-link {{ $activeTab === 'commerce' ? 'active' : '' }}"
+                        id="tab-commerce-btn"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tab-commerce"
+                        data-settings-tab="commerce"
+                        type="button"
+                        role="tab"
+                        aria-controls="tab-commerce"
+                        aria-selected="{{ $activeTab === 'commerce' ? 'true' : 'false' }}">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Commerce</span>
+                </button>
+            @endif
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link {{ $activeTab === 'momo' ? 'active' : '' }}"
-                    id="tab-momo-btn"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-momo"
-                    data-settings-tab="momo"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-momo"
-                    aria-selected="{{ $activeTab === 'momo' ? 'true' : 'false' }}">
-                <i class="bi bi-phone"></i>
-                <span>Mobile Money</span>
-            </button>
+            @if(auth()->user()->hasAdminPermission('settings.momo.view'))
+                <button class="nav-link {{ $activeTab === 'momo' ? 'active' : '' }}"
+                        id="tab-momo-btn"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tab-momo"
+                        data-settings-tab="momo"
+                        type="button"
+                        role="tab"
+                        aria-controls="tab-momo"
+                        aria-selected="{{ $activeTab === 'momo' ? 'true' : 'false' }}">
+                    <i class="bi bi-phone"></i>
+                    <span>Mobile Money</span>
+                </button>
+            @endif
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link {{ $activeTab === 'profil' ? 'active' : '' }}"
-                    id="tab-profil-btn"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-profil"
-                    data-settings-tab="profil"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-profil"
-                    aria-selected="{{ $activeTab === 'profil' ? 'true' : 'false' }}">
-                <i class="bi bi-person-vcard"></i>
-                <span>Profil</span>
-            </button>
+            @if(auth()->user()->hasAdminPermission('settings.profil.view'))
+                <button class="nav-link {{ $activeTab === 'profil' ? 'active' : '' }}"
+                        id="tab-profil-btn"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tab-profil"
+                        data-settings-tab="profil"
+                        type="button"
+                        role="tab"
+                        aria-controls="tab-profil"
+                        aria-selected="{{ $activeTab === 'profil' ? 'true' : 'false' }}">
+                    <i class="bi bi-person-vcard"></i>
+                    <span>Profil</span>
+                </button>
+            @endif
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link {{ $activeTab === 'securite' ? 'active' : '' }}"
-                    id="tab-securite-btn"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-securite"
-                    data-settings-tab="securite"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-securite"
-                    aria-selected="{{ $activeTab === 'securite' ? 'true' : 'false' }}">
-                <i class="bi bi-shield-check"></i>
-                <span>Sécurité</span>
-            </button>
+            @if(auth()->user()->hasAdminPermission('settings.securite.view'))
+                <button class="nav-link {{ $activeTab === 'securite' ? 'active' : '' }}"
+                        id="tab-securite-btn"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tab-securite"
+                        data-settings-tab="securite"
+                        type="button"
+                        role="tab"
+                        aria-controls="tab-securite"
+                        aria-selected="{{ $activeTab === 'securite' ? 'true' : 'false' }}">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Sécurité</span>
+                </button>
+            @endif
         </li>
     </ul>
 
     <div class="tab-content" id="adminSettingsTabsContent">
+        @if(auth()->user()->hasAdminPermission('settings.commerce.view'))
+            {{-- Commerce --}}
+            <div class="tab-pane fade {{ $activeTab === 'commerce' ? 'show active' : '' }}"
+                id="tab-commerce"
+                role="tabpanel"
+                aria-labelledby="tab-commerce-btn"
+                tabindex="0">
 
-        {{-- Commerce --}}
-        <div class="tab-pane fade {{ $activeTab === 'commerce' ? 'show active' : '' }}"
-             id="tab-commerce"
-             role="tabpanel"
-             aria-labelledby="tab-commerce-btn"
-             tabindex="0">
-
-            <section class="admin-publication-fees">
-                <div class="admin-publication-fees-header">
-                    <div>
-                        <span>Configuration commerciale</span>
-                        <h4>Frais de publication des livres</h4>
-                        <p>Ces montants sont appliqués automatiquement selon le format choisi par l’écrivain.</p>
-                    </div>
-                    <span class="admin-publication-fees-lock">
-                        <i class="bi bi-shield-lock"></i> Montants contrôlés par l’administration
-                    </span>
-                </div>
-
-                <form method="POST" action="{{ route('admin.settings.publication-fees.update') }}">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="admin-publication-fees-grid">
-                        <label>
-                            <span class="admin-publication-fee-icon"><i class="bi bi-file-earmark-text"></i></span>
-                            <div>
-                                <strong>Livre écrit — Ebook</strong>
-                                <small>Frais demandés pour le dépôt d’un fichier PDF.</small>
-                                <div class="admin-publication-fee-input">
-                                    <input type="number"
-                                           name="ebook_amount"
-                                           min="0.01"
-                                           max="999999"
-                                           step="0.01"
-                                           value="{{ old('ebook_amount', data_get($publicationFees, 'ebook.amount', 10)) }}"
-                                           required>
-                                    <span class="fee-currency-preview">EUR</span>
-                                </div>
-                            </div>
-                        </label>
-
-                        <label>
-                            <span class="admin-publication-fee-icon audio"><i class="bi bi-headphones"></i></span>
-                            <div>
-                                <strong>Livre audio</strong>
-                                <small>Frais demandés pour le dépôt d’un fichier audio.</small>
-                                <div class="admin-publication-fee-input">
-                                    <input type="number"
-                                           name="audio_amount"
-                                           min="0.01"
-                                           max="999999"
-                                           step="0.01"
-                                           value="{{ old('audio_amount', data_get($publicationFees, 'audio.amount', 15)) }}"
-                                           required>
-                                    <span class="fee-currency-preview">EUR</span>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="admin-publication-fees-footer">
+                <section class="admin-publication-fees">
+                    <div class="admin-publication-fees-header">
                         <div>
-                            <label for="publication-fee-currency">Devise</label>
-                            <input id="publication-fee-currency"
-                                   type="text"
-                                   name="currency"
-                                   maxlength="3"
-                                   value="{{ old('currency', data_get($publicationFees, 'ebook.currency', 'EUR')) }}"
-                                   readonly
-                                   required>
+                            <span>Configuration commerciale</span>
+                            <h4>Frais de publication des livres</h4>
+                            <p>Ces montants sont appliqués automatiquement selon le format choisi par l’écrivain.</p>
                         </div>
-                        <p>
-                            <i class="bi bi-info-circle"></i>
-                            Les nouvelles valeurs s’appliquent aux prochaines demandes de paiement uniquement.
-                        </p>
-                        <button type="submit">
-                            <i class="bi bi-check2-circle"></i> Enregistrer les frais
-                        </button>
+                        <span class="admin-publication-fees-lock">
+                            <i class="bi bi-shield-lock"></i> Montants contrôlés par l’administration
+                        </span>
                     </div>
-                </form>
-            </section>
 
-            <section class="admin-publication-fees" style="margin-top:22px;">
-                <div class="admin-publication-fees-header">
-                    <div>
-                        <span>Configuration commerciale</span>
-                        <h4>Commissions et retraits</h4>
-                        <p>Part KaMa prélevée sur chaque vente, frais de versement et montant minimum de retrait.</p>
+                    <form method="POST" action="{{ route('admin.settings.publication-fees.update') }}">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="admin-publication-fees-grid">
+                            <label>
+                                <span class="admin-publication-fee-icon"><i class="bi bi-file-earmark-text"></i></span>
+                                <div>
+                                    <strong>Livre écrit — Ebook</strong>
+                                    <small>Frais demandés pour le dépôt d’un fichier PDF.</small>
+                                    <div class="admin-publication-fee-input">
+                                        <input type="number"
+                                            name="ebook_amount"
+                                            min="0.01"
+                                            max="999999"
+                                            step="0.01"
+                                            value="{{ old('ebook_amount', data_get($publicationFees, 'ebook.amount', 10)) }}"
+                                            required>
+                                        <span class="fee-currency-preview">EUR</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label>
+                                <span class="admin-publication-fee-icon audio"><i class="bi bi-headphones"></i></span>
+                                <div>
+                                    <strong>Livre audio</strong>
+                                    <small>Frais demandés pour le dépôt d’un fichier audio.</small>
+                                    <div class="admin-publication-fee-input">
+                                        <input type="number"
+                                            name="audio_amount"
+                                            min="0.01"
+                                            max="999999"
+                                            step="0.01"
+                                            value="{{ old('audio_amount', data_get($publicationFees, 'audio.amount', 15)) }}"
+                                            required>
+                                        <span class="fee-currency-preview">EUR</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="admin-publication-fees-footer">
+                            <div>
+                                <label for="publication-fee-currency">Devise</label>
+                                <input id="publication-fee-currency"
+                                    type="text"
+                                    name="currency"
+                                    maxlength="3"
+                                    value="{{ old('currency', data_get($publicationFees, 'ebook.currency', 'EUR')) }}"
+                                    readonly
+                                    required>
+                            </div>
+                            <p>
+                                <i class="bi bi-info-circle"></i>
+                                Les nouvelles valeurs s’appliquent aux prochaines demandes de paiement uniquement.
+                            </p>
+                            <button type="submit">
+                                <i class="bi bi-check2-circle"></i> Enregistrer les frais
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="admin-publication-fees" style="margin-top:22px;">
+                    <div class="admin-publication-fees-header">
+                        <div>
+                            <span>Configuration commerciale</span>
+                            <h4>Retraits auteurs</h4>
+                            <p>Commission prélevée sur chaque demande de retrait et montant minimum autorisé.</p>
+                        </div>
+                        <span class="admin-publication-fees-lock">
+                            <i class="bi bi-percent"></i> Appliqué à chaque nouvelle demande
+                        </span>
                     </div>
-                    <span class="admin-publication-fees-lock">
-                        <i class="bi bi-percent"></i> Appliqué à chaque nouvelle demande
-                    </span>
-                </div>
 
-                <form method="POST" action="{{ route('admin.settings.withdrawal.update') }}">
-                    @csrf
-                    @method('PUT')
+                    <form method="POST" action="{{ route('admin.settings.withdrawal.update') }}">
+                        @csrf
+                        @method('PUT')
 
-                    <div class="admin-publication-fees-grid">
-                        <label>
-                            <span class="admin-publication-fee-icon"><i class="bi bi-pie-chart"></i></span>
-                            <div>
-                                <strong>Part plateforme sur les ventes</strong>
-                                <small>Prélevée à chaque achat. Le portefeuille auteur ne reçoit que le reste.</small>
-                                <div class="admin-publication-fee-input">
-                                    <input type="number"
-                                           name="sale_platform_percent"
-                                           min="0"
-                                           max="90"
-                                           step="0.01"
-                                           value="{{ old('sale_platform_percent', $salePlatformPercent) }}"
-                                           required>
-                                    <span class="fee-currency-preview">%</span>
+                        <div class="admin-publication-fees-grid">
+                            <label>
+                                <span class="admin-publication-fee-icon"><i class="bi bi-percent"></i></span>
+                                <div>
+                                    <strong>Commission de retrait</strong>
+                                    <small>Pourcentage prélevé par KaMa sur le montant demandé.</small>
+                                    <div class="admin-publication-fee-input">
+                                        <input type="number"
+                                            name="withdrawal_commission_percent"
+                                            min="0"
+                                            max="50"
+                                            step="0.01"
+                                            value="{{ old('withdrawal_commission_percent', $withdrawalCommissionPercent) }}"
+                                            required>
+                                        <span class="fee-currency-preview">%</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label>
+                                <span class="admin-publication-fee-icon audio"><i class="bi bi-cash-coin"></i></span>
+                                <div>
+                                    <strong>Montant minimum</strong>
+                                    <small>Seuil en dessous duquel un retrait n’est pas possible.</small>
+                                    <div class="admin-publication-fee-input">
+                                        <input type="number"
+                                            name="withdrawal_minimum_amount"
+                                            min="1"
+                                            max="999999"
+                                            step="0.01"
+                                            value="{{ old('withdrawal_minimum_amount', $withdrawalMinimumAmount) }}"
+                                            required>
+                                        <span class="fee-currency-preview">EUR</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="admin-publication-fees-footer">
+                            <p>
+                                <i class="bi bi-info-circle"></i>
+                                Exemple : 100 € demandés avec 5 % → commission 5 €, net versé 95 €.
+                            </p>
+                            <button type="submit">
+                                <i class="bi bi-check2-circle"></i> Enregistrer les retraits
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        @endif
+
+        @if(auth()->user()->hasAdminPermission('settings.momo.view'))
+            {{-- Mobile Money --}}
+            <div class="tab-pane fade {{ $activeTab === 'momo' ? 'show active' : '' }}"
+                id="tab-momo"
+                role="tabpanel"
+                aria-labelledby="tab-momo-btn"
+                tabindex="0">
+
+                <section class="admin-publication-fees admin-momo-rates">
+                    <div class="admin-publication-fees-header">
+                        <div>
+                            <span>CurrencyFreaks</span>
+                            <h4>Taux Mobile Money (1 EUR → devise locale)</h4>
+                            <p>Taux live récupérés automatiquement. Plus de saisie manuelle.</p>
+                        </div>
+                        <span class="admin-publication-fees-lock">
+                            <i class="bi bi-currency-exchange"></i> {{ count($pawaPayRates) }} devises
+                        </span>
+                    </div>
+
+                    @if(!($fxMeta['configured'] ?? false))
+                        <div class="alert alert-warning m-4 mb-0">
+                            <strong>Clé API manquante.</strong>
+                            Ajoutez <code>CURRENCYFREAKS_API_KEY</code> dans le fichier <code>.env</code>
+                            (clé gratuite sur
+                            <a href="https://currencyfreaks.com/signup" target="_blank" rel="noopener">currencyfreaks.com</a>).
+                        </div>
+                    @elseif(!empty($fxMeta['error']))
+                        <div class="alert alert-danger m-4 mb-0">
+                            {{ $fxMeta['error'] }}
+                        </div>
+                    @endif
+
+                    <div class="admin-momo-rates-grid">
+                        @forelse($pawaPayRates as $currency => $rate)
+                            @php
+                                $meta = $pawaPayCurrencyMeta[$currency] ?? null;
+                            @endphp
+                            <div class="admin-momo-rate-card">
+                                <div class="admin-momo-rate-top">
+                                    <strong>{{ $currency }}</strong>
+                                </div>
+                                <span class="admin-momo-rate-name">{{ $meta['label'] ?? $currency }}</span>
+                                @if(!empty($meta['countries']))
+                                    <small class="admin-momo-rate-countries">{{ $meta['countries'] }}</small>
+                                @endif
+                                <div class="admin-momo-rate-value">
+                                    <span>{{ number_format((float) $rate, 4, ',', ' ') }}</span>
+                                    <small>/ EUR</small>
                                 </div>
                             </div>
-                        </label>
-
-                        <label>
-                            <span class="admin-publication-fee-icon"><i class="bi bi-percent"></i></span>
-                            <div>
-                                <strong>Frais de retrait</strong>
-                                <small>Pourcentage prélevé au moment du versement, sur le montant demandé.</small>
-                                <div class="admin-publication-fee-input">
-                                    <input type="number"
-                                           name="withdrawal_commission_percent"
-                                           min="0"
-                                           max="50"
-                                           step="0.01"
-                                           value="{{ old('withdrawal_commission_percent', $withdrawalCommissionPercent) }}"
-                                           required>
-                                    <span class="fee-currency-preview">%</span>
-                                </div>
+                        @empty
+                            <div class="admin-momo-rate-empty">
+                                Aucun taux affiché pour le moment.
                             </div>
-                        </label>
-
-                        <label>
-                            <span class="admin-publication-fee-icon audio"><i class="bi bi-cash-coin"></i></span>
-                            <div>
-                                <strong>Montant minimum</strong>
-                                <small>Seuil en dessous duquel un retrait n’est pas possible.</small>
-                                <div class="admin-publication-fee-input">
-                                    <input type="number"
-                                           name="withdrawal_minimum_amount"
-                                           min="1"
-                                           max="999999"
-                                           step="0.01"
-                                           value="{{ old('withdrawal_minimum_amount', $withdrawalMinimumAmount) }}"
-                                           required>
-                                    <span class="fee-currency-preview">EUR</span>
-                                </div>
-                            </div>
-                        </label>
+                        @endforelse
                     </div>
 
                     <div class="admin-publication-fees-footer">
@@ -299,560 +361,548 @@
                             <span class="admin-momo-rate-name">{{ $meta['label'] ?? $currency }}</span>
                             @if(!empty($meta['countries']))
                                 <small class="admin-momo-rate-countries">{{ $meta['countries'] }}</small>
+                            Source :
+                            <strong>{{ $fxMeta['source'] ?? '—' }}</strong>
+                            @if(!empty($fxMeta['date']))
+                                · {{ $fxMeta['date'] }}
                             @endif
-                            <div class="admin-momo-rate-value">
-                                <span>{{ number_format((float) $rate, 4, ',', ' ') }}</span>
-                                <small>/ EUR</small>
-                            </div>
+                            · aucune marge KaMa
+                            @if(($fxMeta['source'] ?? '') === 'currencyfreaks_usd_cross')
+                                · plan gratuit = croisement USD (identique à (USD→devise)/(USD→EUR))
+                            @endif
+                        </p>
+                        <form method="POST" action="{{ route('admin.settings.pawapay-rates.update') }}">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" @disabled(!($fxMeta['configured'] ?? false))>
+                                <i class="bi bi-arrow-repeat"></i> Rafraîchir les taux
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        @endif
+
+        @if(auth()->user()->hasAdminPermission('settings.profil.view'))
+            {{-- Profil --}}
+            <div class="tab-pane fade {{ $activeTab === 'profil' ? 'show active' : '' }}"
+                id="tab-profil"
+                role="tabpanel"
+                aria-labelledby="tab-profil-btn"
+                tabindex="0">
+
+                <section class="admin-profile-section">
+
+                    {{-- HEADER --}}
+                    <div class="admin-profile-header">
+                        <div>
+                            <span>Configuration du compte</span>
+                            <h4 class="admin-profile-headerh4">Informations personnelles</h4>
+                            <p>Gérez vos informations personnelles, votre photo de profil et vos coordonnées.</p>
                         </div>
-                    @empty
-                        <div class="admin-momo-rate-empty">
-                            Aucun taux affiché pour le moment.
-                        </div>
-                    @endforelse
-                </div>
 
-                <div class="admin-publication-fees-footer">
-                    <p>
-                        <i class="bi bi-info-circle"></i>
-                        Source :
-                        <strong>{{ $fxMeta['source'] ?? '—' }}</strong>
-                        @if(!empty($fxMeta['date']))
-                            · {{ $fxMeta['date'] }}
-                        @endif
-                        · aucune marge KaMa
-                        @if(($fxMeta['source'] ?? '') === 'currencyfreaks_usd_cross')
-                            · plan gratuit = croisement USD (identique à (USD→devise)/(USD→EUR))
-                        @endif
-                    </p>
-                    <form method="POST" action="{{ route('admin.settings.pawapay-rates.update') }}">
-                        @csrf
-                        @method('PUT')
-                        <button type="submit" @disabled(!($fxMeta['configured'] ?? false))>
-                            <i class="bi bi-arrow-repeat"></i> Rafraîchir les taux
-                        </button>
-                    </form>
-                </div>
-            </section>
-        </div>
-
-        {{-- Profil --}}
-        <div class="tab-pane fade {{ $activeTab === 'profil' ? 'show active' : '' }}"
-            id="tab-profil"
-            role="tabpanel"
-            aria-labelledby="tab-profil-btn"
-            tabindex="0">
-
-            <section class="admin-profile-section">
-
-                {{-- HEADER --}}
-                <div class="admin-profile-header">
-                    <div>
-                        <span>Configuration du compte</span>
-                        <h4 class="admin-profile-headerh4">Informations personnelles</h4>
-                        <p>Gérez vos informations personnelles, votre photo de profil et vos coordonnées.</p>
+                        <span class="admin-profile-badge">
+                            <i class="bi bi-shield-check"></i>
+                            Compte administrateur
+                        </span>
                     </div>
 
-                    <span class="admin-profile-badge">
-                        <i class="bi bi-shield-check"></i>
-                        Compte administrateur
-                    </span>
-                </div>
+                    <form method="POST"
+                        action="{{ route('admin.account.update') }}"
+                        enctype="multipart/form-data">
 
-                <form method="POST"
-                    action="{{ route('admin.account.update') }}"
-                    enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
 
-                    @csrf
-                    @method('PUT')
+                        {{-- PROFIL --}}
+                        <div class="admin-profile-content">
 
-                    {{-- PROFIL --}}
-                    <div class="admin-profile-content">
+                            {{-- AVATAR --}}
+                            <div class="admin-profile-identity">
 
-                        {{-- AVATAR --}}
-                        <div class="admin-profile-identity">
+                                <div class="admin-profile-avatar-wrapper">
+                                    <label for="uploadfile-1" class="admin-profile-avatar-label">
 
-                            <div class="admin-profile-avatar-wrapper">
-                                <label for="uploadfile-1" class="admin-profile-avatar-label">
+                                        <img
+                                            src="{{ Auth::user()->avatar
+                                                ? asset('storage/'.Auth::user()->avatar)
+                                                : asset('assets/images/avatar/01.jpg') }}"
+                                            class="admin-profile-avatar"
+                                            alt="Avatar">
 
-                                    <img
-                                        src="{{ Auth::user()->avatar
-                                            ? asset('storage/'.Auth::user()->avatar)
-                                            : asset('assets/images/avatar/01.jpg') }}"
-                                        class="admin-profile-avatar"
-                                        alt="Avatar">
+                                        <span class="admin-profile-avatar-overlay">
+                                            <i class="bi bi-camera"></i>
+                                        </span>
 
-                                    <span class="admin-profile-avatar-overlay">
-                                        <i class="bi bi-camera"></i>
+                                        <input id="uploadfile-1"
+                                            type="file"
+                                            name="avatar"
+                                            class="d-none"
+                                            accept="image/*">
+                                    </label>
+
+                                    <small>
+                                        Cliquez sur la photo pour la modifier
+                                    </small>
+                                </div>
+
+                                <div class="admin-profile-identity-info">
+                                    <h5>
+                                        {{ Auth::user()->firstname }} {{ Auth::user()->lastname }}
+                                    </h5>
+
+                                    <span class="admin-profile-role">
+                                        <i class="bi bi-person-badge"></i>
+                                        Administrateur
                                     </span>
 
-                                    <input id="uploadfile-1"
-                                        type="file"
-                                        name="avatar"
-                                        class="d-none"
-                                        accept="image/*">
-                                </label>
+                                    <p>
+                                        {{ Auth::user()->email }}
+                                    </p>
+                                </div>
 
-                                <small>
-                                    Cliquez sur la photo pour la modifier
-                                </small>
                             </div>
 
-                            <div class="admin-profile-identity-info">
-                                <h5>
-                                    {{ Auth::user()->firstname }} {{ Auth::user()->lastname }}
-                                </h5>
+                            {{-- INFORMATIONS --}}
+                            <div class="admin-profile-block">
 
-                                <span class="admin-profile-role">
-                                    <i class="bi bi-person-badge"></i>
-                                    Administrateur
-                                </span>
+                                <div class="admin-profile-block-header">
+                                    <div>
+                                        <span>Informations du compte</span>
+                                        <h5>Identité et coordonnées</h5>
+                                    </div>
 
-                                <p>
-                                    {{ Auth::user()->email }}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        {{-- INFORMATIONS --}}
-                        <div class="admin-profile-block">
-
-                            <div class="admin-profile-block-header">
-                                <div>
-                                    <span>Informations du compte</span>
-                                    <h5>Identité et coordonnées</h5>
+                                    <i class="bi bi-person-vcard"></i>
                                 </div>
 
-                                <i class="bi bi-person-vcard"></i>
-                            </div>
+                                <div class="admin-profile-grid">
 
-                            <div class="admin-profile-grid">
+                                    {{-- PRÉNOM --}}
+                                    <div class="admin-profile-field">
+                                        <label for="firstname">
+                                            <i class="bi bi-person"></i>
+                                            Prénom
+                                        </label>
 
-                                {{-- PRÉNOM --}}
-                                <div class="admin-profile-field">
-                                    <label for="firstname">
-                                        <i class="bi bi-person"></i>
-                                        Prénom
-                                    </label>
+                                        <input
+                                            id="firstname"
+                                            type="text"
+                                            name="firstname"
+                                            value="{{ old('firstname', Auth::user()->firstname) }}"
+                                            required>
+                                    </div>
 
-                                    <input
-                                        id="firstname"
-                                        type="text"
-                                        name="firstname"
-                                        value="{{ old('firstname', Auth::user()->firstname) }}"
-                                        required>
-                                </div>
+                                    {{-- NOM --}}
+                                    <div class="admin-profile-field">
+                                        <label for="lastname">
+                                            <i class="bi bi-person-lines-fill"></i>
+                                            Nom
+                                        </label>
 
-                                {{-- NOM --}}
-                                <div class="admin-profile-field">
-                                    <label for="lastname">
-                                        <i class="bi bi-person-lines-fill"></i>
-                                        Nom
-                                    </label>
+                                        <input
+                                            id="lastname"
+                                            type="text"
+                                            name="lastname"
+                                            value="{{ old('lastname', Auth::user()->lastname) }}"
+                                            required>
+                                    </div>
 
-                                    <input
-                                        id="lastname"
-                                        type="text"
-                                        name="lastname"
-                                        value="{{ old('lastname', Auth::user()->lastname) }}"
-                                        required>
-                                </div>
+                                    {{-- EMAIL --}}
+                                    <div class="admin-profile-field">
+                                        <label for="email">
+                                            <i class="bi bi-envelope"></i>
+                                            Adresse email
+                                        </label>
 
-                                {{-- EMAIL --}}
-                                <div class="admin-profile-field">
-                                    <label for="email">
-                                        <i class="bi bi-envelope"></i>
-                                        Adresse email
-                                    </label>
+                                        <input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            value="{{ old('email', Auth::user()->email) }}"
+                                            required>
+                                    </div>
 
-                                    <input
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        value="{{ old('email', Auth::user()->email) }}"
-                                        required>
-                                </div>
+                                    {{-- TÉLÉPHONE --}}
+                                    <div class="admin-profile-field">
+                                        <label for="phone">
+                                            <i class="bi bi-telephone"></i>
+                                            Téléphone
+                                        </label>
 
-                                {{-- TÉLÉPHONE --}}
-                                <div class="admin-profile-field">
-                                    <label for="phone">
-                                        <i class="bi bi-telephone"></i>
-                                        Téléphone
-                                    </label>
+                                        <input
+                                            id="phone"
+                                            type="text"
+                                            name="phone"
+                                            value="{{ old('phone', Auth::user()->phone) }}">
+                                    </div>
 
-                                    <input
-                                        id="phone"
-                                        type="text"
-                                        name="phone"
-                                        value="{{ old('phone', Auth::user()->phone) }}">
-                                </div>
+                                    {{-- PAYS --}}
+                                    <div class="admin-profile-field">
+                                        <label for="country_id">
+                                            <i class="bi bi-globe"></i>
+                                            Pays
+                                        </label>
 
-                                {{-- PAYS --}}
-                                <div class="admin-profile-field">
-                                    <label for="country_id">
-                                        <i class="bi bi-globe"></i>
-                                        Pays
-                                    </label>
+                                        <select
+                                            id="country_id"
+                                            name="country_id"
+                                            required>
 
-                                    <select
-                                        id="country_id"
-                                        name="country_id"
-                                        required>
-
-                                        <option value="">
-                                            Sélectionnez votre pays
-                                        </option>
-
-                                        @foreach($countries as $country)
-                                            <option
-                                                value="{{ $country->id }}"
-                                                {{ old('country_id', optional(Auth::user()->country)->id) == $country->id ? 'selected' : '' }}>
-
-                                                {{ $country->flag }} {{ $country->name }}
-
+                                            <option value="">
+                                                Sélectionnez votre pays
                                             </option>
-                                        @endforeach
 
-                                    </select>
+                                            @foreach($countries as $country)
+                                                <option
+                                                    value="{{ $country->id }}"
+                                                    {{ old('country_id', optional(Auth::user()->country)->id) == $country->id ? 'selected' : '' }}>
+
+                                                    {{ $country->flag }} {{ $country->name }}
+
+                                                </option>
+                                            @endforeach
+
+                                        </select>
+                                    </div>
+
+                                    {{-- VILLE --}}
+                                    <div class="admin-profile-field">
+                                        <label for="city">
+                                            <i class="bi bi-geo-alt"></i>
+                                            Ville
+                                        </label>
+
+                                        <input
+                                            id="city"
+                                            type="text"
+                                            name="city"
+                                            value="{{ old('city', Auth::user()->city) }}">
+                                    </div>
+
                                 </div>
 
-                                {{-- VILLE --}}
-                                <div class="admin-profile-field">
-                                    <label for="city">
-                                        <i class="bi bi-geo-alt"></i>
-                                        Ville
+                            </div>
+
+                            {{-- GENRE --}}
+                            <div class="admin-profile-block">
+
+                                <div class="admin-profile-block-header">
+                                    <div>
+                                        <span>Préférences personnelles</span>
+                                        <h5>Genre</h5>
+                                    </div>
+
+                                    <i class="bi bi-gender-ambiguous"></i>
+                                </div>
+
+                                <div class="admin-profile-gender">
+
+                                    <input type="radio"
+                                        class="btn-check"
+                                        name="gender"
+                                        id="male"
+                                        value="male"
+                                        {{ Auth::user()->gender == 'male' ? 'checked' : '' }}>
+
+                                    <label for="male">
+                                        <i class="bi bi-gender-male"></i>
+                                        Homme
                                     </label>
 
-                                    <input
-                                        id="city"
-                                        type="text"
-                                        name="city"
-                                        value="{{ old('city', Auth::user()->city) }}">
+
+                                    <input type="radio"
+                                        class="btn-check"
+                                        name="gender"
+                                        id="female"
+                                        value="female"
+                                        {{ Auth::user()->gender == 'female' ? 'checked' : '' }}>
+
+                                    <label for="female">
+                                        <i class="bi bi-gender-female"></i>
+                                        Femme
+                                    </label>
+
+
+                                    <input type="radio"
+                                        class="btn-check"
+                                        name="gender"
+                                        id="other"
+                                        value="other"
+                                        {{ Auth::user()->gender == 'other' ? 'checked' : '' }}>
+
+                                    <label for="other">
+                                        <i class="bi bi-gender-ambiguous"></i>
+                                        Autre
+                                    </label>
+
                                 </div>
 
                             </div>
 
-                        </div>
+                            {{-- BIO --}}
+                            <div class="admin-profile-block">
 
-                        {{-- GENRE --}}
-                        <div class="admin-profile-block">
+                                <div class="admin-profile-block-header">
+                                    <div>
+                                        <span>Présentation</span>
+                                        <h5>Biographie</h5>
+                                    </div>
 
-                            <div class="admin-profile-block-header">
-                                <div>
-                                    <span>Préférences personnelles</span>
-                                    <h5>Genre</h5>
+                                    <i class="bi bi-chat-square-text"></i>
                                 </div>
 
-                                <i class="bi bi-gender-ambiguous"></i>
-                            </div>
+                                <div class="admin-profile-bio">
 
-                            <div class="admin-profile-gender">
+                                    <textarea
+                                        name="bio"
+                                        rows="5"
+                                        placeholder="Parlez-nous de vous...">{{ old('bio', Auth::user()->bio) }}</textarea>
 
-                                <input type="radio"
-                                    class="btn-check"
-                                    name="gender"
-                                    id="male"
-                                    value="male"
-                                    {{ Auth::user()->gender == 'male' ? 'checked' : '' }}>
-
-                                <label for="male">
-                                    <i class="bi bi-gender-male"></i>
-                                    Homme
-                                </label>
-
-
-                                <input type="radio"
-                                    class="btn-check"
-                                    name="gender"
-                                    id="female"
-                                    value="female"
-                                    {{ Auth::user()->gender == 'female' ? 'checked' : '' }}>
-
-                                <label for="female">
-                                    <i class="bi bi-gender-female"></i>
-                                    Femme
-                                </label>
-
-
-                                <input type="radio"
-                                    class="btn-check"
-                                    name="gender"
-                                    id="other"
-                                    value="other"
-                                    {{ Auth::user()->gender == 'other' ? 'checked' : '' }}>
-
-                                <label for="other">
-                                    <i class="bi bi-gender-ambiguous"></i>
-                                    Autre
-                                </label>
-
-                            </div>
-
-                        </div>
-
-                        {{-- BIO --}}
-                        <div class="admin-profile-block">
-
-                            <div class="admin-profile-block-header">
-                                <div>
-                                    <span>Présentation</span>
-                                    <h5>Biographie</h5>
-                                </div>
-
-                                <i class="bi bi-chat-square-text"></i>
-                            </div>
-
-                            <div class="admin-profile-bio">
-
-                                <textarea
-                                    name="bio"
-                                    rows="5"
-                                    placeholder="Parlez-nous de vous...">{{ old('bio', Auth::user()->bio) }}</textarea>
-
-                                <small>
-                                    Présentez brièvement votre profil ou ajoutez toute information utile.
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {{-- FOOTER --}}
-                    <div class="admin-profile-footer">
-
-                        <p>
-                            <i class="bi bi-info-circle"></i>
-                            Les modifications seront appliquées immédiatement à votre compte.
-                        </p>
-
-                        <button type="submit">
-                            <i class="bi bi-check2-circle"></i>
-                            Enregistrer les modifications
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </section>
-
-        </div>
-
-        {{-- Sécurité --}}
-        <div class="tab-pane fade {{ $activeTab === 'securite' ? 'show active' : '' }}"
-            id="tab-securite"
-            role="tabpanel"
-            aria-labelledby="tab-securite-btn"
-            tabindex="0">
-
-            <section class="admin-security-section">
-
-                {{-- HEADER --}}
-                <div class="admin-security-header">
-                    <div>
-                        <span>Protection du compte</span>
-                        <h4 class="admin-security-headerh4">Sécurité</h4>
-                        <p>
-                            Modifiez régulièrement votre mot de passe afin de protéger votre compte administrateur.
-                        </p>
-                    </div>
-
-                    <span class="admin-security-badge">
-                        <i class="bi bi-shield-check"></i>
-                        Compte sécurisé
-                    </span>
-                </div>
-
-
-                {{-- CONTENT --}}
-                <div class="admin-security-content">
-
-                    <form method="POST" action="{{ route('admin.password.update') }}">
-                        @csrf
-                        @method('PUT')
-
-
-                        {{-- MOT DE PASSE ACTUEL --}}
-                        <div class="admin-security-field">
-
-                            <label for="current_password">
-                                <span class="admin-security-field-icon">
-                                    <i class="bi bi-key-fill"></i>
-                                </span>
-
-                                <span>
-                                    <strong>Mot de passe actuel</strong>
                                     <small>
-                                        Entrez votre mot de passe actuel pour continuer.
+                                        Présentez brièvement votre profil ou ajoutez toute information utile.
                                     </small>
-                                </span>
-                            </label>
-
-                            <div class="admin-security-input">
-                                <input
-                                    type="password"
-                                    id="current_password"
-                                    name="current_password"
-                                    placeholder="Votre mot de passe actuel">
-
-                                <button
-                                    type="button"
-                                    class="toggle-password"
-                                    data-target="current_password"
-                                    aria-label="Afficher ou masquer le mot de passe">
-
-                                    <i class="bi bi-eye-slash"></i>
-
-                                </button>
-                            </div>
-
-                        </div>
-
-
-                        {{-- NOUVEAU MOT DE PASSE --}}
-                        <div class="admin-security-field">
-
-                            <label for="password">
-                                <span class="admin-security-field-icon">
-                                    <i class="bi bi-shield-lock-fill"></i>
-                                </span>
-
-                                <span>
-                                    <strong>Nouveau mot de passe</strong>
-                                    <small>
-                                        Choisissez un mot de passe suffisamment robuste.
-                                    </small>
-                                </span>
-                            </label>
-
-                            <div class="admin-security-input">
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    placeholder="Nouveau mot de passe">
-
-                                <button
-                                    type="button"
-                                    class="toggle-password"
-                                    data-target="password"
-                                    aria-label="Afficher ou masquer le mot de passe">
-
-                                    <i class="bi bi-eye-slash"></i>
-
-                                </button>
-                            </div>
-
-                        </div>
-
-
-                        {{-- CONFIRMATION --}}
-                        <div class="admin-security-field">
-
-                            <label for="password_confirmation">
-                                <span class="admin-security-field-icon">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                </span>
-
-                                <span>
-                                    <strong>Confirmation du mot de passe</strong>
-                                    <small>
-                                        Saisissez à nouveau votre nouveau mot de passe.
-                                    </small>
-                                </span>
-                            </label>
-
-                            <div class="admin-security-input">
-                                <input
-                                    type="password"
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    placeholder="Confirmez votre nouveau mot de passe">
-
-                                <button
-                                    type="button"
-                                    class="toggle-password"
-                                    data-target="password_confirmation"
-                                    aria-label="Afficher ou masquer le mot de passe">
-
-                                    <i class="bi bi-eye-slash"></i>
-
-                                </button>
-                            </div>
-
-                        </div>
-
-
-                        {{-- CONSEILS --}}
-                        <div class="admin-security-tips">
-
-                            <div class="admin-security-tips-icon">
-                                <i class="bi bi-shield-check"></i>
-                            </div>
-
-                            <div>
-                                <h6>
-                                    Conseils de sécurité
-                                </h6>
-
-                                <p>
-                                    Pour renforcer la sécurité de votre compte, votre mot de passe devrait contenir :
-                                </p>
-
-                                <div class="admin-security-requirements">
-
-                                    <span>
-                                        <i class="bi bi-check2"></i>
-                                        Au moins 8 caractères
-                                    </span>
-
-                                    <span>
-                                        <i class="bi bi-check2"></i>
-                                        Une lettre majuscule
-                                    </span>
-
-                                    <span>
-                                        <i class="bi bi-check2"></i>
-                                        Un chiffre
-                                    </span>
-
-                                    <span>
-                                        <i class="bi bi-check2"></i>
-                                        Un caractère spécial
-                                    </span>
 
                                 </div>
+
                             </div>
 
                         </div>
-
 
                         {{-- FOOTER --}}
-                        <div class="admin-security-footer">
+                        <div class="admin-profile-footer">
 
                             <p>
                                 <i class="bi bi-info-circle"></i>
-                                Après modification, utilisez votre nouveau mot de passe lors de votre prochaine connexion.
+                                Les modifications seront appliquées immédiatement à votre compte.
                             </p>
 
                             <button type="submit">
-                                <i class="bi bi-lock-fill"></i>
-                                Modifier le mot de passe
+                                <i class="bi bi-check2-circle"></i>
+                                Enregistrer les modifications
                             </button>
 
                         </div>
 
                     </form>
 
-                </div>
+                </section>
 
-            </section>
+            </div>
+        @endif
 
-        </div>
+        @if(auth()->user()->hasAdminPermission('settings.securite.view'))
+            {{-- Sécurité --}}
+            <div class="tab-pane fade {{ $activeTab === 'securite' ? 'show active' : '' }}"
+                id="tab-securite"
+                role="tabpanel"
+                aria-labelledby="tab-securite-btn"
+                tabindex="0">
 
+                <section class="admin-security-section">
+
+                    {{-- HEADER --}}
+                    <div class="admin-security-header">
+                        <div>
+                            <span>Protection du compte</span>
+                            <h4 class="admin-security-headerh4">Sécurité</h4>
+                            <p>
+                                Modifiez régulièrement votre mot de passe afin de protéger votre compte administrateur.
+                            </p>
+                        </div>
+
+                        <span class="admin-security-badge">
+                            <i class="bi bi-shield-check"></i>
+                            Compte sécurisé
+                        </span>
+                    </div>
+
+
+                    {{-- CONTENT --}}
+                    <div class="admin-security-content">
+
+                        <form method="POST" action="{{ route('admin.password.update') }}">
+                            @csrf
+                            @method('PUT')
+
+
+                            {{-- MOT DE PASSE ACTUEL --}}
+                            <div class="admin-security-field">
+
+                                <label for="current_password">
+                                    <span class="admin-security-field-icon">
+                                        <i class="bi bi-key-fill"></i>
+                                    </span>
+
+                                    <span>
+                                        <strong>Mot de passe actuel</strong>
+                                        <small>
+                                            Entrez votre mot de passe actuel pour continuer.
+                                        </small>
+                                    </span>
+                                </label>
+
+                                <div class="admin-security-input">
+                                    <input
+                                        type="password"
+                                        id="current_password"
+                                        name="current_password"
+                                        placeholder="Votre mot de passe actuel">
+
+                                    <button
+                                        type="button"
+                                        class="toggle-password"
+                                        data-target="current_password"
+                                        aria-label="Afficher ou masquer le mot de passe">
+
+                                        <i class="bi bi-eye-slash"></i>
+
+                                    </button>
+                                </div>
+
+                            </div>
+
+
+                            {{-- NOUVEAU MOT DE PASSE --}}
+                            <div class="admin-security-field">
+
+                                <label for="password">
+                                    <span class="admin-security-field-icon">
+                                        <i class="bi bi-shield-lock-fill"></i>
+                                    </span>
+
+                                    <span>
+                                        <strong>Nouveau mot de passe</strong>
+                                        <small>
+                                            Choisissez un mot de passe suffisamment robuste.
+                                        </small>
+                                    </span>
+                                </label>
+
+                                <div class="admin-security-input">
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        placeholder="Nouveau mot de passe">
+
+                                    <button
+                                        type="button"
+                                        class="toggle-password"
+                                        data-target="password"
+                                        aria-label="Afficher ou masquer le mot de passe">
+
+                                        <i class="bi bi-eye-slash"></i>
+
+                                    </button>
+                                </div>
+
+                            </div>
+
+
+                            {{-- CONFIRMATION --}}
+                            <div class="admin-security-field">
+
+                                <label for="password_confirmation">
+                                    <span class="admin-security-field-icon">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </span>
+
+                                    <span>
+                                        <strong>Confirmation du mot de passe</strong>
+                                        <small>
+                                            Saisissez à nouveau votre nouveau mot de passe.
+                                        </small>
+                                    </span>
+                                </label>
+
+                                <div class="admin-security-input">
+                                    <input
+                                        type="password"
+                                        id="password_confirmation"
+                                        name="password_confirmation"
+                                        placeholder="Confirmez votre nouveau mot de passe">
+
+                                    <button
+                                        type="button"
+                                        class="toggle-password"
+                                        data-target="password_confirmation"
+                                        aria-label="Afficher ou masquer le mot de passe">
+
+                                        <i class="bi bi-eye-slash"></i>
+
+                                    </button>
+                                </div>
+
+                            </div>
+
+
+                            {{-- CONSEILS --}}
+                            <div class="admin-security-tips">
+
+                                <div class="admin-security-tips-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+
+                                <div>
+                                    <h6>
+                                        Conseils de sécurité
+                                    </h6>
+
+                                    <p>
+                                        Pour renforcer la sécurité de votre compte, votre mot de passe devrait contenir :
+                                    </p>
+
+                                    <div class="admin-security-requirements">
+
+                                        <span>
+                                            <i class="bi bi-check2"></i>
+                                            Au moins 8 caractères
+                                        </span>
+
+                                        <span>
+                                            <i class="bi bi-check2"></i>
+                                            Une lettre majuscule
+                                        </span>
+
+                                        <span>
+                                            <i class="bi bi-check2"></i>
+                                            Un chiffre
+                                        </span>
+
+                                        <span>
+                                            <i class="bi bi-check2"></i>
+                                            Un caractère spécial
+                                        </span>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            {{-- FOOTER --}}
+                            <div class="admin-security-footer">
+
+                                <p>
+                                    <i class="bi bi-info-circle"></i>
+                                    Après modification, utilisez votre nouveau mot de passe lors de votre prochaine connexion.
+                                </p>
+
+                                <button type="submit">
+                                    <i class="bi bi-lock-fill"></i>
+                                    Modifier le mot de passe
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+            </div>
+        @endif
     </div>
 </div>
 @endsection

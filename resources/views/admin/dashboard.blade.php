@@ -32,7 +32,7 @@
         </div>
     </section>
 
-    <section class="admin-metric-grid">
+    <div class="admin-metric-grid">
         <article class="admin-metric-card">
             <span class="admin-metric-icon red"><i class="bi bi-bag-check-fill"></i></span>
             <div><small>Livres vendus</small><strong>{{ number_format($metrics['sales']) }}</strong><span>{{ number_format($metrics['paid_orders']) }} commande(s) payée(s)</span></div>
@@ -57,7 +57,7 @@
             <span class="admin-metric-icon dark"><i class="bi bi-send-check"></i></span>
             <div><small>À verser aux auteurs</small><strong class="admin-metric-amount">{{ number_format($metrics['pending_payout'], 2, ',', ' ') }} €</strong><span>Retraits ouverts, pas encore envoyés</span></div>
         </article>
-    </section>
+    </div>
 
     <div class="admin-dashboard-grid">
         <section class="admin-panel">
