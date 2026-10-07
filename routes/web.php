@@ -979,13 +979,29 @@ Route::post('/webhooks/stripe', \App\Http\Controllers\StripeWebhookController::c
 
 Route::post('/webhooks/pawapay', \App\Http\Controllers\PawaPayWebhookController::class)
     ->name('webhooks.pawapay');
-
-
     // routes communes
     Route::middleware('auth')->group(function(){
-
     Route::delete('/notifications/clear',
         [NotificationController::class,'clear']
     )->name('notifications.clear');
+});
+
+// =============================
+// LEGAL
+// =============================
+
+Route::prefix('legal')->name('legal.')->group(function () {
+
+    Route::view('/terms', 'legal.terms')
+        ->name('terms');
+
+    Route::view('/privacy', 'legal.privacy')
+        ->name('privacy');
+
+    Route::view('/cookies', 'legal.cookies')
+        ->name('cookies');
+
+    Route::view('/sales', 'legal.sales')
+        ->name('sales');
 
 });

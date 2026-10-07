@@ -52813,3 +52813,216 @@ font-size:13px;
 .become-writer-actions .become-writer-btn.confirm:not(:disabled):hover {
   background: #910000;
 }
+
+
+/* Legal pages */
+    /* =========================================================
+   KAMA — LEGAL PAGES
+   ========================================================= */
+
+.kama-legal-page {
+    padding: 90px 0 110px;
+    background: #fff;
+}
+
+.kama-legal-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.kama-legal-header {
+    margin-bottom: 55px;
+}
+
+.kama-legal-date {
+    display: inline-block;
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #777;
+}
+
+.kama-legal-header h1 {
+    margin: 0;
+    font-size: clamp(2.1rem, 4vw, 3.2rem);
+    line-height: 1.15;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: -0.03em;
+}
+
+.kama-legal-intro {
+    max-width: 720px;
+    margin: 20px 0 0;
+    font-size: 1.08rem;
+    line-height: 1.8;
+    color: #666;
+}
+
+.kama-legal-content {
+    color: #333;
+}
+
+.kama-legal-section {
+    margin-bottom: 48px;
+}
+
+.kama-legal-section:last-child {
+    margin-bottom: 0;
+}
+
+.kama-legal-section h2 {
+    margin: 0 0 18px;
+    font-size: 1.35rem;
+    line-height: 1.4;
+    font-weight: 700;
+    color: #111;
+}
+
+.kama-legal-section p {
+    margin: 0 0 15px;
+    font-size: 0.98rem;
+    line-height: 1.85;
+    color: #555;
+}
+
+.kama-legal-section p:last-child {
+    margin-bottom: 0;
+}
+
+.kama-legal-section ul,
+.kama-legal-section ol {
+    margin: 18px 0 0;
+    padding-left: 22px;
+}
+
+.kama-legal-section li {
+    margin-bottom: 10px;
+    font-size: 0.98rem;
+    line-height: 1.75;
+    color: #555;
+}
+
+.kama-legal-section a {
+    color: #b30000;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.kama-legal-section a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   LEGAL PAGE — TABLE OF CONTENTS
+   ========================================================= */
+
+.kama-legal-toc {
+    margin-bottom: 50px;
+    padding: 25px 28px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 14px;
+}
+
+.kama-legal-toc h3 {
+    margin: 0 0 15px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.kama-legal-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.kama-legal-toc li {
+    margin-bottom: 8px;
+}
+
+.kama-legal-toc li:last-child {
+    margin-bottom: 0;
+}
+
+.kama-legal-toc a {
+    color: #555;
+    text-decoration: none;
+    font-size: 0.92rem;
+}
+
+.kama-legal-toc a:hover {
+    color: #b30000;
+}
+
+
+/* =========================================================
+   LEGAL PAGE — INFO BOX
+   ========================================================= */
+
+.kama-legal-notice {
+    margin: 25px 0;
+    padding: 20px 22px;
+    background: #fff8f8;
+    border-left: 3px solid #b30000;
+    border-radius: 8px;
+}
+
+.kama-legal-notice p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   LEGAL PAGE — RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .kama-legal-page {
+        padding: 70px 0 90px;
+    }
+
+    .kama-legal-header {
+        margin-bottom: 45px;
+    }
+
+    .kama-legal-section {
+        margin-bottom: 40px;
+    }
+
+}
+
+
+@media (max-width: 575.98px) {
+
+    .kama-legal-page {
+        padding: 50px 0 70px;
+    }
+
+    .kama-legal-header h1 {
+        font-size: 2rem;
+    }
+
+    .kama-legal-intro {
+        font-size: 0.98rem;
+        line-height: 1.7;
+    }
+
+    .kama-legal-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .kama-legal-section p,
+    .kama-legal-section li {
+        font-size: 0.94rem;
+    }
+
+    .kama-legal-toc {
+        padding: 20px;
+    }
+
+}
+
