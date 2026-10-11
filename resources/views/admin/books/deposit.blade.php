@@ -31,7 +31,7 @@
                 <div class="kkiapay-order-content">
                     <small>Ouvrage</small>
                     <h2>{{ $book->title }}</h2>
-                    <div class="total"><span>Total</span><strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong></div>
+                    <div class="total"><span>Total</span><strong>{{ number_format($fee->amount, 2, '.', ',') }} €</strong></div>
                 </div>
             </aside>
 
@@ -50,7 +50,7 @@
 
                 <button type="button" id="openStripePayment" class="kkiapay-pay-button" @disabled(! $stripeConfigured)>
                     <span><i class="bi bi-lock-fill"></i> Payer avec Stripe</span>
-                    <strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($fee->amount, 2, '.', ',') }} €</strong>
                 </button>
             </section>
         </div>

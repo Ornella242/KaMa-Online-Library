@@ -151,7 +151,7 @@
                                                     </small>
                                                 </div>
                                             </td>
-                                            <td><strong class="admin-books-price">{{ number_format($book->price, 2, ',', ' ') }} $</strong>
+                                            <td><strong class="admin-books-price">{{ number_format($book->price, 2, ',', ' ') }} €</strong>
                                             </td>
                                             <td>
                                                 <span class="admin-books-status {{ $statusClass }}">
@@ -273,7 +273,7 @@
                                 <span class="admin-books-status {{ $modalStatusClass }}">
                                     <span></span>{{ $modalStatusLabel }}
                                 </span>
-                                <strong class="admin-book-modal-price">{{ number_format($book->price, 2, ',', ' ') }} $</strong>
+                                <strong class="admin-book-modal-price">{{ number_format($book->price, 2, ',', ' ') }} €</strong>
 
                                 @if($book->type === 'ebook')
                                     <a href="{{ route('admin.books.preview.file', $book) }}" target="_blank" rel="noopener"

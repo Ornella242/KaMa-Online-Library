@@ -16,10 +16,10 @@
 
         <div class="writer-metric-grid">
             <article class="writer-metric">
-                <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
+                <span class="writer-metric-icon red"><i class="bi bi-currency-euro"></i></span>
                 <div>
                     <small>Revenus bruts</small>
-                    <strong>{{ number_format($totalRevenue, 2, ',', ' ') }} $</strong>
+                    <strong>{{ number_format($totalRevenue, 2, ',', ' ') }} €</strong>
                     <span class="{{ $revenueGrowth >= 0 ? 'positive' : 'negative' }}">
                         <i class="bi {{ $revenueGrowth >= 0 ? 'bi-arrow-up' : 'bi-arrow-down' }}"></i>
                         {{ abs($revenueGrowth) }}% ce mois
@@ -209,7 +209,7 @@ if (bookPerformanceElement && typeof ApexCharts !== 'undefined') {
 
             labels: {
                 formatter: function(value) {
-                    return '$' + value.toLocaleString();
+                    return value.toLocaleString() + ' €';
                 }
             }
         },
@@ -217,7 +217,7 @@ if (bookPerformanceElement && typeof ApexCharts !== 'undefined') {
         tooltip: {
             y: {
                 formatter: function(value) {
-                    return '$' + value.toLocaleString();
+                    return value.toLocaleString() + ' €';
                 }
             }
         },

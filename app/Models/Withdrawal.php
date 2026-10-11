@@ -75,15 +75,6 @@ class Withdrawal extends Model
                     'phone' => ['label' => 'Téléphone', 'type' => 'tel', 'placeholder' => '+33 …'],
                 ],
             ],
-            self::METHOD_PAYPAL => [
-                'label' => 'PayPal',
-                'icon' => 'bi-paypal',
-                'hint' => 'Versement sur une adresse e-mail PayPal',
-                'fields' => [
-                    'email' => ['label' => 'E-mail PayPal', 'type' => 'email', 'placeholder' => 'vous@email.com'],
-                    'account_name' => ['label' => 'Nom du compte', 'type' => 'text', 'placeholder' => 'Nom affiché'],
-                ],
-            ],
         ];
     }
 
@@ -95,6 +86,15 @@ class Withdrawal extends Model
     public static function methodCatalog(): array
     {
         return self::paymentMethods() + [
+            self::METHOD_PAYPAL => [
+                'label' => 'PayPal',
+                'icon' => 'bi-paypal',
+                'hint' => 'Ancien canal',
+                'fields' => [
+                    'email' => ['label' => 'E-mail PayPal', 'type' => 'email', 'placeholder' => 'vous@email.com'],
+                    'account_name' => ['label' => 'Nom du compte', 'type' => 'text', 'placeholder' => 'Nom affiché'],
+                ],
+            ],
             self::METHOD_MOBILE_MONEY => [
                 'label' => 'Mobile Money',
                 'icon' => 'bi-phone',

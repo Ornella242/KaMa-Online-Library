@@ -34,8 +34,8 @@
                     <small>Ouvrage concerné</small>
                     <h2>{{ $book->title }}</h2>
                     <div><span>Statut actuel</span><strong>Brouillon</strong></div>
-                    <div><span>Frais d’enregistrement</span><strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong></div>
-                    <div class="total"><span>Total à payer</span><strong>${{ number_format($fee->amount, 2, '.', ',') }}</strong></div>
+                    <div><span>Frais d’enregistrement</span><strong>{{ number_format($fee->amount, 2, '.', ',') }} €</strong></div>
+                    <div class="total"><span>Total à payer</span><strong>{{ number_format($fee->amount, 2, '.', ',') }} €</strong></div>
                 </div>
             </aside>
 

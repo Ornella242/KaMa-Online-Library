@@ -30,4 +30,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Le fichier téléversé dépasse la taille maximale autorisée (100 Mo).',
+                ], 413);
+            }
+
+            return back()->with('error', 'Le fichier envoyé est trop volumineux (la taille maximale autorisée est de 100 Mo).');
+        });
     })->create();

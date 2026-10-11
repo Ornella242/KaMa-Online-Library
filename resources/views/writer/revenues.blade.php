@@ -16,7 +16,7 @@
 
         <div class="writer-metric-grid">
             <article class="writer-metric">
-                <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
+                <span class="writer-metric-icon red"><i class="bi bi-currency-euro"></i></span>
                 <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }}€</strong><span class="neutral">Prix des ventes, avant part KaMa</span></div>
             </article>
             <article class="writer-metric">

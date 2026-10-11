@@ -6,11 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\AudiobookRequest;
 use App\Models\Book;
 use App\Models\Payment;
-use App\Services\Audiobook\AudiobookAnalyzer;
-use App\Services\Audiobook\ElevenLabsService;
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Notifications\NewAudiobookRequestNotification;
+use App\Services\Audiobook\AudiobookAnalyzer;
+use App\Services\Audiobook\ElevenLabsService;
+use App\Services\PaymentFulfillmentService;
+use App\Services\PawaPayService;
+use App\Services\StripeService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Throwable;
 
 class AudiobookController extends Controller
 {
@@ -69,25 +74,16 @@ class AudiobookController extends Controller
 
     public function store(Request $request, Book $book)
     {
-        /*
-        * 1. Vérifier que le livre appartient bien à l'auteur connecté
-        */
         abort_unless(
             $book->user_id === auth()->id(),
             403
         );
 
-        /*
-        * 2. Le livre doit être publié
-        */
         abort_unless(
             $book->status === Book::STATUS_PUBLISHED,
             404
         );
 
-        /*
-        * 3. Valider la voix sélectionnée
-        */
         $validated = $request->validate([
             'voice_id' => [
                 'required',
@@ -98,16 +94,9 @@ class AudiobookController extends Controller
             'voice_id.required' => 'Veuillez sélectionner une voix.',
         ]);
 
-        /*
-        * 4. Récupérer les voix ElevenLabs
-        */
         $voicesResponse = $this->elevenLabsService->getVoices();
-
         $voices = $voicesResponse['voices'] ?? [];
 
-        /*
-        * 5. Vérifier que la voix sélectionnée existe
-        */
         $selectedVoice = collect($voices)->firstWhere(
             'voice_id',
             $validated['voice_id']
@@ -121,54 +110,26 @@ class AudiobookController extends Controller
                 ->withInput();
         }
 
-        /*
-        * 6. Refaire l'analyse du livre côté serveur
-        */
         $analysis = $this->analyzer->analyze(
             $book->file_path
         );
 
         $statistics = $analysis['statistics'] ?? [];
 
-        /*
-        * 7. Statistiques du livre
-        */
-        $characters = (int) (
-            $statistics['characters'] ?? 0
-        );
+        $characters = (int) ($statistics['characters'] ?? 0);
+        $words = (int) ($statistics['words'] ?? 0);
+        $elevenLabsCost = (float) ($statistics['elevenlabs_cost'] ?? 0);
 
-        $words = (int) (
-            $statistics['words'] ?? 0
-        );
-
-        /*
-        * 8. Coût estimé ElevenLabs
-        */
-        $elevenLabsCost = (float) (
-            $statistics['elevenlabs_cost'] ?? 0
-        );
-
-        /*
-        * 9. Frais KaMa
-        *
-        * 20 % du prix de l'ebook.
-        */
         $kamaFee = round(
             ((float) $book->price) * 0.20,
             2
         );
 
-        /*
-        * 10. Total à payer
-        */
         $totalAmount = round(
             $elevenLabsCost + $kamaFee,
             2
         );
 
-        /*
-        * 11. Vérifier si une demande active existe déjà
-        */
         $existingRequest = $book->audiobookRequests()
             ->where('author_id', auth()->id())
             ->whereIn('status', [
@@ -182,144 +143,241 @@ class AudiobookController extends Controller
             ->first();
 
         if ($existingRequest) {
+            if ($existingRequest->status === AudiobookRequest::STATUS_PENDING_PAYMENT) {
+                $existingRequest->update([
+                    'voice_id' => $selectedVoice['voice_id'],
+                    'characters' => $characters,
+                    'words' => $words,
+                    'elevenlabs_cost' => $elevenLabsCost,
+                    'kama_fee' => $kamaFee,
+                    'total_amount' => $totalAmount,
+                ]);
+
+                return redirect()
+                    ->route('writer.books.audiobook.payment', $book)
+                    ->with('success', 'Votre demande d’audiobook a été mise à jour. Procédez maintenant au paiement pour la valider.');
+            }
+
             return redirect()
-                ->route(
-                    'writer.books.audiobook',
-                    $book
-                )
-                ->with(
-                    'info',
-                    'Une demande d’audiobook existe déjà pour ce livre.'
-                );
+                ->route('writer.books.audiobook', $book)
+                ->with('info', 'Une demande d’audiobook est déjà en cours de traitement pour ce livre.');
         }
 
-        /*
-        * 12. Créer la demande
-        */
-        $audiobookRequest = $book->audiobookRequests()->create([
+        $book->audiobookRequests()->create([
             'author_id' => auth()->id(),
             'voice_id' => $selectedVoice['voice_id'],
-
             'characters' => $characters,
             'words' => $words,
-
             'elevenlabs_cost' => $elevenLabsCost,
             'kama_fee' => $kamaFee,
             'total_amount' => $totalAmount,
-
             'status' => AudiobookRequest::STATUS_PENDING_PAYMENT,
         ]);
 
-       
         return redirect()
-            ->route(
-                'writer.books.audiobook',
-                $book
-            )
-            ->with(
-                'success',
-                'Votre demande d’audiobook a été enregistrée. Vous pouvez maintenant procéder à la commande.'
-            );
+            ->route('writer.books.audiobook.payment', $book)
+            ->with('success', 'Votre demande d’audiobook a été enregistrée. Procédez maintenant au paiement pour finaliser votre commande.');
     }
 
     /**
-     * Simulation du paiement audiobook.
-     * Pour le moment, le paiement est directement considéré
-     * comme réussi.
+     * Page de paiement de l'audiobook.
      */
-    public function pay(Book $book)
+    public function payment(Book $book, StripeService $stripe, PawaPayService $pawaPay)
     {
-       
-        abort_unless(
-            $book->user_id === auth()->id(),
-            403
-        );
-
-        abort_unless(
-            $book->status === Book::STATUS_PUBLISHED,
-            404
-        );
+        abort_unless($book->user_id === auth()->id(), 403);
+        abort_unless($book->status === Book::STATUS_PUBLISHED, 404);
 
         $audiobookRequest = $book->audiobookRequests()
             ->where('author_id', auth()->id())
+            ->where('status', AudiobookRequest::STATUS_PENDING_PAYMENT)
             ->latest()
             ->firstOrFail();
 
-        abort_unless(
-            $audiobookRequest->status === AudiobookRequest::STATUS_PENDING_PAYMENT,
-            409,
-            'Cette demande d’audiobook ne peut plus être payée.'
-        );
+        $voicesResponse = $this->elevenLabsService->getVoices();
+        $voices = $voicesResponse['voices'] ?? [];
+        $selectedVoice = collect($voices)->firstWhere('voice_id', $audiobookRequest->voice_id);
+        $voiceName = $selectedVoice['name'] ?? $audiobookRequest->voice_id;
 
-        $payment = Payment::create([
-            'user_id' => auth()->id(),
-            'book_id' => $book->id,
+        $author = auth()->user();
+        $author->loadMissing('country');
 
-            'reference' => 'KAMA-AUDIO-' . strtoupper(
-                str()->random(12)
-            ),
-
-            'amount' => $audiobookRequest->total_amount,
-            'currency' => 'EUR',
-
-            'status' => 'success',
-            'type' => 'audiobook',
-
-            'payment_method' => 'simulation',
-            'transaction_id' => null,
-        ]);
-
-       $audiobookRequest->update([
-            'status' => AudiobookRequest::STATUS_PAID,
-            'payment_id' => $payment->id,
-        ]);
-
-        $this->notifyAudiobookAdmins($audiobookRequest);
-
-        return redirect()
-            ->route(
-                'writer.books.audiobook',
-                $book
+        $momoCountry = $pawaPay->resolveCountry($author->country?->code);
+        $momoQuote = ($pawaPay->isConfigured() && $momoCountry)
+            ? $pawaPay->convertFromEur(
+                (float) $audiobookRequest->total_amount,
+                $momoCountry['currency'],
+                $momoCountry['decimals']
             )
-            ->with(
-                'success',
-                'Paiement confirmé. Votre demande d’audiobook a été transmise à KaMa.'
-            );
+            : null;
+
+        return view('writer.books.audiobook-payment', [
+            'book' => $book,
+            'audiobookRequest' => $audiobookRequest,
+            'voiceName' => $voiceName,
+            'stripeConfigured' => $stripe->isConfigured(),
+            'stripeTestMode' => $stripe->isTestMode(),
+            'pawaPayConfigured' => $pawaPay->isConfigured(),
+            'pawaPaySandbox' => $pawaPay->isSandbox(),
+            'momoCountry' => $momoCountry,
+            'momoQuote' => $momoQuote,
+            'momoAvailable' => $momoCountry !== null,
+        ]);
     }
 
-    private function notifyAudiobookAdmins(
-        AudiobookRequest $audiobookRequest
-        ): void {
-        /*
-        * Admin principal KaMa
-        * OU
-        * administrateur possédant la permission
-        * books.audio.generate
-        */
-        $admins = User::query()
-            ->whereHas(
-                'role',
-                fn ($query) => $query->where('name', 'admin')
-            )
-            ->where(function ($query) {
-                $query
-                    ->where('is_main_admin', true)
-                    ->orWhereHas(
-                        'adminRoles.permissions',
-                        fn ($permissionQuery) => $permissionQuery->where(
-                            'name',
-                            'books.audio.generate'
-                        )
-                    );
-            })
-            ->get();
+    /**
+     * Préparation du paiement en ligne (Stripe ou PawaPay).
+     */
+    public function pay(Request $request, Book $book, StripeService $stripe, PawaPayService $pawaPay)
+    {
+        abort_unless($book->user_id === auth()->id(), 403);
+        abort_unless($book->status === Book::STATUS_PUBLISHED, 404);
 
-        $admins->each(function (User $admin) use ($audiobookRequest) {
-            $admin->notify(
-                new NewAudiobookRequestNotification(
-                    $audiobookRequest
-                )
+        $audiobookRequest = $book->audiobookRequests()
+            ->where('author_id', auth()->id())
+            ->where('status', AudiobookRequest::STATUS_PENDING_PAYMENT)
+            ->latest()
+            ->firstOrFail();
+
+        $method = $request->input('method', 'card');
+
+        if ($method === 'momo' || $method === 'pawapay') {
+            abort_unless($pawaPay->isConfigured(), 503, 'PawaPay n’est pas encore configuré.');
+
+            $author = auth()->user();
+            $author->loadMissing('country');
+            $country = $pawaPay->resolveCountry($author->country?->code);
+
+            if (! $country) {
+                return response()->json([
+                    'message' => 'Le Mobile Money n’est pas disponible pour votre pays (' . ($author->country?->name ?? 'inconnu') . '). Veuillez payer par carte bancaire.',
+                ], 422);
+            }
+
+            try {
+                $quote = $pawaPay->convertFromEur(
+                    (float) $audiobookRequest->total_amount,
+                    $country['currency'],
+                    $country['decimals']
+                );
+            } catch (Throwable $exception) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            $depositId = (string) Str::uuid();
+
+            try {
+                $session = $pawaPay->createPaymentPage(
+                    (float) $quote['local_amount'],
+                    $country['currency'],
+                    $depositId,
+                    route('writer.books.audiobook.success', $book) . '?deposit_id=' . $depositId,
+                    [
+                        'type' => 'audiobook',
+                        'audiobook_request_id' => (string) $audiobookRequest->id,
+                        'book_id' => (string) $book->id,
+                        'user_id' => (string) auth()->id(),
+                    ]
+                );
+            } catch (Throwable $exception) {
+                report($exception);
+
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                ], 502);
+            }
+
+            return response()->json([
+                'checkout_url' => $session['redirectUrl'],
+                'deposit_id' => $depositId,
+            ]);
+        }
+
+        // Par défaut: Stripe (Carte bancaire)
+        abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
+
+        try {
+            $checkout = $stripe->createCheckout(
+                (float) $audiobookRequest->total_amount,
+                [
+                    'name' => trim(auth()->user()->firstname . ' ' . auth()->user()->lastname),
+                    'email' => auth()->user()->email,
+                    'custom' => [
+                        'type' => 'audiobook',
+                        'audiobook_request_id' => (string) $audiobookRequest->id,
+                        'book_id' => (string) $book->id,
+                        'user_id' => (string) auth()->id(),
+                    ],
+                ],
+                route('writer.books.audiobook.success', $book) . '?session_id={CHECKOUT_SESSION_ID}',
+                route('writer.books.audiobook.payment', $book),
+                'Commande Audiobook KaMa — ' . $book->title
             );
-        });
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 502);
+        }
+
+        return response()->json([
+            'checkout_url' => $checkout['url'],
+            'checkout_id' => $checkout['id'],
+            'payment' => [
+                'reference' => 'AUDIO-' . $audiobookRequest->id,
+                'amount' => (float) $audiobookRequest->total_amount,
+                'currency' => 'EUR',
+            ],
+        ]);
+    }
+
+    /**
+     * Confirmation de paiement suite au retour Stripe / PawaPay.
+     */
+    public function success(
+        Request $request,
+        Book $book,
+        StripeService $stripe,
+        PawaPayService $pawaPay,
+        PaymentFulfillmentService $fulfillment
+    ) {
+        abort_unless($book->user_id === auth()->id(), 403);
+
+        $sessionId = $request->query('session_id');
+        $depositId = $request->query('deposit_id');
+
+        if ($sessionId && $stripe->isConfigured()) {
+            $session = $stripe->retrieveCheckout($sessionId);
+            $paymentStatus = strtolower((string) ($session['payment_status'] ?? ''));
+
+            if ($paymentStatus === 'paid') {
+                $custom = (array) ($session['metadata'] ?? []);
+                $transactionId = (string) (
+                    ($session['payment_intent'] ?? null)
+                    ?: ($session['id'] ?? null)
+                    ?: ('stripe-' . uniqid())
+                );
+
+                $fulfillment->handlePaidCheckout($custom, $transactionId, 'stripe');
+            }
+        } elseif ($depositId && $pawaPay->isConfigured()) {
+            $check = $pawaPay->checkDeposit($depositId);
+            $depositStatus = strtoupper((string) data_get($check, 'data.status', ''));
+
+            if ($check['status'] === 'FOUND' && $depositStatus === 'COMPLETED') {
+                $custom = (array) data_get($check, 'data.metadata', []);
+                if (empty($custom['type'])) {
+                    $custom['type'] = 'audiobook';
+                    $custom['book_id'] = (string) $book->id;
+                }
+                $fulfillment->handlePaidCheckout($custom, $depositId, 'pawapay');
+            }
+        }
+
+        return redirect()
+            ->route('writer.books.audiobook', $book)
+            ->with('success', 'Paiement confirmé avec succès ! Votre commande d’audiobook a été transmise à KaMa.');
     }
 }

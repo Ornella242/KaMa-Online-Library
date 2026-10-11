@@ -343,7 +343,7 @@ Steps START -->
 
 														<div class="col-md-4">
 															<label class="form-label">
-																Prix en $ *
+																Prix en € *
 															</label>
 
 															<input
@@ -1348,8 +1348,8 @@ if (previewStartPage && previewEndPage) {
         const price = document.querySelector('[name="price"]')?.value;
         setText(
             'summary_price',
-            price ? Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' $' : null,
-            '0.00 $'
+            price ? Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : null,
+            '0.00 €'
         );
 
         const pagesInput = document.getElementById('pagesInput');

@@ -270,10 +270,20 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
             [AudiobookController::class, 'store']
         )->name('writer.books.audiobook.store');
 
+        Route::get(
+            '/books/{book}/audiobook/payment',
+            [AudiobookController::class, 'payment']
+        )->name('writer.books.audiobook.payment');
+
         Route::post(
-            'writer/books/{book}/audiobook/pay',
+            '/books/{book}/audiobook/pay',
             [AudiobookController::class, 'pay']
         )->name('writer.books.audiobook.pay');
+
+        Route::get(
+            '/books/{book}/audiobook/success',
+            [AudiobookController::class, 'success']
+        )->name('writer.books.audiobook.success');
         
         Route::post(
             '/books/{book}/sponsorship/{plan}',

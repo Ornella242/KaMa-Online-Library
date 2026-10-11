@@ -473,7 +473,7 @@ Steps START -->
 
 														<div class="col-md-4">
 															<label class="form-label">
-																Prix en $ *
+																Prix en € *
 															</label>
 
 															<input
@@ -1085,7 +1085,7 @@ Steps START -->
 														</small>
 
 														<strong id="summary_price">
-															0 $
+															0 €
 														</strong>
 
 													</div>
@@ -1281,7 +1281,7 @@ Steps START -->
 
 
 												<h1>
-													25 $
+													25 €
 												</h1>
 
 
@@ -1601,6 +1601,13 @@ Steps END -->
 		}
 		const file = this.files[0];
 		if (!file) return;
+
+		const maxSizeBytes = 100 * 1024 * 1024;
+		if (file.size > maxSizeBytes) {
+			alert('Le fichier sélectionné est trop volumineux (' + (file.size / (1024 * 1024)).toFixed(1) + ' Mo). La taille maximale autorisée est de 100 Mo.');
+			this.value = '';
+			return;
+		}
 
 		usingExistingFile = false;
 		if (existingFilePanel) existingFilePanel.classList.add('d-none');

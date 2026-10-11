@@ -23,7 +23,7 @@
                     <small>Formule</small>
                     <h2>{{ $sponsorship->plan->name ?? 'Sponsoring' }}</h2>
                     <div><span>Durée</span><strong>{{ $sponsorship->plan->duration_days ?? '—' }} jours</strong></div>
-                    <div class="total"><span>Total</span><strong>${{ number_format($sponsorship->amount, 2, '.', ',') }}</strong></div>
+                    <div class="total"><span>Total</span><strong>{{ number_format($sponsorship->amount, 2, '.', ',') }} €</strong></div>
                 </div>
             </aside>
 
@@ -50,7 +50,7 @@
 
                 <button type="button" id="openStripePayment" class="kkiapay-pay-button" @disabled(! $stripeConfigured)>
                     <span><i class="bi bi-lock-fill"></i> Payer avec Stripe</span>
-                    <strong>${{ number_format($sponsorship->amount, 2, '.', ',') }}</strong>
+                    <strong>{{ number_format($sponsorship->amount, 2, '.', ',') }} €</strong>
                 </button>
             </section>
         </div>

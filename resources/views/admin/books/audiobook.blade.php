@@ -279,7 +279,7 @@ $estimatedCost = $statistics['estimated_cost'] ?? 0;
                 </span>
 
                 <strong>
-                    ${{ number_format((float) $estimatedCost, 2, '.', ',') }}
+                    {{ number_format((float) $estimatedCost, 2, '.', ',') }} €
                 </strong>
 
                 <p>

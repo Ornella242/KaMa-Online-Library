@@ -110,6 +110,24 @@ class StripeService
         ];
     }
 
+    public function retrieveCheckout(string $sessionId): ?array
+    {
+        abort_unless($this->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
+
+        try {
+            return Http::withToken((string) config('services.stripe.secret'))
+                ->acceptJson()
+                ->timeout(15)
+                ->get("https://api.stripe.com/v1/checkout/sessions/{$sessionId}")
+                ->throw()
+                ->json();
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return null;
+        }
+    }
+
     public function verifyWebhookSignature(string $payload, ?string $signatureHeader): bool
     {
         $secret = (string) config('services.stripe.webhook_secret', '');

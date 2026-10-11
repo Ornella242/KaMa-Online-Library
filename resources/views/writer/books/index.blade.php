@@ -384,7 +384,7 @@
                                                 </span>
 
                                                 <strong>
-                                                    ${{ number_format($publicationFee->amount, 2, '.', ',') }}
+                                                    {{ number_format($publicationFee->amount, 2, '.', ',') }} €
                                                 </strong>
 
                                             </a>

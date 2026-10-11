@@ -496,7 +496,7 @@
 
 			let price = document.querySelector('[name="price"]')?.value;
 			document.querySelector("#summary_price").innerText =
-				price ? price + " $" : "0 $";
+				price ? price + " €" : "0 €";
 
 		// =========================
 		// PAGES / DUREE AUDIO

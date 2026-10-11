@@ -961,7 +961,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (summaryTitle && titleInput) summaryTitle.textContent = titleInput.value || 'Titre du livre';
 
         const summaryPrice = document.getElementById('summary_price');
-        if (summaryPrice && priceInput) summaryPrice.textContent = (priceInput.value || '0') + ' $';
+        if (summaryPrice && priceInput) summaryPrice.textContent = (priceInput.value || '0') + ' €';
 
         const summaryPages = document.getElementById('summary_pages');
         if (summaryPages && pagesInput) summaryPages.textContent = pagesInput.value || '0';

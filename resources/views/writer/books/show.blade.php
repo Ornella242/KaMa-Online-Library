@@ -85,7 +85,7 @@
                     <div class="writer-book-meta-grid">
                         <div>
                             <small>Prix</small>
-                            <strong>${{ number_format((float) $book->price, 2, '.', ',') }}</strong>
+                            <strong>{{ number_format((float) $book->price, 2, '.', ',') }} €</strong>
                         </div>
                         <div>
                             <small>Langue</small>
@@ -159,9 +159,11 @@
                                             && $audiobookRequest->status === \App\Models\AudiobookRequest::STATUS_COMPLETED
                                             && $audiobookRequest->published_book_id;
 
+                                        $audiobookPendingPayment = $audiobookRequest
+                                            && $audiobookRequest->status === \App\Models\AudiobookRequest::STATUS_PENDING_PAYMENT;
+
                                         $audiobookInProgress = $audiobookRequest
                                             && in_array($audiobookRequest->status, [
-                                                \App\Models\AudiobookRequest::STATUS_PENDING_PAYMENT,
                                                 \App\Models\AudiobookRequest::STATUS_PAID,
                                                 \App\Models\AudiobookRequest::STATUS_QUEUED,
                                                 \App\Models\AudiobookRequest::STATUS_GENERATING,
@@ -179,6 +181,15 @@
                                             <i class="bi bi-headphones"></i>
                                             Audiobook disponible
                                         </button>
+
+                                    @elseif($audiobookPendingPayment)
+                                        <a
+                                            href="{{ route('writer.books.audiobook.payment', $book) }}"
+                                            class="btn-primary-action"
+                                        >
+                                            <i class="bi bi-credit-card"></i>
+                                            Payer l'audiobook ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)
+                                        </a>
 
                                     @elseif($audiobookInProgress)
                                         <button
@@ -310,7 +321,7 @@
                         </div>
                         <div>
                             <dt>Prix de vente</dt>
-                            <dd>${{ number_format((float) $book->price, 2, '.', ',') }}</dd>
+                            <dd>{{ number_format((float) $book->price, 2, '.', ',') }} €</dd>
                         </div>
                         @if($book->type === 'ebook')
                             <div>
@@ -405,7 +416,7 @@
             <div class="preview-end-content">
                 <h2>Fin de l'aperçu</h2>
                 <p>Vous venez de lire la dernière page sélectionnée.</p>
-                <h3>${{ number_format((float) $book->price, 2, '.', ',') }}</h3>
+                <h3>{{ number_format((float) $book->price, 2, '.', ',') }} €</h3>
             </div>
         `;
         pages.push(finalPage);

@@ -60,7 +60,7 @@
                                 </div>
                             </td>
                             <td>{{ $plan->duration_days }} jour(s)</td>
-                            <td><strong>${{ number_format($plan->price, 2, '.', ',') }}</strong></td>
+                            <td><strong>{{ number_format($plan->price, 2, '.', ',') }} €</strong></td>
                             <td>{{ number_format($plan->sponsorships_count) }}</td>
                             <td>
                                 <div class="categories-row-actions">

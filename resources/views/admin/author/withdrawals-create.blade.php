@@ -73,7 +73,7 @@
                     <div>
                         <span>Étape 1</span>
                         <h2>Mode de versement</h2>
-                        <p>Virement bancaire, Western Union ou PayPal.</p>
+                        <p>Virement bancaire ou Western Union.</p>
                     </div>
                 </header>
 

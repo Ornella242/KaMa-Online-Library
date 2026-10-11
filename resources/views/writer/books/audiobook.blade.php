@@ -384,7 +384,7 @@
                                     ',',
                                     ' '
                                 ) }}
-                                $
+                                €
                             </strong>
 
                         </div>
@@ -406,7 +406,7 @@
                                         2,
                                         ',',
                                         ' '
-                                    ) }} $)
+                                    ) }} €)
                                 </small>
 
                             </div>
@@ -418,7 +418,7 @@
                                     ',',
                                     ' '
                                 ) }}
-                                $
+                                €
                             </strong>
 
                         </div>
@@ -448,7 +448,7 @@
                                 ',',
                                 ' '
                             ) }}
-                            $
+                            €
                         </strong>
 
                     </div>
@@ -525,6 +525,7 @@
 
                             <option
                                 value="{{ $voice['voice_id'] }}"
+                                @selected(old('voice_id', $audiobookRequest?->voice_id ?? '') === $voice['voice_id'])
                                 data-preview-url="{{ $voice['preview_url'] ?? '' }}"
                                 data-description="{{ $voice['description'] ?? '' }}"
                                 data-language="{{ $labels['language'] ?? '' }}"
@@ -695,10 +696,10 @@
                             disabled
                         >
 
-                            <i class="bi bi-send"></i>
+                            <i class="bi bi-credit-card-2-front"></i>
 
                             <span>
-                                Enregistrer la demande
+                                Enregistrer & Procéder au paiement ({{ number_format($totalAmount, 2, ',', ' ') }} €)
                             </span>
 
                         </button>
@@ -742,24 +743,14 @@
                                     commande à KaMa.
                                 </p>
 
-                                {{-- Stripe et Pawapay àajouter --}}
-                                <form
-                                        method="POST"
-                                        action="{{ route(
-                                            'writer.books.audiobook.pay',
-                                            ['book' => $book->id]
-                                        ) }}"
-                                    >
-                                        @csrf
-
-                                        <button
-                                            type="submit"
-                                            class="audiobook-generate-btn"
-                                        >
-                                            <i class="bi bi-credit-card"></i>
-                                            <span>Procéder à la commande</span>
-                                        </button>
-                                </form>
+                                <a
+                                    href="{{ route('writer.books.audiobook.payment', $book) }}"
+                                    class="audiobook-generate-btn"
+                                    style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;"
+                                >
+                                    <i class="bi bi-lock-fill"></i>
+                                    <span>Payer ma commande ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)</span>
+                                </a>
 
                             </div>
 
@@ -2403,6 +2394,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     );
 
+    if (voiceSelect.value) {
+        voiceSelect.dispatchEvent(new Event('change'));
+        selectVoiceButton.click();
+    }
 });
 
 </script>

@@ -279,7 +279,7 @@ Title and Tabs START -->
                     <div class="col-lg-4">
 
                         <label>
-                            <i class="bi bi-currency-dollar"></i>
+                            <i class="bi bi-currency-euro"></i>
                             Prix
                         </label>
 

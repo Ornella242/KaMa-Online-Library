@@ -3,14 +3,17 @@
 namespace App\Services;
 
 use App\Mail\OrderPurchaseMail;
+use App\Models\AudiobookRequest;
 use App\Models\Book;
 use App\Models\BookSponsorship;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
+use App\Notifications\NewAudiobookRequestNotification;
 use App\Notifications\NewBookSubmittedNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Throwable;
 
 class PaymentFulfillmentService
@@ -26,6 +29,7 @@ class PaymentFulfillmentService
             'order' => $this->fulfillOrder($custom, $transactionId, $paymentMethod),
             'publication' => $this->fulfillPublication($custom, $transactionId, $paymentMethod),
             'sponsorship' => $this->fulfillSponsorship($custom, $transactionId, $paymentMethod),
+            'audiobook' => $this->fulfillAudiobook($custom, $transactionId, $paymentMethod),
             default => ['ok' => false, 'message' => 'Type de paiement inconnu.'],
         };
     }
@@ -209,6 +213,90 @@ class PaymentFulfillmentService
             'redirect' => route('writer.books'),
             'message' => 'Paiement confirmé. Votre sponsoring sera activé après validation par l’équipe KaMa.',
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $custom
+     */
+    public function fulfillAudiobook(array $custom, string $transactionId, ?string $paymentMethod = 'stripe'): array
+    {
+        $requestId = $custom['audiobook_request_id'] ?? null;
+        $bookId = $custom['book_id'] ?? null;
+
+        $audiobookRequest = AudiobookRequest::query()
+            ->when($requestId, fn ($q) => $q->where('id', $requestId))
+            ->when(! $requestId && $bookId, fn ($q) => $q->where('book_id', $bookId))
+            ->latest('id')
+            ->first();
+
+        if (! $audiobookRequest) {
+            return ['ok' => false, 'message' => 'Demande d’audiobook introuvable.'];
+        }
+
+        if ($audiobookRequest->status === AudiobookRequest::STATUS_PAID || in_array($audiobookRequest->status, [
+            AudiobookRequest::STATUS_QUEUED,
+            AudiobookRequest::STATUS_GENERATING,
+            AudiobookRequest::STATUS_ASSEMBLING,
+            AudiobookRequest::STATUS_COMPLETED,
+        ], true)) {
+            return [
+                'ok' => true,
+                'already' => true,
+                'redirect' => route('writer.books.audiobook', $audiobookRequest->book_id),
+                'message' => 'Paiement déjà confirmé pour cette demande d’audiobook.',
+            ];
+        }
+
+        $payment = DB::transaction(function () use ($audiobookRequest, $transactionId, $paymentMethod) {
+            $locked = AudiobookRequest::query()->lockForUpdate()->findOrFail($audiobookRequest->id);
+            abort_unless($locked->status === AudiobookRequest::STATUS_PENDING_PAYMENT, 409);
+
+            $payment = Payment::query()->create([
+                'user_id' => $locked->author_id,
+                'book_id' => $locked->book_id,
+                'reference' => 'KAMA-AUDIO-'.strtoupper(Str::random(10)),
+                'amount' => $locked->total_amount,
+                'currency' => 'EUR',
+                'status' => 'success',
+                'type' => 'audiobook',
+                'payment_method' => $paymentMethod ?: 'stripe',
+                'transaction_id' => $transactionId,
+            ]);
+
+            $locked->update([
+                'status' => AudiobookRequest::STATUS_PAID,
+                'payment_id' => $payment->id,
+            ]);
+
+            return $payment;
+        });
+
+        // Notifier les administrateurs KaMa
+        $this->notifyAudiobookAdmins($audiobookRequest->fresh());
+
+        return [
+            'ok' => true,
+            'redirect' => route('writer.books.audiobook', $audiobookRequest->book_id),
+            'message' => 'Paiement confirmé ! Votre commande d’audiobook a été transmise à l’équipe KaMa.',
+        ];
+    }
+
+    private function notifyAudiobookAdmins(AudiobookRequest $audiobookRequest): void
+    {
+        $admins = User::query()
+            ->whereHas('role', fn ($q) => $q->where('name', 'admin'))
+            ->where(function ($query) {
+                $query->where('is_main_admin', true)
+                    ->orWhereHas(
+                        'adminRoles.permissions',
+                        fn ($pq) => $pq->where('name', 'books.audio.generate')
+                    );
+            })
+            ->get();
+
+        $admins->each(function (User $admin) use ($audiobookRequest) {
+            $admin->notify(new NewAudiobookRequestNotification($audiobookRequest));
+        });
     }
 
     private function sendPurchaseEmail(Order $order): void

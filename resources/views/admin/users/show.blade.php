@@ -224,7 +224,7 @@
                     <span>Total des gains</span>
 
                     <strong>
-                        {{ number_format((float) ($data['totalRevenue'] ?? 0), 2) }} $
+                        {{ number_format((float) ($data['totalRevenue'] ?? 0), 2) }} €
                     </strong>
 
                 </div>
@@ -571,7 +571,7 @@
             {{-- PRIX --}}
             <div class="kama-user-book-price">
 
-                {{ number_format((float) $book->price, 2) }} $
+                {{ number_format((float) $book->price, 2) }} €
 
             </div>
 

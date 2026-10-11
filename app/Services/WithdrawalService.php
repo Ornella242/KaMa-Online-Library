@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Withdrawal;
+use App\Notifications\WithdrawalInitiatedNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class WithdrawalService
 {
@@ -60,7 +62,7 @@ class WithdrawalService
 
         $accountNumber = $this->primaryAccountIdentifier($method, $payoutDetails);
 
-        return DB::transaction(function () use ($author, $amount, $method, $payoutDetails, $commissionPercent, $commissionAmount, $netAmount, $accountNumber) {
+        $withdrawal = DB::transaction(function () use ($author, $amount, $method, $payoutDetails, $commissionPercent, $commissionAmount, $netAmount, $accountNumber) {
             $wallet = $this->walletService->ensureWallet($author);
             $wallet = \App\Models\Wallet::query()->lockForUpdate()->findOrFail($wallet->id);
 
@@ -102,6 +104,14 @@ class WithdrawalService
 
             return $withdrawal->fresh();
         });
+
+        try {
+            $author->notify(new WithdrawalInitiatedNotification($withdrawal));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $withdrawal;
     }
 
     public function markProcessing(Withdrawal $withdrawal, ?string $note = null): Withdrawal

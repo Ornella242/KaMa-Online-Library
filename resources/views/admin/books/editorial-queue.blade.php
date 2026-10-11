@@ -185,7 +185,7 @@
                             <img src="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('assets/images/book/01.jpg') }}"
                                 alt="Couverture de {{ $book->title }}">
                             <span class="editorial-review-status"><i class="bi bi-search"></i> En vérification</span>
-                            <strong>{{ number_format($book->price, 2, ',', ' ') }} $</strong>
+                            <strong>{{ number_format($book->price, 2, ',', ' ') }} €</strong>
 
                             @if($book->type === 'ebook')
                                 <a href="{{ route('admin.books.preview.file', $book) }}" target="_blank" rel="noopener">

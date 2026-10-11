@@ -89,7 +89,7 @@
                         </small>
 
                         <strong>
-                            {{ number_format($book->price,2) }} $
+                            {{ number_format($book->price,2) }} €
                         </strong>
 
                     </div>
