@@ -93,6 +93,10 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/login/verify-2fa', [AuthController::class, 'showVerifyTwoFactor'])->name('auth.2fa.index');
+Route::post('/login/verify-2fa', [AuthController::class, 'verifyTwoFactor'])->name('auth.2fa.verify');
+Route::post('/login/resend-2fa', [AuthController::class, 'resendTwoFactor'])->name('auth.2fa.resend');
+Route::match(['GET', 'POST'], '/login/cancel-2fa', [AuthController::class, 'cancelTwoFactor'])->name('auth.2fa.cancel');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/email/verify', function () {
     return view('auth.verify-email');

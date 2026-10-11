@@ -15,8 +15,9 @@ use App\Notifications\ResetPasswordNotification;
 use App\Models\Book;
 use App\Models\Country;
 use App\Models\Wallet;
+use Illuminate\Support\Facades\Hash;
 
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_code'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, CanResetPassword;
@@ -38,6 +39,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'bio',
         'password',
+        'two_factor_code',
+        'two_factor_expires_at',
     ];
 
     protected $casts = [
@@ -52,7 +55,73 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_expires_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Génère et enregistre un code OTP à 6 chiffres valide 10 minutes.
+     */
+    public function generateTwoFactorCode(): string
+    {
+        $code = sprintf('%06d', random_int(100000, 999999));
+
+        $this->forceFill([
+            'two_factor_code' => Hash::make($code),
+            'two_factor_expires_at' => now()->addMinutes(10),
+        ])->save();
+
+        return $code;
+    }
+
+    /**
+     * Vérifie la validité du code OTP fourni.
+     */
+    public function isValidTwoFactorCode(string $code): bool
+    {
+        if (! $this->two_factor_code || ! $this->two_factor_expires_at) {
+            return false;
+        }
+
+        if ($this->two_factor_expires_at->isPast()) {
+            return false;
+        }
+
+        return Hash::check(trim($code), $this->two_factor_code);
+    }
+
+    /**
+     * Réinitialise le code OTP après connexion réussie ou annulation.
+     */
+    public function clearTwoFactorCode(): void
+    {
+        $this->forceFill([
+            'two_factor_code' => null,
+            'two_factor_expires_at' => null,
+        ])->save();
+    }
+
+    /**
+     * Adresse email masquée pour l'affichage de confirmation (ex: j***e@domain.com).
+     */
+    public function maskedEmail(): string
+    {
+        $parts = explode('@', (string) $this->email);
+        if (count($parts) !== 2) {
+            return (string) $this->email;
+        }
+
+        $name = $parts[0];
+        $domain = $parts[1];
+        $len = mb_strlen($name);
+
+        if ($len <= 2) {
+            $masked = mb_substr($name, 0, 1) . '***';
+        } else {
+            $masked = mb_substr($name, 0, 1) . str_repeat('*', min(5, $len - 2)) . mb_substr($name, -1);
+        }
+
+        return $masked . '@' . $domain;
     }
 
     public function role()
