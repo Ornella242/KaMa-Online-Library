@@ -2,238 +2,176 @@
 <footer class="kama-footer">
     <div class="container">
 
-        <div class="row g-5">
+        {{-- MAIN FOOTER --}}
+        <div class="kama-footer-main">
 
-            <!-- BRAND -->
-            <div class="col-lg-5">
+            {{-- BRAND --}}
+            <div class="kama-footer-brand">
 
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('assets/images/KaMa2.png') }}"
-                         class="footer-logo"
-                         alt="KaMa">
+                <a href="{{ route('home') }}"
+                   class="kama-footer-brand-link"
+                   aria-label="KaMa — Accueil">
+
+                    <img
+                        src="{{ asset('assets/images/KaMa2.png') }}"
+                        class="footer-logo"
+                        alt="KaMa"
+                    >
                 </a>
 
-                <!-- SOCIAL -->
-                <div class="footer-social">
 
-                    <a href="#" aria-label="Facebook">
+                <div class="footer-social"
+                     aria-label="Réseaux sociaux de KaMa">
+
+                    {{-- Remplacer les # par les URL réelles des profils --}}
+                    <a href="#"
+                       aria-label="Facebook"
+                       target="_blank"
+                       rel="noopener noreferrer">
                         <i class="bi bi-facebook"></i>
                     </a>
 
-                    <a href="#" aria-label="Instagram">
+                    <a href="#"
+                       aria-label="Instagram"
+                       target="_blank"
+                       rel="noopener noreferrer">
                         <i class="bi bi-instagram"></i>
                     </a>
 
-                    <a href="#" aria-label="X">
+                    <a href="#"
+                       aria-label="X"
+                       target="_blank"
+                       rel="noopener noreferrer">
                         <i class="bi bi-twitter-x"></i>
                     </a>
 
-                    <a href="#" aria-label="LinkedIn">
+                    <a href="#"
+                       aria-label="LinkedIn"
+                       target="_blank"
+                       rel="noopener noreferrer">
                         <i class="bi bi-linkedin"></i>
                     </a>
 
-                    <a href="#" aria-label="YouTube">
+                    <a href="#"
+                       aria-label="YouTube"
+                       target="_blank"
+                       rel="noopener noreferrer">
                         <i class="bi bi-youtube"></i>
                     </a>
 
                 </div>
-
             </div>
 
+            {{-- NAVIGATION --}}
+            <div class="kama-footer-navigation">
 
-            <!-- LINKS -->
-            <div class="col-lg-7">
+                {{-- EXPLORE --}}
+                <div class="kama-footer-column">
+                    <h2>Explorer</h2>
 
-                <div class="row g-4">
+                    <ul>
+                        <li>
+                            <a href="{{ route('home') }}">Accueil</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('catalogue') }}">Catalogue</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('about') }}">À propos de KaMa</a>
+                        </li>
+                    </ul>
+                </div>
 
-                    <!-- EXPLORE -->
-                    <div class="col-6 col-md-3">
+                {{-- AUTHORS --}}
+                <div class="kama-footer-column">
+                    <h2>Pour les auteurs</h2>
 
-                        <h5>
-                            Explorer
-                        </h5>
+                    <ul>
+                        <li>
+                            <a href="{{ route('register') }}">Devenir auteur</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('register') }}">Publier un livre</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('legal.author-terms') }}">
+                                Conditions de publication
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-                        <ul>
+                {{-- HELP --}}
+                <div class="kama-footer-column">
+                    <h2>Besoin d’aide ?</h2>
 
-                            <li>
-                                <a href="{{ route('home') }}">
-                                    Accueil
-                                </a>
-                            </li>
+                    <ul>
+                        <li>
+                            <a href="mailto:contact@kama-online.com">
+                                Nous contacter
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('faq') }}">FAQ</a>
+                        </li>
+                    </ul>
+                </div>
 
-                            <li>
-                                <a href="{{ route('catalogue') }}">
-                                    Catalogue
-                                </a>
-                            </li>
+                {{-- LEGAL --}}
+                <div class="kama-footer-column">
+                    <h2>Informations légales</h2>
 
-                        </ul>
-
-                    </div>
-
-
-                    <!-- AUTHORS -->
-                    <div class="col-6 col-md-3">
-
-                        <h5>
-                            Auteurs
-                        </h5>
-
-                        <ul>
-
-                            <li>
-                                <a href="{{ route('register') }}">
-                                    Devenir auteur
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('register') }}">
-                                    Publier un livre
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('register') }}">
-                                    Espace écrivain
-                                </a>
-                            </li>
-
-                        </ul>
-
-                    </div>
-
-
-                    <!-- ABOUT -->
-                    <div class="col-6 col-md-3">
-
-                        <h5>
-                            KaMa
-                        </h5>
-
-                        <ul>
-
-                            <li>
-                                <a href="{{ route('about') }}">
-                                    À propos
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="#">
-                                    Contact
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('faq') }}">
-                                    FAQ
-                                </a>
-                            </li>
-
-                        </ul>
-
-                    </div>
-
-
-                    <!-- LEGAL -->
-                    <div class="col-6 col-md-3">
-
-                        <h5>
-                            Légal
-                        </h5>
-
-                        <ul>
-
-                            <li>
-                                <a href="{{ route('legal.terms') }}">
-                                    Conditions d'utilisation
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('legal.privacy') }}">
-                                    Confidentialité
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('legal.cookies') }}">
-                                    Cookies
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('legal.sales') }}">
-                                    Paiement & remboursements
-                                </a>
-                            </li>
-
-                        </ul>
-
-                    </div>
-
+                    <ul>
+                        <li>
+                            <a href="{{ route('legal.terms') }}">
+                                Conditions d’utilisation
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('legal.sales') }}">
+                                Paiements et remboursements
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('legal.privacy') }}">
+                                Confidentialité
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('legal.cookies') }}">
+                                Politique relative aux cookies
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
             </div>
-
         </div>
 
+        {{-- BOTTOM --}}
+        <div class="kama-footer-bottom">
 
-        <!-- NEWSLETTER -->
-        {{-- <div class="footer-newsletter">
+            <p class="kama-footer-copyright">
+                © {{ date('Y') }} KaMa.
+                Tous droits réservés.
+            </p>
 
-            <div>
+            <div class="kama-footer-payment"
+                 aria-label="Moyens de paiement">
 
-                <h4>
-                    Restez connecté à la littérature africaine
-                </h4>
-
-                <p>
-                    Recevez les nouveautés, les auteurs à découvrir et les actualités KaMa.
-                </p>
-
-            </div>
-
-
-            <form>
-
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Votre adresse email"
-                    autocomplete="email"
-                    required
-                >
-
-                <button type="submit">
-                    S'inscrire
-                </button>
-
-            </form>
-
-        </div> --}}
-
-
-        <!-- BOTTOM -->
-        <div class="footer-bottom">
-
-            <span>
-                © {{ date('Y') }} KaMa. Tous droits réservés.
-            </span>
-
-            <div class="payment-icons">
+                <span>Paiements sécurisés</span>
 
                 <img
                     src="{{ asset('assets/images/element/visa.svg') }}"
                     alt="Visa"
+                    loading="lazy"
                 >
 
                 <img
                     src="{{ asset('assets/images/element/mastercard.svg') }}"
                     alt="Mastercard"
+                    loading="lazy"
                 >
-
             </div>
 
         </div>

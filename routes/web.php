@@ -1009,6 +1009,9 @@ Route::prefix('legal')->name('legal.')->group(function () {
     Route::view('/terms', 'legal.terms')
         ->name('terms');
 
+    Route::view('/author-terms', 'legal.author-terms')
+        ->name('author-terms');
+
     Route::view('/privacy', 'legal.privacy')
         ->name('privacy');
 
