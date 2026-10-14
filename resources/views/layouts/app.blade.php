@@ -944,6 +944,7 @@
 			});
 		@endif
 	</script>
+	@include('partials.cookie-consent')
 	@stack('scripts')
 </body>
 </html>

@@ -142,6 +142,11 @@
                                 Politique relative aux cookies
                             </a>
                         </li>
+                        <li>
+                            <button type="button" class="kama-footer-cookie-btn js-open-cookie-settings">
+                                Gestion des cookies
+                            </button>
+                        </li>
                     </ul>
                 </div>
 

@@ -375,8 +375,14 @@
                         <p>
                             Pour modifier vos préférences, utilisez le lien
                             ou le bouton de gestion des cookies disponible
-                            sur KaMa, lorsqu'il est mis en place.
+                            sur KaMa, ou cliquez directement ci-dessous :
                         </p>
+
+                        <div class="mt-3 mb-2">
+                            <button type="button" class="btn btn-danger js-open-cookie-settings" style="background-color: #b30000; border-color: #b30000; border-radius: 10px; font-weight: 600; padding: 10px 20px;">
+                                <i class="bi bi-sliders me-1"></i> Ouvrir le centre de préférences des cookies
+                            </button>
+                        </div>
 
                     </section>
 
