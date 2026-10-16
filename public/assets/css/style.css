@@ -48911,6 +48911,16 @@ font-size:13px;
     transition: color 0.2s ease;
 }
 
+.kama-footer-column button {
+    display: inline-block;
+    color: #999999;
+    font-size: 13px;
+    line-height: 1.75;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: color 0.2s ease;
+}
+
 .kama-footer-column a:hover {
     color: #ffffff;
 }

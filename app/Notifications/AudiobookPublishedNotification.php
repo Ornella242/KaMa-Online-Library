@@ -66,7 +66,7 @@ class AudiobookPublishedNotification extends Notification implements ShouldQueue
                 'Votre audiobook est maintenant disponible sur KaMa'
             )
             ->view(
-                'emails.audiobooks/published',
+                'emails.audiobooks.published',
                 [
                     'user' => $notifiable,
                     'audiobookRequest' => $this->audiobookRequest,

@@ -11,6 +11,7 @@ use App\Models\Book;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
+use App\Notifications\AudiobookPublishedNotification;
 use App\Services\Audiobook\AudiobookGenerationService;
 
 class AudiobookRequestController extends Controller

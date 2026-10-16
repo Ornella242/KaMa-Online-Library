@@ -13,19 +13,30 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::create([
-        'name' => 'reader',
-        'description' => 'Utilisateur qui lit et achète des livres.',
-        ]);
+         Role::updateOrCreate(
+            ['name' => 'admin'],
+            [
+                'label' => 'Administrateur',
+                'description' => 'Administrateur de la plateforme KaMa.',
+            ]
+        );
+        
+        Role::updateOrCreate(
+            ['name' => 'reader'],
+            [
+                'label' => 'Lecteur',
+                'description' => 'Utilisateur qui lit et achète des livres.',
+            ]
+        );
 
-        Role::create([
-            'name' => 'writer',
-            'description' => 'Auteur pouvant publier ses ouvrages.',
-        ]);
+        Role::updateOrCreate(
+            ['name' => 'writer'],
+            [
+                'label' => 'Auteur',
+                'description' => 'Utilisateur qui publie des livres.',
+            ]
+        );
 
-        Role::create([
-            'name' => 'admin',
-            'description' => 'Administrateur de la plateforme.',
-        ]);
+       
     }
 }

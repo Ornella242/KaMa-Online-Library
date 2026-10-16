@@ -30,7 +30,7 @@ class WalletSeeder extends Seeder
                 ],
                 [
                     'balance' => 0,
-                    'currency' => 'USD'
+                    'currency' => 'EUR'
                 ]
             );
 

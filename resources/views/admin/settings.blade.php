@@ -246,142 +246,119 @@
             </div>
         @endif
 
-        @if(auth()->user()->hasAdminPermission('settings.momo.view'))
-            {{-- Mobile Money --}}
-            <div class="tab-pane fade {{ $activeTab === 'momo' ? 'show active' : '' }}"
-                id="tab-momo"
-                role="tabpanel"
-                aria-labelledby="tab-momo-btn"
-                tabindex="0">
+@if(auth()->user()->hasAdminPermission('settings.momo.view'))
+    {{-- Mobile Money --}}
+    <div class="tab-pane fade {{ $activeTab === 'momo' ? 'show active' : '' }}"
+         id="tab-momo"
+         role="tabpanel"
+         aria-labelledby="tab-momo-btn"
+         tabindex="0">
 
-                <section class="admin-publication-fees admin-momo-rates">
-                    <div class="admin-publication-fees-header">
-                        <div>
-                            <span>CurrencyFreaks</span>
-                            <h4>Taux Mobile Money (1 EUR → devise locale)</h4>
-                            <p>Taux live récupérés automatiquement. Plus de saisie manuelle.</p>
-                        </div>
-                        <span class="admin-publication-fees-lock">
-                            <i class="bi bi-currency-exchange"></i> {{ count($pawaPayRates) }} devises
-                        </span>
-                    </div>
+        <section class="admin-publication-fees admin-momo-rates">
 
-                    @if(!($fxMeta['configured'] ?? false))
-                        <div class="alert alert-warning m-4 mb-0">
-                            <strong>Clé API manquante.</strong>
-                            Ajoutez <code>CURRENCYFREAKS_API_KEY</code> dans le fichier <code>.env</code>
-                            (clé gratuite sur
-                            <a href="https://currencyfreaks.com/signup" target="_blank" rel="noopener">currencyfreaks.com</a>).
-                        </div>
-                    @elseif(!empty($fxMeta['error']))
-                        <div class="alert alert-danger m-4 mb-0">
-                            {{ $fxMeta['error'] }}
-                        </div>
-                    @endif
-
-                    <div class="admin-momo-rates-grid">
-                        @forelse($pawaPayRates as $currency => $rate)
-                            @php
-                                $meta = $pawaPayCurrencyMeta[$currency] ?? null;
-                            @endphp
-                            <div class="admin-momo-rate-card">
-                                <div class="admin-momo-rate-top">
-                                    <strong>{{ $currency }}</strong>
-                                </div>
-                                <span class="admin-momo-rate-name">{{ $meta['label'] ?? $currency }}</span>
-                                @if(!empty($meta['countries']))
-                                    <small class="admin-momo-rate-countries">{{ $meta['countries'] }}</small>
-                                @endif
-                                <div class="admin-momo-rate-value">
-                                    <span>{{ number_format((float) $rate, 4, ',', ' ') }}</span>
-                                    <small>/ EUR</small>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="admin-momo-rate-empty">
-                                Aucun taux affiché pour le moment.
-                            </div>
-                        @endforelse
-                    </div>
-
-                    <div class="admin-publication-fees-footer">
-                        <p>
-                            <i class="bi bi-info-circle"></i>
-                            Exemple : vente 10 € avec 30 % KaMa → 7 € au portefeuille auteur. Retrait de 7 € avec 5 % de frais → 6,65 € versés.
-                        </p>
-                        <button type="submit">
-                            <i class="bi bi-check2-circle"></i> Enregistrer les retraits
-                        </button>
-                    </div>
-                </form>
-            </section>
-        </div>
-
-        {{-- Mobile Money --}}
-        <div class="tab-pane fade {{ $activeTab === 'momo' ? 'show active' : '' }}"
-             id="tab-momo"
-             role="tabpanel"
-             aria-labelledby="tab-momo-btn"
-             tabindex="0">
-
-            <section class="admin-publication-fees admin-momo-rates">
-                <div class="admin-publication-fees-header">
-                    <div>
-                        <span>CurrencyFreaks</span>
-                        <h4>Taux Mobile Money (1 EUR → devise locale)</h4>
-                        <p>Taux live récupérés automatiquement. Plus de saisie manuelle.</p>
-                    </div>
-                    <span class="admin-publication-fees-lock">
-                        <i class="bi bi-currency-exchange"></i> {{ count($pawaPayRates) }} devises
-                    </span>
+            {{-- HEADER --}}
+            <div class="admin-publication-fees-header">
+                <div>
+                    <span>CurrencyFreaks</span>
+                    <h4>Taux Mobile Money (1 EUR → devise locale)</h4>
+                    <p>Taux de change récupérés automatiquement.</p>
                 </div>
 
-                @if(!($fxMeta['configured'] ?? false))
-                    <div class="alert alert-warning m-4 mb-0">
-                        <strong>Clé API manquante.</strong>
-                        Ajoutez <code>CURRENCYFREAKS_API_KEY</code> dans le fichier <code>.env</code>
-                        (clé gratuite sur
-                        <a href="https://currencyfreaks.com/signup" target="_blank" rel="noopener">currencyfreaks.com</a>).
-                    </div>
-                @elseif(!empty($fxMeta['error']))
-                    <div class="alert alert-danger m-4 mb-0">
-                        {{ $fxMeta['error'] }}
-                    </div>
-                @endif
-
-                <div class="admin-momo-rates-grid">
-                    @forelse($pawaPayRates as $currency => $rate)
-                        @php
-                            $meta = $pawaPayCurrencyMeta[$currency] ?? null;
-                        @endphp
-                        <div class="admin-momo-rate-card">
-                            <div class="admin-momo-rate-top">
-                                <strong>{{ $currency }}</strong>
-                            </div>
-                            <span class="admin-momo-rate-name">{{ $meta['label'] ?? $currency }}</span>
-                            @if(!empty($meta['countries']))
-                                <small class="admin-momo-rate-countries">{{ $meta['countries'] }}</small>
-                            Source :
-                            <strong>{{ $fxMeta['source'] ?? '—' }}</strong>
-                            @if(!empty($fxMeta['date']))
-                                · {{ $fxMeta['date'] }}
-                            @endif
-                            · aucune marge KaMa
-                            @if(($fxMeta['source'] ?? '') === 'currencyfreaks_usd_cross')
-                                · plan gratuit = croisement USD (identique à (USD→devise)/(USD→EUR))
-                            @endif
-                        </p>
-                        <form method="POST" action="{{ route('admin.settings.pawapay-rates.update') }}">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" @disabled(!($fxMeta['configured'] ?? false))>
-                                <i class="bi bi-arrow-repeat"></i> Rafraîchir les taux
-                            </button>
-                        </form>
-                    </div>
-                </section>
+                <span class="admin-publication-fees-lock">
+                    <i class="bi bi-currency-exchange"></i>
+                    {{ count($pawaPayRates) }} devises
+                </span>
             </div>
-        @endif
+
+            {{-- ÉTAT DE L'API --}}
+            @if(!($fxMeta['configured'] ?? false))
+                <div class="alert alert-warning m-4 mb-0">
+                    <strong>Clé API manquante.</strong>
+                    Ajoutez <code>CURRENCYFREAKS_API_KEY</code> dans le fichier
+                    <code>.env</code>.
+                    <a href="https://currencyfreaks.com/signup"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Obtenir une clé API
+                    </a>.
+                </div>
+            @elseif(!empty($fxMeta['error']))
+                <div class="alert alert-danger m-4 mb-0">
+                    {{ $fxMeta['error'] }}
+                </div>
+            @endif
+
+            {{-- TAUX DE CHANGE --}}
+            <div class="admin-momo-rates-grid">
+                @forelse($pawaPayRates as $currency => $rate)
+                    @php
+                        $meta = $pawaPayCurrencyMeta[$currency] ?? null;
+                    @endphp
+
+                    <div class="admin-momo-rate-card">
+                        <div class="admin-momo-rate-top">
+                            <strong>{{ $currency }}</strong>
+                        </div>
+
+                        <span class="admin-momo-rate-name">
+                            {{ $meta['label'] ?? $currency }}
+                        </span>
+
+                        @if(!empty($meta['countries']))
+                            <small class="admin-momo-rate-countries">
+                                {{ $meta['countries'] }}
+                            </small>
+                        @endif
+
+                        <div class="admin-momo-rate-value">
+                            <span>
+                                {{ number_format((float) $rate, 4, ',', ' ') }}
+                            </span>
+                            <small>/ EUR</small>
+                        </div>
+                    </div>
+                @empty
+                    <div class="admin-momo-rate-empty">
+                        Aucun taux affiché pour le moment.
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- INFORMATIONS ET ACTUALISATION --}}
+            <div class="admin-publication-fees-footer">
+                <p>
+                    <i class="bi bi-info-circle"></i>
+                    Source :
+                    <strong>{{ $fxMeta['source'] ?? '—' }}</strong>
+
+                    @if(!empty($fxMeta['date']))
+                        · {{ $fxMeta['date'] }}
+                    @endif
+
+                    · Aucune marge KaMa sur le taux de change.
+
+                    @if(($fxMeta['source'] ?? '') === 'currencyfreaks_usd_cross')
+                        · Taux calculés par croisement USD :
+                        (USD → devise locale) / (USD → EUR).
+                    @endif
+                </p>
+
+                <form method="POST"
+                      action="{{ route('admin.settings.pawapay-rates.update') }}">
+                    @csrf
+                    @method('PUT')
+
+                    <button type="submit"
+                            @disabled(!($fxMeta['configured'] ?? false))>
+                        <i class="bi bi-arrow-repeat"></i>
+                        Rafraîchir les taux
+                    </button>
+                </form>
+            </div>
+
+        </section>
+    </div>
+@endif
 
         @if(auth()->user()->hasAdminPermission('settings.profil.view'))
             {{-- Profil --}}
