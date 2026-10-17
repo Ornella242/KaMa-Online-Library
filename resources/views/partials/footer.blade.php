@@ -20,10 +20,9 @@
                 </a>
 
 
-                <div class="footer-social"
+                {{-- <div class="footer-social"
                      aria-label="Réseaux sociaux de KaMa">
 
-                    {{-- Remplacer les # par les URL réelles des profils --}}
                     <a href="#"
                        aria-label="Facebook"
                        target="_blank"
@@ -59,7 +58,7 @@
                         <i class="bi bi-youtube"></i>
                     </a>
 
-                </div>
+                </div> --}}
             </div>
 
             {{-- NAVIGATION --}}
