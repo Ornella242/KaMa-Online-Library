@@ -164,7 +164,7 @@
                             <li><strong>Nom de la plateforme :</strong> KaMa Afrika Online Library</li>
                             <li>
                                 <strong>Contact relatif aux données personnelles :</strong>
-                                <a href="mailto:contact@kama-online.com">contact@kama-online.com</a>.
+                                <a href="mailto:contact@kama-afrika.com">contact@kama-afrika.com</a>.
                             </li>
                         </ul>
                     </section>
@@ -625,8 +625,8 @@
 
                         <p>
                             Pour exercer vos droits, contactez-nous à l'adresse
-                            <a href="mailto:contact@kama-online.com">
-                                contact@kama-online.com
+                            <a href="mailto:contact@kama-afrika.com">
+                                contact@kama-afrika.com
                             </a>.
                         </p>
 
@@ -714,8 +714,8 @@
                             <li><strong>Plateforme :</strong> KaMa.</li>
                             <li>
                                 <strong>E-mail :</strong>
-                                <a href="mailto:contact@kama-online.com">
-                                    contact@kama-online.com
+                                <a href="mailto:contact@kama-afrika.com">
+                                    contact@kama-afrika.com
                                 </a>
                             </li>
                         </ul>

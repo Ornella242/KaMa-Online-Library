@@ -255,8 +255,8 @@
 
 		<a href="{{url('/')}}"> Accueil</a>
 		<a href="{{route('catalogue')}}"> Catalogue </a>
-		<a href="#"> A propos </a>
-		<a href="#">FAQ </a>
+		<a href="{{ route('about') }}"> A propos </a>
+		<a href="{{ route('faq') }}">FAQ </a>
 
 		<button class="mobile-category-btn"
 		data-bs-toggle="collapse"
@@ -265,8 +265,6 @@
 
 		<i class="bi bi-chevron-down"></i>
 		</button>
-
-
 
 		<div class="collapse" id="mobileCategories">
 			@foreach($categories as $category)

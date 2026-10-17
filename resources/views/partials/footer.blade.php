@@ -107,7 +107,7 @@
 
                     <ul>
                         <li>
-                            <a href="mailto:contact@kama-online.com">
+                            <a href="mailto:contact@kama-afrika.com">
                                 Nous contacter
                             </a>
                         </li>

@@ -279,7 +279,7 @@
                             Toute suspicion d’accès frauduleux ou
                             d’utilisation non autorisée doit être signalée
                             rapidement à KaMa par l’intermédiaire de
-                            <strong>contact@kama-online.com</strong>.
+                            <strong>contact@kama-afrika.com</strong>.
                         </p>
 
                         <p>
@@ -550,8 +550,8 @@
                             Toute personne estimant qu’un contenu
                             accessible sur KaMa porte atteinte à ses
                             droits peut adresser un signalement à
-                            <a href="mailto:contact@kama-online.com">
-                                <strong>contact@kama-online.com</strong>
+                            <a href="mailto:contact@kama-afrika.com">
+                                <strong>contact@kama-afrika.com</strong>
                             </a>,
                             en identifiant précisément le contenu
                             concerné et en fournissant les informations
@@ -828,8 +828,8 @@
                             CGU, à l’utilisation de KaMa ou au
                             fonctionnement de la plateforme, vous
                             pouvez contacter l’équipe KaMa :
-                            <a href="mailto:contact@kama-online.com">
-                                    <strong>contact@kama-online.com</strong>
+                            <a href="mailto:contact@kama-afrika.com">
+                                    <strong>contact@kama-afrika.com</strong>
                                 </a>
                         </p>
                                

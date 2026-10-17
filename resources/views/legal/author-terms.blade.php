@@ -735,8 +735,8 @@
 
                         <p>
                             <strong>E-mail :</strong>
-                            <a href="mailto:contact@kama-online.com">
-                                contact@kama-online.com
+                            <a href="mailto:contact@kama-afrika.com">
+                                contact@kama-afrika.com
                             </a>
                         </p>
 

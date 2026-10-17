@@ -443,8 +443,10 @@
 			// =========================
 
 			let title = document.querySelector('[name="title"]')?.value;
-			document.querySelector("#summary_title").innerText =
-				title || "Titre du livre";
+			const summaryTitle = document.querySelector("#summary_title");
+			if (summaryTitle) {
+				summaryTitle.innerText = title || "Titre du livre";
+			}
 
 			// =========================
 			// CATEGORIE
@@ -472,10 +474,12 @@
 			// =========================
 			// LANGUE
 			// =========================
+			const language = document.querySelector('[name="language"]')?.value;
+			const summaryLanguage = document.querySelector("#summary_language");
 
-			let language = document.querySelector('[name="language"]')?.value;
-			document.querySelector("#summary_language").innerText =
-				language || "Langue";
+			if (summaryLanguage) {
+				summaryLanguage.innerText = language || "Langue";
+			}
 
 			// =========================
 			// TYPE
@@ -495,8 +499,11 @@
 			// =========================
 
 			let price = document.querySelector('[name="price"]')?.value;
-			document.querySelector("#summary_price").innerText =
-				price ? price + " €" : "0 €";
+			const summaryPrice = document.querySelector("#summary_price");
+
+			if (summaryPrice) {
+				summaryPrice.innerText = price ? price + " €" : "0 €";
+			}
 
 		// =========================
 		// PAGES / DUREE AUDIO
@@ -698,8 +705,11 @@
 					// =========================
 
 					let year = document.querySelector('[name="publication_year"]')?.value;
-					document.querySelector("#summary_year").innerText =
-						year || "----";
+					const summaryYear = document.querySelector("#summary_year");
+
+					if (summaryYear) {
+						summaryYear.innerText = year || "----";
+					}
 
 					// =========================
 					// DESCRIPTION
@@ -708,8 +718,12 @@
 					let description =
 						document.querySelector('[name="short_description"]')?.value;
 
-					document.querySelector("#summary_short_description").innerText =
-						description || "Aucune description disponible.";
+					const summaryDescription = document.querySelector("#summary_short_description");
+
+					if (summaryDescription) {
+						summaryDescription.innerText =
+							description || "Aucune description disponible.";
+					}
 
 					// =========================
 					// COUVERTURE
@@ -863,8 +877,11 @@
 
 
 		// Changement du type d'aperçu
-		previewType.addEventListener('change', updatePreviewFields);
+		// previewType.addEventListener('change', updatePreviewFields);
 
+		if (previewType) {
+			previewType.addEventListener('change', updatePreviewFields);
+		}
 
 		// Initialisation
 		updatePreviewFields();

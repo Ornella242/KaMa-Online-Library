@@ -661,8 +661,8 @@
                         </p>
 
                         <p>
-                            <a href="mailto:contact@kama-online.com">
-                                <strong>contact@kama-online.com</strong>
+                            <a href="mailto:contact@kama-afrika.com">
+                                <strong>contact@kama-afrika.com</strong>
                             </a>
                         </p>
 
@@ -806,8 +806,8 @@
 
                         <p>
                             <i class="bi bi-envelope"></i>
-                            <a href="mailto:contact@kama-online.com">
-                                <strong>contact@kama-online.com</strong>
+                            <a href="mailto:contact@kama-afrika.com">
+                                <strong>contact@kama-afrika.com</strong>
                             </a>
                         </p>
                     </section>
