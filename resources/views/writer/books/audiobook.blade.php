@@ -692,13 +692,14 @@
                         <button
                             type="submit"
                             id="save-audiobook-request-btn"
-                            class="audiobook-generate-btn"
+                            class="audiobook-generate-btn js-loading-action"
+                            data-loading-text="Enregistrement en cours…"
                             disabled
                         >
 
                             <i class="bi bi-credit-card-2-front"></i>
 
-                            <span>
+                            <span class="js-loading-label">
                                 Enregistrer & Procéder au paiement ({{ number_format($totalAmount, 2, ',', ' ') }} €)
                             </span>
 
@@ -745,11 +746,12 @@
 
                                 <a
                                     href="{{ route('writer.books.audiobook.payment', $book) }}"
-                                    class="audiobook-generate-btn"
+                                    class="audiobook-generate-btn js-loading-action"
+                                    data-loading-text="Redirection vers le paiement…"
                                     style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;"
                                 >
                                     <i class="bi bi-lock-fill"></i>
-                                    <span>Payer ma commande ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)</span>
+                                    <span class="js-loading-label">Payer ma commande ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)</span>
                                 </a>
 
                             </div>
@@ -1802,6 +1804,20 @@
     box-shadow: none;
 }
 
+.audiobook-generate-btn.is-loading,
+.audiobook-generate-btn.is-loading:disabled {
+    opacity: .85;
+    cursor: wait;
+    pointer-events: none;
+    box-shadow: 0 8px 20px rgba(179,0,0,.18);
+}
+
+.audiobook-generate-btn.is-loading .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    border-width: .15em;
+}
+
 .audiobook-request-wrapper small {
     margin-top: 8px;
 
@@ -2011,6 +2027,54 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    const setActionLoading = (element) => {
+        if (!element || element.classList.contains('is-loading')) {
+            return false;
+        }
+
+        const label = element.querySelector('.js-loading-label');
+        const icon = element.querySelector('i:not(.spinner-border)');
+        const loadingText = element.dataset.loadingText || 'Chargement…';
+
+        element.classList.add('is-loading');
+        element.setAttribute('aria-busy', 'true');
+
+        if (element.tagName === 'BUTTON' || element.tagName === 'INPUT') {
+            element.disabled = true;
+        } else {
+            element.setAttribute('aria-disabled', 'true');
+        }
+
+        if (icon) {
+            icon.className = 'spinner-border spinner-border-sm';
+            icon.removeAttribute('aria-hidden');
+        }
+
+        if (label) {
+            label.textContent = loadingText;
+        }
+
+        return true;
+    };
+
+    document.querySelectorAll('a.js-loading-action').forEach((link) => {
+        link.addEventListener('click', function (event) {
+            if (link.classList.contains('is-loading')) {
+                event.preventDefault();
+                return;
+            }
+
+            setActionLoading(link);
+        });
+    });
+
+    const requestForm = document.getElementById('audiobook-request-form');
+    const saveRequestButton = document.getElementById('save-audiobook-request-btn');
+
+    requestForm?.addEventListener('submit', function () {
+        setActionLoading(saveRequestButton);
+    });
+
     const voiceSelect =
         document.getElementById('voice_id');
 
@@ -2037,9 +2101,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const voiceSelectionMessage =
         document.getElementById('voice-selection-message');
-
-    const saveRequestButton =
-        document.getElementById('save-audiobook-request-btn');
 
     const selectedVoiceInput =
         document.getElementById('selected_voice_id');

@@ -264,7 +264,7 @@
 
                 <i class="bi bi-cash-coin"></i>
 
-                <span>Retraits</span>
+                <span>Mes retraits</span>
 
             </a>
 
@@ -350,7 +350,7 @@
         @endif
 
 
-        {{-- Retraits --}}
+        {{-- Retraits auteurs (file de traitement) --}}
         @if(auth()->user()->hasAdminPermission('withdrawals.view'))
 
             <a href="{{ route('admin.withdrawals.index') }}"
@@ -358,7 +358,7 @@
 
                 <i class="bi bi-cash-stack"></i>
 
-                <span>Retraits</span>
+                <span>Retraits auteurs</span>
 
             </a>
 

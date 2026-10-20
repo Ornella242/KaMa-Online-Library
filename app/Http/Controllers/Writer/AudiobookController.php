@@ -269,16 +269,18 @@ class AudiobookController extends Controller
 
             try {
                 $session = $pawaPay->createPaymentPage(
-                    (float) $quote['local_amount'],
-                    $country['currency'],
-                    $depositId,
-                    route('writer.books.audiobook.success', $book) . '?deposit_id=' . $depositId,
+                    $quote['amount'],
+                    $quote['currency'],
+                    $country['iso3'],
+                    route('writer.books.audiobook.success', $book).'?deposit_id='.$depositId,
+                    'Audiobook KaMa '.$book->id,
                     [
                         'type' => 'audiobook',
                         'audiobook_request_id' => (string) $audiobookRequest->id,
                         'book_id' => (string) $book->id,
                         'user_id' => (string) auth()->id(),
-                    ]
+                    ],
+                    $depositId
                 );
             } catch (Throwable $exception) {
                 report($exception);
@@ -289,8 +291,15 @@ class AudiobookController extends Controller
             }
 
             return response()->json([
-                'checkout_url' => $session['redirectUrl'],
-                'deposit_id' => $depositId,
+                'checkout_url' => $session['redirect_url'],
+                'deposit_id' => $session['deposit_id'],
+                'payment' => [
+                    'reference' => 'AUDIO-'.$audiobookRequest->id,
+                    'amount' => $quote['numeric'],
+                    'currency' => $quote['currency'],
+                    'amount_eur' => (float) $audiobookRequest->total_amount,
+                    'label' => $quote['label'],
+                ],
             ]);
         }
 

@@ -7,7 +7,7 @@
             <div>
                 <span class="writer-page-eyebrow">Finances</span>
                 <h1>Demande de retrait</h1>
-                <p>Indiquez où recevoir l’argent. KaMa fait le versement ensuite : vous n’avez plus rien à faire de votre côté.</p>
+                <p>Indiquez où recevoir l’argent. KaMa prélève {{ number_format($commissionPercent, 2, ',', ' ') }}&nbsp;% de commission, verse le reste, puis s’occupe du paiement.</p>
             </div>
             <a href="{{ route('writer.wallet') }}" class="writer-primary-action">
                 <i class="bi bi-wallet2"></i> Retour au portefeuille
@@ -124,8 +124,8 @@
                     </div>
                     <div class="col-md-8">
                         <div class="withdrawal-summary">
-                            <div><span>Commission ({{ number_format($commissionPercent, 2, '.', ',') }} %)</span><strong id="commissionPreview">{{ number_format(0, 2, '.', ',') }}€</strong></div>
-                            <div><span>Vous recevrez</span><strong id="netPreview" class="text-success">{{ number_format(0, 2, '.', ',') }}€</strong></div>
+                            <div><span>Commission KaMa ({{ number_format($commissionPercent, 2, ',', ' ') }} %)</span><strong id="commissionPreview">0,00 €</strong></div>
+                            <div><span>Vous recevrez</span><strong id="netPreview" class="text-success">0,00 €</strong></div>
                         </div>
                     </div>
                 </div>
@@ -160,7 +160,7 @@
 }
 .withdrawal-methods{
     display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-columns:repeat(2,minmax(0,1fr));
     gap:18px;
     margin:12px 0 28px;
 }
@@ -258,63 +258,73 @@
 
 @push('scripts')
 <script>
-const methods = @json($methods);
-const commissionPercent = {{ (float) $commissionPercent }};
-const fieldsBox = document.getElementById('payoutFields');
-const amountInput = document.getElementById('withdrawalAmount');
-const commissionPreview = document.getElementById('commissionPreview');
-const netPreview = document.getElementById('netPreview');
-const oldDetails = @json(old('payout_details', []));
+document.addEventListener('DOMContentLoaded', () => {
+    const methods = @json($methods);
+    const commissionPercent = {{ (float) $commissionPercent }};
+    const fieldsBox = document.getElementById('payoutFields');
+    const amountInput = document.getElementById('withdrawalAmount');
+    const commissionPreview = document.getElementById('commissionPreview');
+    const netPreview = document.getElementById('netPreview');
+    const oldDetails = @json(old('payout_details', []));
+    const form = document.getElementById('withdrawalForm');
 
-function renderFields(methodKey) {
-    const method = methods[methodKey];
-    if (!method || !fieldsBox) return;
+    function renderFields(methodKey) {
+        const method = methods[methodKey];
+        if (!method || !fieldsBox) return;
 
-    fieldsBox.innerHTML = Object.entries(method.fields).map(([key, field]) => {
-        const value = oldDetails[key] ?? '';
-        const required = field.required === false ? '' : 'required';
+        fieldsBox.innerHTML = Object.entries(method.fields).map(([key, field]) => {
+            const value = oldDetails[key] ?? '';
+            const required = field.required === false ? '' : 'required';
 
-        if (field.type === 'select') {
-            const options = (field.options || []).map(opt =>
-                `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`
-            ).join('');
+            if (field.type === 'select') {
+                const options = (field.options || []).map(opt =>
+                    `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`
+                ).join('');
+                return `<div>
+                    <label class="form-label">${field.label}</label>
+                    <select class="form-select" name="payout_details[${key}]" ${required}>
+                        <option value="">Choisir…</option>
+                        ${options}
+                    </select>
+                </div>`;
+            }
+
             return `<div>
                 <label class="form-label">${field.label}</label>
-                <select class="form-select" name="payout_details[${key}]" ${required}>
-                    <option value="">Choisir…</option>
-                    ${options}
-                </select>
+                <input class="form-control"
+                       type="${field.type || 'text'}"
+                       name="payout_details[${key}]"
+                       placeholder="${field.placeholder || ''}"
+                       value="${value}"
+                       ${required}>
             </div>`;
-        }
+        }).join('');
+    }
 
-        return `<div>
-            <label class="form-label">${field.label}</label>
-            <input class="form-control"
-                   type="${field.type || 'text'}"
-                   name="payout_details[${key}]"
-                   placeholder="${field.placeholder || ''}"
-                   value="${value}"
-                   ${required}>
-        </div>`;
-    }).join('');
-}
+    function updatePreview() {
+        const amount = parseFloat(amountInput?.value || '0') || 0;
+        const commission = Math.round((amount * commissionPercent / 100) * 100) / 100;
+        const net = Math.round((amount - commission) * 100) / 100;
+        if (commissionPreview) commissionPreview.textContent = `${commission.toFixed(2).replace('.', ',')} €`;
+        if (netPreview) netPreview.textContent = `${Math.max(net, 0).toFixed(2).replace('.', ',')} €`;
+    }
 
-function updatePreview() {
-    const amount = parseFloat(amountInput?.value || '0') || 0;
-    const commission = Math.round((amount * commissionPercent / 100) * 100) / 100;
-    const net = Math.round((amount - commission) * 100) / 100;
-    if (commissionPreview) commissionPreview.textContent = `${commission.toFixed(2)} €`;
-    if (netPreview) netPreview.textContent = `${Math.max(net, 0).toFixed(2)} €`;
-}
+    document.querySelectorAll('input[name="payment_method"]').forEach(input => {
+        input.addEventListener('change', () => renderFields(input.value));
+    });
 
-document.querySelectorAll('input[name="payment_method"]').forEach(input => {
-    input.addEventListener('change', () => renderFields(input.value));
+    amountInput?.addEventListener('input', updatePreview);
+
+    form?.addEventListener('submit', () => {
+        const button = form.querySelector('button[type="submit"]');
+        if (!button || button.disabled) return;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Envoi de la demande…';
+    });
+
+    const selected = document.querySelector('input[name="payment_method"]:checked')?.value || 'bank_transfer';
+    renderFields(selected);
+    updatePreview();
 });
-
-amountInput?.addEventListener('input', updatePreview);
-
-const selected = document.querySelector('input[name="payment_method"]:checked')?.value || 'bank_transfer';
-renderFields(selected);
-updatePreview();
 </script>
 @endpush

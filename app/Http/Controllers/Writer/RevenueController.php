@@ -38,12 +38,12 @@ class RevenueController extends Controller
 
         $totalWithdrawn = Withdrawal::query()->where('user_id',$userId)
             ->where('status', Withdrawal::STATUS_COMPLETED)
-            ->sum('amount');
+            ->sum('net_amount');
 
         $pendingWithdrawals = Withdrawal::query()
             ->where('user_id', $userId)
             ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
-            ->sum('amount');
+            ->sum('net_amount');
 
         $wallet = app(WalletService::class)->ensureWallet(Auth::user());
         $availableBalance = (float) $wallet->balance;

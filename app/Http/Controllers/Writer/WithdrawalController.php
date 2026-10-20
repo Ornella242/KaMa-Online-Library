@@ -55,7 +55,9 @@ class WithdrawalController extends Controller
         return redirect()
             ->route('writer.wallet')
             ->with('success', 'Demande de retrait #'.$withdrawal->id.' initiée. Montant net à recevoir : '
-                .number_format((float) $withdrawal->net_amount, 2, ',', ' ').' €');
+                .number_format((float) $withdrawal->net_amount, 2, ',', ' ').' €'
+                .' (commission KaMa '.number_format((float) $withdrawal->commission_percent, 2, ',', ' ').' % : '
+                .number_format((float) $withdrawal->commission_amount, 2, ',', ' ').' €).');
     }
 
     public function index()
