@@ -1,6 +1,49 @@
+
 @extends('layouts.app')
 
+@section('meta')
+    @php
+        $bookTitle = $book->title;
+
+        $bookDescription = Str::limit(
+            trim(strip_tags(
+                $book->short_description
+                ?? 'Découvrez ce livre sur KaMa Online Library.'
+            )),
+            200
+        );
+
+        $bookCover = $book->cover_image
+            ? asset('storage/' . ltrim($book->cover_image, '/'))
+            : asset('assets/images/book/01.jpg');
+
+        $bookUrl = route('books.show', $book);
+    @endphp
+
+    <title>{{ $bookTitle }} | KaMa Afrika</title>
+
+    <meta name="description" content="{{ $bookDescription }}">
+
+    {{-- Open Graph : WhatsApp, Facebook et autres réseaux --}}
+    <meta property="og:site_name" content="KaMa Online Library">
+    <meta property="og:type" content="book">
+    <meta property="og:title" content="KaMa Online Library">
+    <meta property="og:description" content="{{ $bookDescription }}">
+    <meta property="og:url" content="{{ $bookUrl }}">
+    <meta property="og:image" content="{{ $bookCover }}">
+    <meta property="og:image:secure_url" content="{{ $bookCover }}">
+    <meta property="og:image:alt" content="Couverture du livre {{ $bookTitle }}">
+
+    {{-- Twitter / X --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="KaMa Online Library">
+    <meta name="twitter:description" content="{{ $bookDescription }}">
+    <meta name="twitter:image" content="{{ $bookCover }}">
+@endsection
+
+
 @section('content')
+
     @php
         $avgRating = round((float) ($book->reviews_avg_rating ?? 0), 1);
         $reviewsCount = (int) ($book->reviews_count ?? 0);

@@ -100,7 +100,7 @@ class DetailsLivreController extends Controller
             'inWishlist',
             'isOwner',
             'myReview',
-            'hasPurchased'
+            'hasPurchased',
         ));
     }
 }

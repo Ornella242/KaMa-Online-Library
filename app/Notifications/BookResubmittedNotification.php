@@ -74,11 +74,11 @@ class BookResubmittedNotification extends Notification
         return (new MailMessage)
 
             ->subject(
-                'Votre livre nécessite des modifications - KaMa'
+                'Ressoumission de livre'
             )
 
             ->view(
-                'emails.books.needs-modifications',
+                'emails.books.book-resubmitted',
                 [
                     'user' => $notifiable,
                     'book' => $this->book

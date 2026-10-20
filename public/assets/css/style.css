@@ -53253,3 +53253,381 @@ font-size:13px;
     outline-offset: 4px;
     border-radius: 2px;
 }
+
+
+
+/* SECTION DE PARTAGE KAMA */
+.kama-share-section {
+    --kama-red: #b30000;
+    --kama-ink: #211d1d;
+    --kama-muted: #777171;
+}
+
+.kama-share-section .kama-card {
+    background: #fff;
+    border: 1px solid #eee7e7;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 35px rgba(40, 15, 15, .045);
+}
+
+.kama-share-section .kama-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #f0ebeb;
+    font-weight: 700;
+    color: var(--kama-ink);
+}
+
+.kama-share-section .kama-card-header > i {
+    color: var(--kama-red);
+    font-size: 1.15rem;
+}
+
+/* CARTE DE PUBLICATION */
+.kama-post-preview {
+    margin-top: 22px;
+    overflow: hidden;
+    border: 1px solid #eee8e8;
+    border-radius: 16px;
+    background: #fff;
+}
+
+.kama-preview-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+}
+
+.kama-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    background: #b30000;
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.kama-preview-top strong,
+.kama-preview-top span {
+    display: block;
+}
+
+.kama-preview-top strong {
+    color: #211d1d;
+    font-size: .95rem;
+}
+
+.kama-preview-top span {
+    margin-top: 3px;
+    color: #898080;
+    font-size: .76rem;
+}
+
+.kama-preview-top > i:last-child {
+    color: #928989;
+}
+
+.kama-preview-cover {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 290px;
+    padding: 25px;
+    background: linear-gradient(135deg, #f8f1f0, #eee4e1);
+}
+
+.kama-preview-cover img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: 290px;
+    object-fit: contain;
+    border-radius: 5px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .17);
+}
+
+.kama-preview-content {
+    padding: 22px;
+}
+
+.kama-preview-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 30px;
+    background: #fff1f1;
+    color: #a30000;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.kama-preview-content h3 {
+    margin: 14px 0 8px;
+    color: #211d1d;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.kama-preview-author {
+    margin-bottom: 14px;
+    color: #716767;
+    font-size: .9rem;
+}
+
+.kama-preview-description {
+    margin-bottom: 20px;
+    color: #625b5b;
+    font-size: .9rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.kama-preview-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 1px solid #eee8e8;
+}
+
+.kama-preview-footer small,
+.kama-preview-footer strong {
+    display: block;
+}
+
+.kama-preview-footer small {
+    margin-bottom: 5px;
+    color: #8a8080;
+    font-size: .75rem;
+}
+
+.kama-preview-footer strong {
+    color: #211d1d;
+    font-size: 1.15rem;
+}
+
+.kama-preview-footer a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 9px;
+    background: #b30000;
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .2s, transform .2s;
+}
+
+.kama-preview-footer a:hover {
+    background: #870000;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.kama-preview-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 16px 0 0;
+    color: #817777;
+    font-size: .78rem;
+    line-height: 1.7;
+}
+
+.kama-preview-note i {
+    margin-top: 3px;
+    color: #b30000;
+}
+
+/* ZONE DE PARTAGE */
+.kama-share-intro {
+    padding: 25px 0 20px;
+}
+
+.kama-share-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 15px;
+    border-radius: 14px;
+    background: #fff0f0;
+    color: #b30000;
+    font-size: 1.35rem;
+}
+
+.kama-share-intro h3 {
+    margin-bottom: 9px;
+    color: #211d1d;
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.kama-share-intro p {
+    margin: 0;
+    color: #777070;
+    font-size: .9rem;
+    line-height: 1.8;
+}
+
+.kama-share-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.kama-share-btn {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    min-height: 69px;
+    padding: 12px 15px;
+    border: 1px solid #eee8e8;
+    border-radius: 12px;
+    background: #fff;
+    color: #211d1d;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .2s;
+}
+
+.kama-share-btn:hover {
+    border-color: #d9baba;
+    background: #fffafa;
+    color: #211d1d;
+    transform: translateY(-1px);
+}
+
+.kama-share-btn > i:first-child {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: #f8f4f4;
+    color: #514848;
+    font-size: 1.2rem;
+}
+
+.kama-share-btn.whatsapp > i:first-child {
+    background: #e8f8ed;
+    color: #168747;
+}
+
+.kama-share-btn.facebook > i:first-child {
+    background: #edf3ff;
+    color: #1877f2;
+}
+
+.kama-share-btn.linkedin > i:first-child {
+    background: #eaf4ff;
+    color: #0a66c2;
+}
+
+.kama-share-btn.twitter > i:first-child {
+    background: #f0f0f0;
+    color: #111;
+}
+
+.kama-share-btn span {
+    display: block;
+    min-width: 0;
+}
+
+.kama-share-btn span strong,
+.kama-share-btn span small {
+    display: block;
+}
+
+.kama-share-btn span strong {
+    margin-bottom: 4px;
+    font-size: .9rem;
+    font-weight: 750;
+}
+
+.kama-share-btn span small {
+    color: #8a8181;
+    font-size: .75rem;
+    line-height: 1.4;
+}
+
+.kama-share-btn > i:last-child {
+    flex-shrink: 0;
+    color: #9a9090;
+    font-size: .9rem;
+}
+
+.kama-share-btn.kama-copy-btn {
+    border-color: #b30000;
+    background: #b30000;
+    color: #fff;
+}
+
+.kama-share-btn.kama-copy-btn:hover {
+    background: #8f0000;
+    color: #fff;
+}
+
+.kama-share-btn.kama-copy-btn > i:first-child {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+}
+
+.kama-share-btn.kama-copy-btn span small,
+.kama-share-btn.kama-copy-btn > i:last-child {
+    color: rgba(255, 255, 255, .8);
+}
+
+.kama-copy-feedback {
+    min-height: 22px;
+    margin-top: 12px;
+    color: #21834b;
+    font-size: .82rem;
+}
+
+@media (max-width: 575px) {
+    .kama-share-section .kama-card {
+        padding: 17px;
+        border-radius: 16px;
+    }
+
+    .kama-preview-cover {
+        min-height: 240px;
+    }
+
+    .kama-preview-cover img {
+        height: 240px;
+    }
+
+    .kama-preview-content {
+        padding: 17px;
+    }
+
+    .kama-preview-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .kama-preview-footer a {
+        width: 100%;
+    }
+}

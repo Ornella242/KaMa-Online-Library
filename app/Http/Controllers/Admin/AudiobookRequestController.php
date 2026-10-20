@@ -58,7 +58,6 @@ class AudiobookRequestController extends Controller
         );
     }
 
-
     public function show(AudiobookRequest $audiobookRequest)
     {
         abort_unless(
@@ -184,16 +183,16 @@ class AudiobookRequestController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            dd([
-                'request_id' => $audiobookRequest->id,
-                'book_id' => $audiobookRequest->book_id,
-                'audiobook_id' => $audiobook->id,
-                'audiobook_status' => $audiobook->status,
-                'voice_id' => $audiobook->voice_id,
-                'chunks_count' => $audiobook->chunks()->count(),
-                'total_chunks' => $audiobook->total_chunks,
-                'total_characters' => $audiobook->total_characters,
-            ]);
+            // dd([
+            //     'request_id' => $audiobookRequest->id,
+            //     'book_id' => $audiobookRequest->book_id,
+            //     'audiobook_id' => $audiobook->id,
+            //     'audiobook_status' => $audiobook->status,
+            //     'voice_id' => $audiobook->voice_id,
+            //     'chunks_count' => $audiobook->chunks()->count(),
+            //     'total_chunks' => $audiobook->total_chunks,
+            //     'total_characters' => $audiobook->total_characters,
+            // ]);
 
             $service->generateAudiobook(
                 $audiobook
