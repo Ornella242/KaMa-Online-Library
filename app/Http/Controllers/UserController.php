@@ -445,85 +445,85 @@ class UserController extends Controller
             ->with('success', 'Bienvenue dans l’espace écrivain ! Votre espace auteur est prêt.');
     }
 
-   public function updateProfile(Request $request)
-{
-    
-    $user = Auth::user();
+    public function updateProfile(Request $request)
+    {
+        
+        $user = Auth::user();
 
-    $validated = $request->validate([
+        $validated = $request->validate([
 
-        'firstname' => [
-            'required',
-            'string',
-            'max:255'
-        ],
+            'firstname' => [
+                'required',
+                'string',
+                'max:255'
+            ],
 
-        'lastname' => [
-            'required',
-            'string',
-            'max:255'
-        ],
+            'lastname' => [
+                'required',
+                'string',
+                'max:255'
+            ],
 
-        'email' => [
-            'required',
-            'email',
-            'max:255',
-            Rule::unique('users', 'email')->ignore($user->id),
-        ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
 
-        'country_id' => [
-            'required',
-            'exists:countries,id'
-        ],
+            'country_id' => [
+                'required',
+                'exists:countries,id'
+            ],
 
-        'city' => [
-            'required',
-            'string',
-            'max:100'
-        ],
+            'city' => [
+                'required',
+                'string',
+                'max:100'
+            ],
 
-        'phone' => [
-            'nullable',
-            'string',
-            'max:50'
-        ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:50'
+            ],
 
-        'bio' => [
-            'nullable',
-            'string',
-            'max:255'
-        ],
+            'bio' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
 
-        'gender' => [
-            'nullable',
-            'in:male,female,other'
-        ],
+            'gender' => [
+                'nullable',
+                'in:male,female,other'
+            ],
 
-        'avatar' => [
-            'nullable',
-            'image',
-            'mimes:jpg,jpeg,png,webp',
-            'max:2048',
-        ],
+            'avatar' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
 
-    ]);
+        ]);
 
-    if ($request->hasFile('avatar')) {
-        $path = $request
-            ->file('avatar')
-            ->store('avatars', 'public');
+        if ($request->hasFile('avatar')) {
+            $path = $request
+                ->file('avatar')
+                ->store('avatars', 'public');
 
-        $validated['avatar'] = $path;
+            $validated['avatar'] = $path;
+        }
+        $user->update($validated);
+
+
+        return back()->with(
+            'success',
+            'Profil mis à jour'
+        );
+
     }
-    $user->update($validated);
-
-
-    return back()->with(
-        'success',
-        'Profil mis à jour'
-    );
-
-}
 
 
     public function changePassword(Request $request)
