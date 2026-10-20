@@ -1600,7 +1600,7 @@
                         <a
                             href="{{ route(
                                 'admin.books.show',
-                                $audiobookRequest->publishedBook
+                                ['book' => $audiobookRequest->publishedBook->slug]
                             ) }}"
                             class="audiobook-published-action">
 

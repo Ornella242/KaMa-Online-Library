@@ -123,7 +123,7 @@
                                 <span class="author-rating"><i class="bi bi-star-fill"></i> {{ number_format($book->reviews_avg_rating ?? 0, 1, ',', ' ') }}</span>
                             </td>
                             <td>
-                                <a href="{{ route('admin.books.show', $book) }}" class="admin-row-action" aria-label="Voir le livre">
+                                <a href="{{ route('admin.books.show', ['book' => $book->slug]) }}" class="admin-row-action" aria-label="Voir le livre">
                                     <i class="bi bi-arrow-up-right"></i>
                                 </a>
                             </td>

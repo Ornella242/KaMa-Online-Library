@@ -217,11 +217,11 @@ Title and Tabs START -->
 
                             @foreach($categories as $category)
 
-                                <option value="{{ $category->id }}"
-                                {{ request('category') == $category->id ? 'selected':'' }}>
-
+                                <option
+                                    value="{{ $category->slug }}"
+                                    {{ request('category') == $category->slug ? 'selected' : '' }}
+                                >
                                     {{ $category->name }}
-
                                 </option>
 
                             @endforeach

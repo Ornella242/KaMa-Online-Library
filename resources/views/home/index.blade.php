@@ -255,8 +255,7 @@ About START -->
                                                         {{ $sponsored->book->author->lastname }}
                                                     </p>
 
-                                                    <a href="{{ route('books.show',$sponsored->book) }}"
-                                                    class="btn btn-dark">
+                                                    <a href="{{ route('books.show', ['book' => $sponsored->book->slug]) }}"  class="btn btn-dark">
                                                         Voir le livre
                                                         <i class="bi bi-arrow-right ms-2"></i>
                                                     </a>
@@ -403,7 +402,7 @@ Livres à la une START-->
                         <!-- Body -->
                         <div class="card-body px-3">
                             <h5 class="card-title mb-0">
-                                <a href="{{ route('books.show', $book) }}" 
+                                <a href="{{ route('books.show', ['book' => $book->slug]) }}" 
                                 class="stretched-link">
                                     {{ $book->title }}
                                 </a>
@@ -435,7 +434,7 @@ Livres à la une START-->
                                 </div>
 
                                 <div class="mt-2 mt-sm-0">
-                                    <a href="{{ route('books.show', $book) }}" 
+                                    <a href="{{ route('books.show', ['book' => $book->slug]) }}" 
                                     class="btn btn-sm btn-see mb-0">
                                         Voir plus
                                     </a>
@@ -594,7 +593,7 @@ Meilleurs livres START-->
                                     ⭐ 
                                     {{ number_format($book->reviews_avg_rating ?? 0,1) }}
                                 </span>
-                                <a href="{{ route('books.show', $book) }}" 
+                                <a href="{{ route('books.show', ['book' => $book->slug]) }}" 
                                 class="mini-action">
                                     Voir →
                                 </a>

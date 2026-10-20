@@ -52,12 +52,15 @@ class CatalogueController extends Controller
 
         
         if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
+            $query->whereHas('category', function ($categoryQuery) use ($request) {
+                $categoryQuery->where('slug', $request->category);
+            });
         }
 
-        
         if ($request->filled('subcategory')) {
-            $query->where('subcategory_id', $request->subcategory);
+            $query->whereHas('subcategory', function ($subcategoryQuery) use ($request) {
+                $subcategoryQuery->where('slug', $request->subcategory);
+            });
         }
 
         

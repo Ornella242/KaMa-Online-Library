@@ -1113,32 +1113,34 @@ class BooksController extends Controller
 
     private function getPdfPageCount(string $pdfPath): ?int
     {
-        foreach (['/usr/local/bin/pdfinfo', '/opt/homebrew/bin/pdfinfo', 'pdfinfo'] as $binary) {
-            $command = $binary === 'pdfinfo'
-                ? 'pdfinfo '.escapeshellarg($pdfPath).' 2>/dev/null'
-                : (is_executable($binary)
-                    ? escapeshellarg($binary).' '.escapeshellarg($pdfPath).' 2>/dev/null'
-                    : null);
-
-            if ($command === null) {
-                continue;
-            }
-
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            if ($exitCode !== 0) {
-                continue;
-            }
-
-            foreach ($output as $line) {
-                if (preg_match('/^Pages:\s+(\d+)/i', $line, $matches)) {
-                    return (int) $matches[1];
-                }
-            }
+        if (!extension_loaded('imagick') || !is_file($pdfPath)) {
+            return null;
         }
 
-        return null;
+        $imagick = null;
+
+        try {
+            $imagick = new Imagick();
+            $imagick->pingImage($pdfPath);
+
+            $pageCount = $imagick->getNumberImages();
+
+            return $pageCount > 0 ? $pageCount : null;
+
+        } catch (\ImagickException $e) {
+            \Log::warning('Impossible de compter les pages du PDF avec Imagick.', [
+                'file' => basename($pdfPath),
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+
+        } finally {
+            if ($imagick instanceof Imagick) {
+                $imagick->clear();
+                $imagick->destroy();
+            }
+        }
     }
 
     public function previewPage(Book $book, $page)

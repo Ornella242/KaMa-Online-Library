@@ -58,7 +58,11 @@
                     $tone = $notifMeta[1];
                     $url = $notification->data['url']
                         ?? (isset($notification->data['book_id'])
-                            ? route('admin.books.show', $notification->data['book_id'])
+                            ? (
+                                ($book = \App\Models\Book::find($notification->data['book_id']))
+                                    ? route('books.show', ['book' => $book->slug])
+                                    : null
+                            )
                             : null);
                 @endphp
                 <article class="admin-author-notif {{ $notification->read_at ? '' : 'is-unread' }}">

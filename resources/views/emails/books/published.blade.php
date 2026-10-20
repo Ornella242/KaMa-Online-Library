@@ -128,7 +128,7 @@
 @include(
     'emails.partials.button',
     [
-        'url' => route('books.show',$book),
+        'url' => route('books.show', ['book' => $book->slug]),
         'slot' => 'Voir mon livre'
     ]
 )

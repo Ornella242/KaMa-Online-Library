@@ -73,8 +73,7 @@
                                             src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : asset('assets/images/book/01.jpg') }}"
                                             alt="">
                                         <div>
-                                            <a href="{{ route('books.show', $book) }}" class="title">{{ $book->title }}</a>
-                                            @if($book->category)
+                                            <a href="{{ route('books.show', ['book' => $book->slug]) }}" class="title">{{ $book->title }}</a>                                            @if($book->category)
                                                 <small>{{ $book->category->name }}</small>
                                             @endif
                                         </div>
@@ -92,7 +91,7 @@
                                 <td>{{ $purchase->created_at?->format('d/m/Y') ?? '—' }}</td>
                                 <td class="text-end">
                                     <div class="reader-table-actions">
-                                        <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-light" title="Voir">
+                                        <a href="{{ route('books.show', ['book' => $book->slug]) }}" class="btn btn-sm btn-light" title="Voir">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         <button

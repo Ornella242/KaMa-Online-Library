@@ -44,12 +44,12 @@
                     $avg = $book->reviews->avg('rating');
                 @endphp
                 <article class="reader-wishlist-item">
-                    <a href="{{ route('books.show', $book) }}" class="cover">
+                    <a href="{{ route('books.show', ['book' => $book->slug]) }}" class="cover">
                         <img src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : asset('assets/images/book/01.jpg') }}" alt="">
                     </a>
                     <div class="body">
                         <span class="type">{{ $book->type === 'audio' ? 'Livre audio' : 'Ebook' }}</span>
-                        <h3><a href="{{ route('books.show', $book) }}">{{ $book->title }}</a></h3>
+                        <h3><a href="{{ route('books.show', ['book' => $book->slug]) }}">{{ $book->title }}</a></h3>
                         <p>
                             {{ trim(($book->author?->firstname ?? '').' '.($book->author?->lastname ?? '')) ?: 'Auteur inconnu' }}
                             @if($book->category) · {{ $book->category->name }} @endif
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-light" title="Voir">
+                        <a href="{{ route('books.show', ['book' => $book->slug]) }}" class="btn btn-sm btn-light" title="Voir">
                             <i class="bi bi-eye"></i>
                         </a>
                         <form method="POST" action="{{ route('reader.wishlist.cart', $book) }}">

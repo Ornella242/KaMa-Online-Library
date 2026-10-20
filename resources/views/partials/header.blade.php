@@ -176,59 +176,47 @@
 
 		<nav class="kama-category-nav">
 			<ul>
-
 				@foreach($categories->take(6) as $category)
-
-				<li class="category-item">
-					<a href="{{route('catalogue',['category'=>$category->id])}}">
-						{{ $category->name }}
-						@if($category->subcategories->count())
-
-						<i class="bi bi-chevron-down"></i>
-						@endif
-					</a>
-
-
-					@if($category->subcategories->count())
-
-						<div class="subcategory-menu">
-							@foreach($category->subcategories as $subcategory)
-								<a href="{{route('catalogue',['subcategory'=>$subcategory->id])}}">
-								{{ $subcategory->name }}
-								</a>
-							@endforeach
-						</div>
-					@endif
-				</li>
-
-				@endforeach
-
-
-				@if($categories->count()>6)
 					<li class="category-item">
+						<a href="{{ route('catalogue', ['category' => $category->slug]) }}">
+							{{ $category->name }}
 
-
-						<a href="#">
-
-						Plus
-
-						<i class="bi bi-chevron-down"></i>
-
-
+							@if($category->subcategories->count())
+								<i class="bi bi-chevron-down"></i>
+							@endif
 						</a>
 
+						@if($category->subcategories->count())
+							<div class="subcategory-menu">
+								@foreach($category->subcategories as $subcategory)
+									<a href="{{ route('catalogue', [
+										'category' => $category->slug,
+										'subcategory' => $subcategory->slug
+									]) }}">
+										{{ $subcategory->name }}
+									</a>
+								@endforeach
+							</div>
+						@endif
+					</li>
+				@endforeach
 
+				@if($categories->count() > 6)
+					<li class="category-item">
+						<a href="{{ route('catalogue') }}">
+							Plus
+							<i class="bi bi-chevron-down"></i>
+						</a>
 
 						<div class="subcategory-menu">
 							@foreach($categories->skip(6) as $category)
-								<a href="{{route('catalogue',['category'=>$category->id])}}">
-								{{ $category->name }}
+								<a href="{{ route('catalogue', ['category' => $category->slug]) }}">
+									{{ $category->name }}
 								</a>
 							@endforeach
 						</div>
 					</li>
 				@endif
-
 			</ul>
 		</nav>
 

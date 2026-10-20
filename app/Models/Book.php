@@ -8,6 +8,7 @@ use App\Models\Subcategory;
 use App\Models\Category;
 use App\Models\AudiobookRequest;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Book extends Model
 {
@@ -26,6 +27,29 @@ class Book extends Model
         self::STATUS_REJECTED,
         self::STATUS_REVISION_REQUIRED,
     ];
+
+     protected static function booted(): void
+    {
+        static::creating(function (Book $book) {
+            if (blank($book->slug)) {
+                $baseSlug = Str::slug($book->title);
+
+                if ($baseSlug === '') {
+                    $baseSlug = 'livre';
+                }
+
+                $slug = $baseSlug;
+                $suffix = 2;
+
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $suffix;
+                    $suffix++;
+                }
+
+                $book->slug = $slug;
+            }
+        });
+    }
 
         protected $fillable = [
         'user_id',
@@ -126,4 +150,6 @@ class Book extends Model
             'published_book_id'
         );
     }
+
+   
 }

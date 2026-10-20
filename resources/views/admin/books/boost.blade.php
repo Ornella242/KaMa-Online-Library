@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @php
-    $bookUrl = config('app.url').'/books/'.$book->id;
+    $bookUrl = route('books.show', ['book' => $book->slug]);
     $coverUrl = config('app.url').'/storage/'.$book->cover_image;
 @endphp
 @section('admin-content')
@@ -176,17 +176,22 @@
                     Partager votre livre
                 </div>
 
+               
                 <div class="share-buttons">
                     <!-- WHATSAPP -->
                     <a target="_blank"
-
+                    rel="noopener noreferrer"
                     href="https://wa.me/?text={{ urlencode(
-                    'Découvrez ce livre sur KaMa Online Library'
-                    .$book->title.''
-                    .'Auteur : '
-                    .$book->author->firstname.' '
-                    .$book->author->lastname.' '
-                    .Str::limit(strip_tags($book->short_description),200).' '.'Lire ici :'.$bookUrl) }}"
+                        'Découvrez ce livre sur KaMa Online Library : '
+                        . $book->title
+                        . ' | Auteur : '
+                        . $book->author->firstname . ' '
+                        . $book->author->lastname
+                        . ' '
+                        . Str::limit(strip_tags($book->short_description), 200)
+                        . ' Lire ici : '
+                        . $bookUrl
+                    ) }}"
                     class="share whatsapp">
                         <i class="bi bi-whatsapp"></i>
                         WhatsApp
@@ -194,7 +199,8 @@
 
                     <!-- LINKEDIN -->
                     <a target="_blank"
-                    href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(route('books.show',$book)) }}"
+                    rel="noopener noreferrer"
+                    href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode($bookUrl) }}"
                     class="share linkedin">
                         <i class="bi bi-linkedin"></i>
                         LinkedIn
@@ -202,7 +208,8 @@
 
                     <!-- FACEBOOK -->
                     <a target="_blank"
-                    href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('books.show',$book)) }}"
+                    rel="noopener noreferrer"
+                    href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($bookUrl) }}"
                     class="share facebook">
                         <i class="bi bi-facebook"></i>
                         Facebook
@@ -210,26 +217,20 @@
 
                     <!-- X -->
                     <a target="_blank"
-
-                    href="https://twitter.com/intent/tweet?text={{ urlencode(
-                    $book->title.' - Disponible sur KaMa '.route('books.show',$book)
-                    ) }}"
+                    rel="noopener noreferrer"
+                    href="https://twitter.com/intent/tweet?text={{ urlencode($book->title . ' - Disponible sur KaMa ' . $bookUrl) }}"
                     class="share twitter">
                         <i class="bi bi-twitter-x"></i>
                         X
                     </a>
 
                     <!-- COPY -->
-                    <button onclick="copyText()" class="share copy">
-
-
+                    <button type="button" onclick="copyText()" class="share copy">
                         <i class="bi bi-copy"></i>
-
                         Copier le lien
-
-
                     </button>
                 </div>
+
             </div>
         </div>
     </div>

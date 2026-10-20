@@ -388,8 +388,8 @@ Advertisement END -->
                                 <h4>
                                     {{ $sameBook->title }}
                                 </h4>
-                                <a href="{{ route('books.show',$sameBook) }}"
-                                  class="see-more">
+                               <a href="{{ route('books.show', ['book' => $sameBook->slug]) }}"
+                                    class="see-more">
                                     <i class="bi bi-eye"></i>
                                 </a>
                             </div>
