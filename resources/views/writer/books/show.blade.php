@@ -185,10 +185,11 @@
                                     @elseif($audiobookPendingPayment)
                                         <a
                                             href="{{ route('writer.books.audiobook.payment', $book) }}"
-                                            class="btn-primary-action"
+                                            class="btn-primary-action js-loading-action"
+                                            data-loading-text="Redirection vers le paiement…"
                                         >
-                                            <i class="bi bi-credit-card"></i>
-                                            Payer l'audiobook ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)
+                                            <i class="bi bi-credit-card js-loading-icon"></i>
+                                            <span class="js-loading-label">Payer l'audiobook ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)</span>
                                         </a>
 
                                     @elseif($audiobookInProgress)
@@ -542,6 +543,16 @@
 }
 .btn-primary-action { background: #fff; color: #b30000; }
 .btn-primary-action:hover { background: #ffe8e8; color: #910000; }
+.btn-primary-action.is-loading {
+    opacity: .85;
+    cursor: wait;
+    pointer-events: none;
+}
+.btn-primary-action.is-loading .spinner-border {
+    width: .95rem;
+    height: .95rem;
+    border-width: .15em;
+}
 .btn-secondary-action {
     background: transparent; color: #fff;
     border: 1px solid rgba(255,255,255,.35);
@@ -665,4 +676,35 @@
     .writer-book-specs dd { text-align: left; }
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a.js-loading-action').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            if (link.classList.contains('is-loading')) {
+                event.preventDefault();
+                return;
+            }
+
+            const label = link.querySelector('.js-loading-label');
+            const icon = link.querySelector('.js-loading-icon, i:not(.spinner-border)');
+            const loadingText = link.dataset.loadingText || 'Chargement…';
+
+            link.classList.add('is-loading');
+            link.setAttribute('aria-busy', 'true');
+            link.setAttribute('aria-disabled', 'true');
+
+            if (icon) {
+                icon.className = 'spinner-border spinner-border-sm';
+            }
+
+            if (label) {
+                label.textContent = loadingText;
+            }
+        });
+    });
+});
+</script>
 @endpush

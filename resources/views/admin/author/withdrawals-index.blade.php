@@ -12,9 +12,14 @@
                 <h1>Mes retraits</h1>
                 <p>Suivez l’avancement de vos demandes de versement.</p>
             </div>
-            <a href="{{ route('admin.author.withdrawals.create') }}" class="writer-primary-action">
-                <i class="bi bi-plus-lg"></i> Nouvelle demande
-            </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('admin.author.wallet') }}" class="writer-primary-action" style="background:#111;">
+                    <i class="bi bi-wallet2"></i> Portefeuille
+                </a>
+                <a href="{{ route('admin.author.withdrawals.create') }}" class="writer-primary-action">
+                    <i class="bi bi-plus-lg"></i> Nouvelle demande
+                </a>
+            </div>
         </header>
 
         <div class="writer-panel">

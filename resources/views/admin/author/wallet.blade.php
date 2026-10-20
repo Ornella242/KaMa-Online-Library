@@ -15,6 +15,9 @@
                 <a href="{{ route('admin.author.withdrawals.create') }}" class="btn btn-light">
                     <i class="bi bi-cash-coin me-2"></i>Faire un retrait
                 </a>
+                <a href="{{ route('admin.author.withdrawals.index') }}" class="btn btn-outline-light">
+                    <i class="bi bi-clock-history me-2"></i>Mes retraits
+                </a>
                 <a href="{{ route('admin.author.revenues') }}" class="btn btn-dark">
                     <i class="bi bi-graph-up-arrow me-2"></i>Revenus
                 </a>

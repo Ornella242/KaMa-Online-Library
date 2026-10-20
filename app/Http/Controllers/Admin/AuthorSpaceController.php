@@ -124,7 +124,7 @@ class AuthorSpaceController extends Controller
 
     public function reviews()
     {
-        $userId = Auth::id();
+        $userId = $this->authorAccount()->id;
 
         $reviews = Review::with(['book', 'user'])
             ->whereHas('book', fn ($query) => $query->where('user_id', $userId))
@@ -187,7 +187,8 @@ class AuthorSpaceController extends Controller
 
     public function revenues()
     {
-        $userId = Auth::id();
+        $author = $this->authorAccount();
+        $userId = $author->id;
 
         $purchaseBase = Payment::whereHas('book', fn ($q) => $q->where('user_id', $userId))
             ->where('status', 'success')
@@ -204,14 +205,14 @@ class AuthorSpaceController extends Controller
         $totalWithdrawn = Withdrawal::query()
             ->where('user_id', $userId)
             ->where('status', Withdrawal::STATUS_COMPLETED)
-            ->sum('amount');
+            ->sum('net_amount');
 
         $pendingWithdrawals = Withdrawal::query()
             ->where('user_id', $userId)
             ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
-            ->sum('amount');
+            ->sum('net_amount');
 
-        $wallet = app(WalletService::class)->ensureWallet(Auth::user());
+        $wallet = app(WalletService::class)->ensureWallet($author);
         $availableBalance = (float) $wallet->balance;
 
         $pendingAmount = Payment::whereHas('book', fn ($q) => $q->where('user_id', $userId))
@@ -248,8 +249,8 @@ class AuthorSpaceController extends Controller
 
     public function wallet(WalletService $walletService)
     {
-        $user = Auth::user();
-        $wallet = $walletService->ensureWallet($user);
+        $author = $this->authorAccount();
+        $wallet = $walletService->ensureWallet($author);
 
         $transactions = $wallet->transactions()
             ->with(['payment.book', 'payment.user'])
@@ -281,8 +282,10 @@ class AuthorSpaceController extends Controller
 
     public function withdrawals()
     {
+        $author = $this->authorAccount();
+
         $withdrawals = Withdrawal::query()
-            ->where('user_id', Auth::id())
+            ->where('user_id', $author->id)
             ->latest()
             ->paginate(15);
 
@@ -291,13 +294,14 @@ class AuthorSpaceController extends Controller
 
     public function createWithdrawal(WalletService $walletService, WithdrawalService $withdrawalService)
     {
-        $wallet = $walletService->ensureWallet(Auth::user());
+        $author = $this->authorAccount();
+        $wallet = $walletService->ensureWallet($author);
         $methods = Withdrawal::paymentMethods();
         $commissionPercent = $withdrawalService->commissionPercent();
         $minimumAmount = $withdrawalService->minimumAmount();
 
         $openWithdrawal = Withdrawal::query()
-            ->where('user_id', Auth::id())
+            ->where('user_id', $author->id)
             ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
             ->latest()
             ->first();
@@ -313,6 +317,8 @@ class AuthorSpaceController extends Controller
 
     public function storeWithdrawal(Request $request, WithdrawalService $withdrawalService)
     {
+        $author = $this->authorAccount();
+
         $validated = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'string', 'in:'.implode(',', array_keys(Withdrawal::paymentMethods()))],
@@ -324,16 +330,18 @@ class AuthorSpaceController extends Controller
             ->all();
 
         $withdrawal = $withdrawalService->request(
-            Auth::user(),
+            $author,
             (float) $validated['amount'],
             $validated['payment_method'],
             $details
         );
 
         return redirect()
-            ->route('admin.author.withdrawals.index')
-            ->with('success', 'Demande de retrait #'.$withdrawal->id.' initiée. Net à recevoir : '
-                .number_format((float) $withdrawal->net_amount, 2, ',', ' ').' €');
+            ->route('admin.author.wallet')
+            ->with('success', 'Demande de retrait #'.$withdrawal->id.' initiée. Montant net à recevoir : '
+                .number_format((float) $withdrawal->net_amount, 2, ',', ' ').' €'
+                .' (commission KaMa '.number_format((float) $withdrawal->commission_percent, 2, ',', ' ').' % : '
+                .number_format((float) $withdrawal->commission_amount, 2, ',', ' ').' €).');
     }
 
     private function authorAccount(): User
