@@ -10,9 +10,9 @@ use App\Services\Audiobook\ElevenLabsService;
 use App\Models\Book;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\Process\Process;
 use App\Notifications\AudiobookPublishedNotification;
 use App\Services\Audiobook\AudiobookGenerationService;
+use Illuminate\Support\Str;
 
 class AudiobookRequestController extends Controller
 {
@@ -244,9 +244,9 @@ class AudiobookRequestController extends Controller
         }
     }
 
-    public function publish(
-        AudiobookRequest $audiobookRequest
-        ) {
+    
+    public function publish(AudiobookRequest $audiobookRequest)
+    {
         abort_unless(
             auth()->user()->hasAdminPermission('books.audio.generate'),
             403
@@ -256,6 +256,7 @@ class AudiobookRequestController extends Controller
             'book',
             'audiobook',
             'publishedBook',
+            'author',
         ]);
 
         abort_unless(
@@ -279,11 +280,16 @@ class AudiobookRequestController extends Controller
         );
 
         abort_unless(
-            !empty($audiobook->final_audio_path),
+            filled($audiobook->final_audio_path),
             404,
-            'Le fichier audio final est introuvable.'
+            'L’archive ZIP de cet audiobook est introuvable.'
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Éviter une publication en double
+        |--------------------------------------------------------------------------
+        */
 
         if ($audiobookRequest->published_book_id) {
             return redirect()
@@ -297,43 +303,68 @@ class AudiobookRequestController extends Controller
                 );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Vérifier l'archive ZIP
+        |--------------------------------------------------------------------------
+        */
+
         $disk = Storage::disk('local');
 
         abort_unless(
             $disk->exists($audiobook->final_audio_path),
             404,
-            'Le fichier audio final n’existe plus sur le serveur.'
+            'L’archive ZIP n’existe plus sur le serveur.'
         );
 
-        $audioAbsolutePath = $disk->path(
-            $audiobook->final_audio_path
+        abort_unless(
+            strtolower(pathinfo(
+                $audiobook->final_audio_path,
+                PATHINFO_EXTENSION
+            )) === 'zip',
+            409,
+            'Le fichier final n’est pas une archive ZIP.'
         );
 
-        $duration = $this->getAudioDuration(
-            $audioAbsolutePath
+        abort_unless(
+            $disk->size($audiobook->final_audio_path) > 0,
+            409,
+            'L’archive ZIP est vide.'
         );
 
         try {
-
             $publishedBook = DB::transaction(function () use (
                 $audiobookRequest,
                 $audiobook,
-                $duration,
                 $disk
             ) {
-
                 $lockedRequest = AudiobookRequest::query()
                     ->lockForUpdate()
                     ->findOrFail($audiobookRequest->id);
 
+                /*
+                * Une autre requête a peut-être publié le livre
+                * entre-temps.
+                */
                 if ($lockedRequest->published_book_id) {
                     return Book::findOrFail(
                         $lockedRequest->published_book_id
                     );
                 }
 
-                $originalBook = $audiobookRequest->book;
+                abort_unless(
+                    $lockedRequest->status === AudiobookRequest::STATUS_COMPLETED,
+                    409,
+                    'La demande audio n’est plus dans un état publiable.'
+                );
 
+                $originalBook = $lockedRequest->book;
+
+                abort_unless(
+                    $originalBook,
+                    404,
+                    'Le livre original est introuvable.'
+                );
 
                 $publishedBook = Book::create([
                     'user_id' => $originalBook->user_id,
@@ -360,32 +391,27 @@ class AudiobookRequestController extends Controller
 
                     'pages' => null,
 
-                    'duration' => $duration,
+                    // La durée n'est pas calculée par FFprobe.
+                    'duration' => null,
 
                     'language' => $originalBook->language,
 
                     'publication_year' =>
                         $originalBook->publication_year,
 
-                
-                    'cover_image' =>
-                        $originalBook->cover_image,
+                    'cover_image' => $originalBook->cover_image,
 
-                
-                    'file_path' =>
-                        $audiobook->final_audio_path,
+                    // Le livre audio télécharge maintenant un ZIP.
+                    'file_path' => $audiobook->final_audio_path,
 
-                    'file_type' => 'mp3',
+                    'file_type' => 'zip',
 
                     'original_file_name' =>
-                        basename(
-                            $audiobook->final_audio_path
-                        ),
+                        Str::slug($originalBook->title)
+                        . '-audiobook.zip',
 
                     'file_size' =>
-                        $disk->size(
-                            $audiobook->final_audio_path
-                        ),
+                        $disk->size($audiobook->final_audio_path),
 
                     'status' => Book::STATUS_PUBLISHED,
 
@@ -394,35 +420,32 @@ class AudiobookRequestController extends Controller
                     'copyright_accepted_at' => now(),
                 ]);
 
-
                 $lockedRequest->update([
-                    'published_book_id' =>
-                        $publishedBook->id,
+                    'published_book_id' => $publishedBook->id,
                 ]);
 
                 return $publishedBook;
             });
-
-        } catch (\Throwable $e) {
-
+            } catch (\Throwable $e) {
             report($e);
 
             return redirect()
                 ->back()
                 ->with(
                     'error',
-                    'Impossible de publier l’audiobook : '
-                    . $e->getMessage()
+                    'Impossible de publier l’audiobook. Consultez les journaux pour plus de détails.'
                 );
         }
 
         $audiobookRequest->refresh();
 
-        $audiobookRequest->author->notify(
-            new AudiobookPublishedNotification(
-                $audiobookRequest
-            )
-        );
+        if ($audiobookRequest->author) {
+            $audiobookRequest->author->notify(
+                new AudiobookPublishedNotification(
+                    $audiobookRequest
+                )
+            );
+        }
 
         return redirect()
             ->route(
@@ -435,61 +458,4 @@ class AudiobookRequestController extends Controller
             );
     }
 
-    private function getAudioDuration( string $audioPath
-        ): string 
-    {
-
-        $process = new Process([
-            'ffprobe',
-            '-v',
-            'error',
-            '-show_entries',
-            'format=duration',
-            '-of',
-            'default=noprint_wrappers=1:nokey=1',
-            $audioPath,
-        ]);
-
-        $process->setTimeout(60);
-
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new \RuntimeException(
-                'Impossible de déterminer la durée du fichier audio.'
-            );
-        }
-
-        $seconds = (float) trim(
-            $process->getOutput()
-        );
-
-        if ($seconds <= 0) {
-            throw new \RuntimeException(
-                'La durée du fichier audio est invalide.'
-            );
-        }
-
-        $totalSeconds = (int) round($seconds);
-
-        $hours = intdiv(
-            $totalSeconds,
-            3600
-        );
-
-        $minutes = intdiv(
-            $totalSeconds % 3600,
-            60
-        );
-
-        $remainingSeconds =
-            $totalSeconds % 60;
-
-        return sprintf(
-            '%02d:%02d:%02d',
-            $hours,
-            $minutes,
-            $remainingSeconds
-        );
-    }
 }

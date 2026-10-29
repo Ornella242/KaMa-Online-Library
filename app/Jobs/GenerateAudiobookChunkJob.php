@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Jobs\AssembleAudiobookJob;
 use App\Models\AudiobookChunk;
 use App\Services\Audiobook\ElevenLabsService;
 use Illuminate\Bus\Queueable;
@@ -12,7 +13,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Jobs\AssembleAudiobookJob;
 use RuntimeException;
 use Throwable;
 
@@ -23,15 +23,8 @@ class GenerateAudiobookChunkJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /**
-     * Important :
-     * on évite les retries automatiques aveugles.
-     *
-     * Une requête ElevenLabs peut avoir consommé
-     * des caractères même si notre application rencontre
-     * ensuite une erreur.
-     */
     public int $tries = 1;
+
     public int $timeout = 180;
 
     public function __construct(
@@ -39,15 +32,43 @@ class GenerateAudiobookChunkJob implements ShouldQueue
     ) {
     }
 
-    public function handle(
-        ElevenLabsService $elevenLabs
-    ): void {
-
+    public function handle(ElevenLabsService $elevenLabs): void
+    {
         /*
         |--------------------------------------------------------------------------
-        | 1. Récupérer le chunk
+        | 1. Réserver le chunk pour éviter les doubles traitements
         |--------------------------------------------------------------------------
         */
+
+        $claimed = DB::transaction(function (): bool {
+            $chunk = AudiobookChunk::whereKey($this->chunkId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$chunk) {
+                return false;
+            }
+
+            if (in_array($chunk->status, [
+                'completed',
+                'generating',
+                'failed',
+            ], true)) {
+                return false;
+            }
+
+            $chunk->update([
+                'status' => 'generating',
+                'started_at' => now(),
+                'error_message' => null,
+            ]);
+
+            return true;
+        });
+
+        if (!$claimed) {
+            return;
+        }
 
         $chunk = AudiobookChunk::with([
             'section.audiobook.book',
@@ -57,36 +78,13 @@ class GenerateAudiobookChunkJob implements ShouldQueue
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Vérifier si déjà terminé
-        |--------------------------------------------------------------------------
-        |
-        | Protection contre une double génération.
-        |
-        */
-
-        if ($chunk->status === 'completed') {
-            return;
-        }
-
         $section = $chunk->section;
+        $audiobook = $section?->audiobook;
 
-        if (!$section) {
+        if (!$section || !$audiobook || !$audiobook->book) {
             $this->failChunk(
                 $chunk,
-                'La section de ce chunk est introuvable.'
-            );
-
-            return;
-        }
-
-        $audiobook = $section->audiobook;
-
-        if (!$audiobook) {
-            $this->failChunk(
-                $chunk,
-                'L’audiobook de ce chunk est introuvable.'
+                'La section, l’audiobook ou le livre associé est introuvable.'
             );
 
             return;
@@ -94,27 +92,21 @@ class GenerateAudiobookChunkJob implements ShouldQueue
 
         /*
         |--------------------------------------------------------------------------
-        | 3. Vérifier que l'audiobook peut encore être généré
+        | 2. Vérifier l'état de l'audiobook et le texte
         |--------------------------------------------------------------------------
         */
 
-        if (
-            in_array(
-                $audiobook->status,
-                ['cancelled', 'completed'],
-                true
-            )
-        ) {
+        if (in_array($audiobook->status, [
+            'cancelled',
+            'completed',
+            'failed',
+        ], true)) {
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 4. Vérifier que le texte existe
-        |--------------------------------------------------------------------------
-        */
+        $text = (string) $chunk->text;
 
-        if ($chunk->text === '') {
+        if (trim($text) === '') {
             $this->failChunk(
                 $chunk,
                 'Le texte du chunk est vide.'
@@ -123,35 +115,31 @@ class GenerateAudiobookChunkJob implements ShouldQueue
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 5. Marquer comme "generating"
-        |--------------------------------------------------------------------------
-        */
-
-        $chunk->update([
-            'status' => 'generating',
-            'started_at' => now(),
-            'error_message' => null,
-        ]);
-
         try {
-
             /*
             |--------------------------------------------------------------------------
-            | 6. Appel ElevenLabs
+            | 3. Générer le MP3 avec ElevenLabs
             |--------------------------------------------------------------------------
             */
 
-            $result =
-                $elevenLabs->generateSpeechWithMetadata(
-                    $chunk->text,
-                    $audiobook->voice_id
+            $result = $elevenLabs->generateSpeechWithMetadata(
+                $text,
+                $audiobook->voice_id
+            );
+
+            if (
+                !isset($result['audio']) ||
+                !is_string($result['audio']) ||
+                $result['audio'] === ''
+            ) {
+                throw new RuntimeException(
+                    'ElevenLabs n’a retourné aucun contenu audio exploitable.'
                 );
+            }
 
             /*
             |--------------------------------------------------------------------------
-            | 7. Déterminer le chemin du fichier
+            | 4. Préparer le chemin du fichier
             |--------------------------------------------------------------------------
             */
 
@@ -168,104 +156,185 @@ class GenerateAudiobookChunkJob implements ShouldQueue
                 $chunk->position
             );
 
+            $disk = Storage::disk('local');
+
             /*
             |--------------------------------------------------------------------------
-            | 8. Sauvegarder le MP3
+            | 5. Enregistrer le MP3 et mettre à jour les statuts
+            |--------------------------------------------------------------------------
+            |
+            | Le verrou sur l'audiobook protège les compteurs et le déclenchement
+            | de l'assemblage. Le fichier est vérifié avant de terminer le chunk.
             |--------------------------------------------------------------------------
             */
 
-            Storage::disk('local')->put(
+            $shouldAssemble = DB::transaction(function () use (
+                $disk,
                 $path,
-                $result['audio']
-            );
+                $result,
+                $text
+            ): bool {
+                $chunk = AudiobookChunk::whereKey($this->chunkId)
+                    ->lockForUpdate()
+                    ->first();
 
-            /*
-            |--------------------------------------------------------------------------
-            | 9. Mettre à jour le chunk
-            |--------------------------------------------------------------------------
-            */
+                if (!$chunk || $chunk->status !== 'generating') {
+                    return false;
+                }
 
-            $characterCost =
-                (int) (
-                    $result['character_cost']
-                    ?? mb_strlen($chunk->text)
+                $section = $chunk->section;
+
+                if (!$section) {
+                    throw new RuntimeException(
+                        'La section du chunk est introuvable.'
+                    );
+                }
+
+                $audiobook = DB::table('audiobooks')
+                    ->where('id', $section->audiobook_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$audiobook) {
+                    throw new RuntimeException(
+                        'L’audiobook associé est introuvable.'
+                    );
+                }
+
+                /*
+                 * Ne jamais finaliser un résultat tardif après une annulation,
+                 * un échec ou la fin de l'audiobook.
+                 */
+                if (in_array($audiobook->status, [
+                    'cancelled',
+                    'completed',
+                    'failed',
+                ], true)) {
+                    return false;
+                }
+
+                $saved = $disk->put($path, $result['audio']);
+
+                if (
+                    !$saved ||
+                    !$disk->exists($path) ||
+                    $disk->size($path) <= 0
+                ) {
+                    throw new RuntimeException(
+                        'Le fichier MP3 du morceau n’a pas été enregistré correctement.'
+                    );
+                }
+
+                $characterCost = (int) (
+                    $result['character_cost'] ?? mb_strlen($text)
                 );
-
-            DB::transaction(function () use (
-                $chunk,
-                $section,
-                $audiobook,
-                $path,
-                $characterCost,
-                $result
-            ) {
 
                 $chunk->update([
                     'status' => 'completed',
-
-                    'character_cost' =>
-                        $characterCost,
-
-                    'audio_path' =>
-                        $path,
-
-                    'request_id' =>
-                        $result['request_id'] ?? null,
-
-                    'trace_id' =>
-                        $result['trace_id'] ?? null,
-
-                    'completed_at' =>
-                        now(),
-
-                    'error_message' =>
-                        null,
+                    'character_cost' => $characterCost,
+                    'audio_path' => $path,
+                    'request_id' => $result['request_id'] ?? null,
+                    'trace_id' => $result['trace_id'] ?? null,
+                    'completed_at' => now(),
+                    'error_message' => null,
                 ]);
 
                 /*
-                |--------------------------------------------------------------------------
-                | Compteurs audiobook
-                |--------------------------------------------------------------------------
-                */
+                 * Mise à jour atomique des compteurs sous le verrou
+                 * de l'audiobook.
+                 */
+                DB::table('audiobooks')
+                    ->where('id', $audiobook->id)
+                    ->update([
+                        'generated_characters' =>
+                            ((int) ($audiobook->generated_characters ?? 0))
+                            + $characterCost,
 
-                $audiobook->increment(
-                    'generated_characters',
-                    $characterCost
-                );
+                        'completed_chunks' =>
+                            ((int) ($audiobook->completed_chunks ?? 0)) + 1,
 
-                $audiobook->increment(
-                    'completed_chunks'
-                );
+                        'updated_at' => now(),
+                    ]);
+
+                /*
+                 * Mettre à jour le statut de la section.
+                 */
+                $totalSectionChunks = AudiobookChunk::where(
+                    'audiobook_section_id',
+                    $section->id
+                )->count();
+
+                $completedSectionChunks = AudiobookChunk::where(
+                    'audiobook_section_id',
+                    $section->id
+                )->where('status', 'completed')->count();
+
+                if (
+                    $totalSectionChunks > 0 &&
+                    $completedSectionChunks === $totalSectionChunks
+                ) {
+                    $section->update([
+                        'status' => 'completed',
+                        'error_message' => null,
+                    ]);
+                } else {
+                    $section->update([
+                        'status' => 'generating',
+                    ]);
+                }
+
+                /*
+                 * Ne passer à assembling qu'une seule fois.
+                 * Le verrou empêche deux chunks de déclencher
+                 * simultanément deux assemblages.
+                 */
+                $totalChunks = AudiobookChunk::whereHas(
+                    'section',
+                    fn ($query) => $query->where(
+                        'audiobook_id',
+                        $audiobook->id
+                    )
+                )->count();
+
+                $completedChunks = AudiobookChunk::whereHas(
+                    'section',
+                    fn ($query) => $query->where(
+                        'audiobook_id',
+                        $audiobook->id
+                    )
+                )->where('status', 'completed')->count();
+
+                if (
+                    $totalChunks > 0 &&
+                    $completedChunks === $totalChunks &&
+                    $audiobook->status !== 'assembling'
+                ) {
+                    DB::table('audiobooks')
+                        ->where('id', $audiobook->id)
+                        ->update([
+                            'status' => 'assembling',
+                            'error_message' => null,
+                            'updated_at' => now(),
+                        ]);
+
+                    return true;
+                }
+
+                return false;
             });
 
             /*
             |--------------------------------------------------------------------------
-            | 10. Vérifier si la section est terminée
+            | 6. Déclencher l'assemblage après validation de la transaction
             |--------------------------------------------------------------------------
             */
 
-            $this->updateSectionStatus(
-                $section->fresh()
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | 11. Vérifier si tout l'audiobook est terminé
-            |--------------------------------------------------------------------------
-            */
-
-            $this->updateAudiobookStatus(
-                $audiobook->fresh()
-            );
-
+            if ($shouldAssemble) {
+                AssembleAudiobookJob::dispatch(
+                    $audiobook->id
+                )->afterCommit();
+            }
         } catch (Throwable $e) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Erreur
-            |--------------------------------------------------------------------------
-            */
-
             $this->failChunk(
                 $chunk,
                 $e->getMessage()
@@ -276,170 +345,80 @@ class GenerateAudiobookChunkJob implements ShouldQueue
     }
 
     /**
-     * Met à jour le statut de la section.
-     */
-    private function updateSectionStatus(
-    $section
-    ): void {
-
-    $totalChunks =
-        $section->chunks()->count();
-
-    $completedChunks =
-        $section->chunks()
-            ->where('audiobook_chunks.status', 'completed')
-            ->count();
-
-    $failedChunks =
-        $section->chunks()
-            ->where('audiobook_chunks.status', 'failed')
-            ->count();
-
-    if (
-        $totalChunks > 0 &&
-        $completedChunks === $totalChunks
-    ) {
-
-        $section->update([
-            'status' => 'completed',
-        ]);
-
-        return;
-    }
-
-    if ($failedChunks > 0) {
-
-        $section->update([
-            'status' => 'failed',
-        ]);
-
-        return;
-    }
-
-    $section->update([
-        'status' => 'generating',
-    ]);
-    }
-
-    /**
-     * Met à jour le statut global de l'audiobook.
-     */
-    private function updateAudiobookStatus(
-        $audiobook
-        ): void {
-
-        $totalChunks =
-            $audiobook->chunks()->count();
-
-        $completedChunks =
-            $audiobook->chunks()
-                ->where('audiobook_chunks.status', 'completed')
-                ->count();
-
-        $failedChunks =
-            $audiobook->chunks()
-                ->where('audiobook_chunks.status', 'failed')
-                ->count();
-
-        if (
-            $totalChunks > 0 &&
-            $completedChunks === $totalChunks
-        ) {
-
-            /*
-            * Tous les chunks sont prêts.
-            * On passe à l'assemblage du fichier final.
-            */
-            $shouldAssemble =
-                $audiobook->status !== 'assembling'
-                && $audiobook->status !== 'completed';
-
-            if ($shouldAssemble) {
-
-                $audiobook->update([
-                    'status' => 'assembling',
-                    'error_message' => null,
-                ]);
-
-                AssembleAudiobookJob::dispatch(
-                    $audiobook->id
-                );
-            }
-
-            return;
-        }
-
-        if ($failedChunks > 0) {
-
-            $audiobook->update([
-                'status' => 'failed',
-                'error_message' =>
-                    'Un ou plusieurs chunks n’ont pas pu être générés.',
-            ]);
-
-            return;
-        }
-
-        $audiobook->update([
-            'status' => 'generating',
-        ]);
-    }
-
-    /**
-     * Marque un chunk comme échoué.
+     * Marque un chunk en échec sans remplacer un statut terminal
+     * de l'audiobook par un autre statut.
      */
     private function failChunk(
         AudiobookChunk $chunk,
         string $message
     ): void {
+        DB::transaction(function () use ($chunk, $message): void {
+            $lockedChunk = AudiobookChunk::whereKey($chunk->id)
+                ->lockForUpdate()
+                ->first();
 
-        $chunk->update([
-            'status' => 'failed',
-            'error_message' => $message,
-        ]);
+            if (!$lockedChunk || $lockedChunk->status === 'completed') {
+                return;
+            }
 
-        if ($chunk->section) {
-
-            $chunk->section->update([
+            $lockedChunk->update([
                 'status' => 'failed',
                 'error_message' => $message,
             ]);
-        }
 
-        if (
-            $chunk->section &&
-            $chunk->section->audiobook
-        ) {
+            $section = $lockedChunk->section;
 
-            $chunk->section->audiobook->update([
+            if (!$section) {
+                return;
+            }
+
+            $section->update([
                 'status' => 'failed',
                 'error_message' => $message,
             ]);
-        }
+
+            $audiobookId = $section->audiobook_id;
+
+            $audiobook = DB::table('audiobooks')
+                ->where('id', $audiobookId)
+                ->lockForUpdate()
+                ->first();
+
+            if (
+                !$audiobook ||
+                in_array($audiobook->status, [
+                    'cancelled',
+                    'completed',
+                ], true)
+            ) {
+                return;
+            }
+
+            DB::table('audiobooks')
+                ->where('id', $audiobookId)
+                ->update([
+                    'status' => 'failed',
+                    'error_message' => $message,
+                    'updated_at' => now(),
+                ]);
+        });
     }
 
     /**
-     * Gestion finale d'une exception du Job.
+     * Dernier filet de sécurité lorsque le job échoue définitivement.
      */
-    public function failed(
-        ?Throwable $exception
-    ): void {
-
-        $chunk = AudiobookChunk::with(
-            'section.audiobook.book'
-        )->find($this->chunkId);
+    public function failed(?Throwable $exception): void
+    {
+        $chunk = AudiobookChunk::find($this->chunkId);
 
         if (!$chunk) {
             return;
         }
 
-        $message =
-            $exception?->getMessage()
-            ?? 'Erreur inconnue lors de la génération.';
-
         $this->failChunk(
             $chunk,
-            $message
+            $exception?->getMessage()
+                ?? 'Erreur inconnue lors de la génération.'
         );
     }
 }

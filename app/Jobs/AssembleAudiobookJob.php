@@ -3,16 +3,18 @@
 namespace App\Jobs;
 
 use App\Models\Audiobook;
+use App\Models\AudiobookRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Models\AudiobookRequest;
 use RuntimeException;
-use Symfony\Component\Process\Process;
+use Throwable;
+use ZipArchive;
 
 class AssembleAudiobookJob implements ShouldQueue
 {
@@ -41,10 +43,10 @@ class AssembleAudiobookJob implements ShouldQueue
             return;
         }
 
-        if (
-            $audiobook->status === 'cancelled' ||
-            $audiobook->status === 'completed'
-        ) {
+        if (in_array($audiobook->status, [
+            'cancelled',
+            'completed',
+        ], true)) {
             return;
         }
 
@@ -52,42 +54,72 @@ class AssembleAudiobookJob implements ShouldQueue
             return;
         }
 
-        $chunks = $audiobook->sections
-            ->sortBy('position')
+        if (!$audiobook->book) {
+            throw new RuntimeException(
+                'Le livre associé à cet audiobook est introuvable.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1. Récupérer les morceaux dans l'ordre des chapitres
+        |--------------------------------------------------------------------------
+        */
+
+        $sections = $audiobook->sections->sortBy('position');
+
+        $chunks = $sections
             ->flatMap(function ($section) {
-                return $section->chunks
-                    ->sortBy('position');
+                return $section->chunks->sortBy('position');
             })
             ->values();
 
         if ($chunks->isEmpty()) {
             throw new RuntimeException(
-                'Aucun chunk audio à assembler.'
+                'Aucun morceau audio à archiver.'
             );
         }
 
-        foreach ($chunks as $chunk) {
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Vérifier que tous les fichiers MP3 sont disponibles
+        |--------------------------------------------------------------------------
+        */
 
+        $disk = Storage::disk('local');
+
+        foreach ($chunks as $chunk) {
             if (
                 $chunk->status !== 'completed' ||
-                !$chunk->audio_path
+                blank($chunk->audio_path)
             ) {
                 throw new RuntimeException(
-                    'Tous les chunks audio ne sont pas prêts.'
+                    'Tous les morceaux audio ne sont pas prêts.'
                 );
             }
 
-            if (
-                !Storage::disk('local')
-                    ->exists($chunk->audio_path)
-            ) {
+            if (!$disk->exists($chunk->audio_path)) {
                 throw new RuntimeException(
-                    'Fichier audio introuvable pour le chunk '
+                    'Fichier audio introuvable pour le morceau '
                     . $chunk->id
                     . '.'
                 );
             }
+
+            if ($disk->size($chunk->audio_path) <= 0) {
+                throw new RuntimeException(
+                    'Le fichier audio du morceau '
+                    . $chunk->id
+                    . ' est vide.'
+                );
+            }
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Préparer le chemin de l'archive ZIP
+        |--------------------------------------------------------------------------
+        */
 
         $bookSlug = Str::limit(
             Str::slug($audiobook->book->title),
@@ -95,134 +127,201 @@ class AssembleAudiobookJob implements ShouldQueue
             ''
         );
 
-        $directory =
-            'elevenlabs-audiobooks/' . $bookSlug;
-
-        Storage::disk('local')->makeDirectory(
-            $directory
-        );
-
-        $concatRelativePath =
-            $directory . '/ffmpeg-input.txt';
-
-        $concatFile =
-            Storage::disk('local')
-                ->path($concatRelativePath);
-
-        $finalRelativePath =
-           $directory . '/' . $bookSlug . '.mp3';
-
-        $finalAbsolutePath =
-            Storage::disk('local')
-                ->path($finalRelativePath);
-
-        $lines = [];
-
-        foreach ($chunks as $chunk) {
-
-            $absolutePath =
-                Storage::disk('local')
-                    ->path($chunk->audio_path);
-
-            $escapedPath =
-                str_replace(
-                    [
-                        '\\',
-                        "'",
-                    ],
-                    [
-                        '\\\\',
-                        "'\\''",
-                    ],
-                    $absolutePath
-                );
-
-            $lines[] =
-                "file '{$escapedPath}'";
+        if ($bookSlug === '') {
+            $bookSlug = 'livre';
         }
 
-        file_put_contents(
-            $concatFile,
-            implode(PHP_EOL, $lines) . PHP_EOL
+        $directory = 'elevenlabs-audiobooks/' . $bookSlug;
+
+        $disk->makeDirectory($directory);
+
+        /*
+         * L'identifiant de l'audiobook évite que deux archives
+         * du même livre utilisent le même nom.
+         */
+        $zipRelativePath = sprintf(
+            '%s/audiobook-%d.zip',
+            $directory,
+            $audiobook->id
         );
 
-        $process = new Process([
-            'ffmpeg',
-            '-y',
-            '-f',
-            'concat',
-            '-safe',
-            '0',
-            '-i',
-            $concatFile,
-            '-c',
-            'copy',
-            $finalAbsolutePath,
-        ]);
+        $zipAbsolutePath = $disk->path($zipRelativePath);
 
-        $process->setTimeout(300);
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Créer le ZIP et classer les morceaux par chapitre
+        |--------------------------------------------------------------------------
+        */
 
-       try {
-
-            $process->run();
-
-            if (!$process->isSuccessful()) {
-
-                throw new RuntimeException(
-                    'FFmpeg a échoué lors de l’assemblage : '
-                    . $process->getErrorOutput()
-                );
-            }
-
-        } finally {
-
-            if (is_file($concatFile)) {
-                unlink($concatFile);
-            }
-        }
-
-        if (
-            !Storage::disk('local')
-                ->exists($finalRelativePath)
-        ) {
+        if (!class_exists(ZipArchive::class)) {
             throw new RuntimeException(
-                'Le fichier audio final n’a pas été créé.'
+                'L’extension PHP ZipArchive n’est pas disponible.'
             );
         }
 
-       $audiobook->update([
-            'status' => 'completed',
-            'final_audio_path' => $finalRelativePath,
-            'actual_cost' =>
-                $audiobook->generated_characters / 1000 * 0.10,
-            'completed_at' => now(),
-            'error_message' => null,
-        ]);
+        $zip = new ZipArchive();
 
-        AudiobookRequest::where(
-            'audiobook_id',
-            $audiobook->id
-        )->update([
-            'status' => AudiobookRequest::STATUS_COMPLETED,
-        ]);
+        $openResult = $zip->open(
+            $zipAbsolutePath,
+            ZipArchive::CREATE | ZipArchive::OVERWRITE
+        );
 
-        
+        if ($openResult !== true) {
+            throw new RuntimeException(
+                'Impossible de créer l’archive ZIP. Code : '
+                . $openResult
+            );
+        }
+
+        $zipClosed = false;
+
+        try {
+            foreach ($sections as $section) {
+                $sectionChunks = $section->chunks
+                    ->sortBy('position');
+
+                foreach ($sectionChunks as $chunk) {
+                    $chapterNumber = (int) $section->position;
+                    $chunkNumber = (int) $chunk->position;
+
+                    $archivePath = sprintf(
+                        'chapitre-%02d/morceau-%03d.mp3',
+                        $chapterNumber,
+                        $chunkNumber
+                    );
+
+                    $absoluteChunkPath = $disk->path(
+                        $chunk->audio_path
+                    );
+
+                    if (!$zip->addFile(
+                        $absoluteChunkPath,
+                        $archivePath
+                    )) {
+                        throw new RuntimeException(
+                            'Impossible d’ajouter le morceau '
+                            . $chunk->id
+                            . ' à l’archive ZIP.'
+                        );
+                    }
+                }
+            }
+
+            if (!$zip->close()) {
+                throw new RuntimeException(
+                    'Impossible de finaliser l’archive ZIP.'
+                );
+            }
+
+            $zipClosed = true;
+        } finally {
+            if (!$zipClosed) {
+                $zip->close();
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5. Vérifier l'archive avant de marquer l'audiobook terminé
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$disk->exists($zipRelativePath) ||
+            $disk->size($zipRelativePath) <= 0
+        ) {
+            throw new RuntimeException(
+                'L’archive ZIP est absente ou vide.'
+            );
+        }
+
+        $verificationZip = new ZipArchive();
+
+        $verificationResult = $verificationZip->open(
+            $zipAbsolutePath,
+            ZipArchive::CHECKCONS
+        );
+
+        if ($verificationResult !== true) {
+            throw new RuntimeException(
+                'L’archive ZIP créée est invalide.'
+            );
+        }
+
+        try {
+            if ($verificationZip->numFiles !== $chunks->count()) {
+                throw new RuntimeException(
+                    'Le nombre de fichiers dans le ZIP ne correspond '
+                    . 'pas au nombre de morceaux audio attendus.'
+                );
+            }
+        } finally {
+            $verificationZip->close();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Enregistrer le résultat en base de données
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $audiobook,
+            $zipRelativePath
+        ) {
+            $lockedAudiobook = Audiobook::query()
+                ->lockForUpdate()
+                ->findOrFail($audiobook->id);
+
+            if (
+                $lockedAudiobook->status === 'cancelled' ||
+                $lockedAudiobook->status === 'completed'
+            ) {
+                return;
+            }
+
+            if ($lockedAudiobook->status !== 'assembling') {
+                return;
+            }
+
+            $lockedAudiobook->update([
+                'status' => 'completed',
+                'final_audio_path' => $zipRelativePath,
+                'actual_cost' =>
+                    $lockedAudiobook->generated_characters
+                    / 1000
+                    * 0.10,
+                'completed_at' => now(),
+                'error_message' => null,
+            ]);
+
+            AudiobookRequest::where(
+                'audiobook_id',
+                $lockedAudiobook->id
+            )->update([
+                'status' => AudiobookRequest::STATUS_COMPLETED,
+            ]);
+        });
     }
 
-    public function failed(\Throwable $exception): void
+    public function failed(Throwable $exception): void
     {
-        $audiobook = Audiobook::find(
-            $this->audiobookId
-        );
+        $audiobook = Audiobook::find($this->audiobookId);
 
         if (!$audiobook) {
             return;
         }
 
+        if (in_array($audiobook->status, [
+            'cancelled',
+            'completed',
+        ], true)) {
+            return;
+        }
+
         $audiobook->update([
             'status' => 'failed',
-            'error_message' =>
-                $exception->getMessage(),
+            'error_message' => $exception->getMessage(),
         ]);
 
         AudiobookRequest::where(

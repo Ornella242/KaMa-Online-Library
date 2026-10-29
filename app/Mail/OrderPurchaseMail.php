@@ -22,11 +22,14 @@ class OrderPurchaseMail extends Mailable
     {
         $this->order->loadMissing('items.book');
 
+       
         $this->downloads = $this->order->items
             ->filter(fn ($item) => $item->book && filled($item->book->file_path))
             ->map(fn ($item) => [
                 'title' => $item->title,
-                'type' => $item->book_type === 'audio' ? 'Livre audio' : 'Ebook',
+                'type' => $item->book_type === 'audio' ? 'Livre audio (ZIP)' : 'Ebook',
+                'filename' => $item->book->original_file_name ?: basename($item->book->file_path),
+                'extension' => strtolower(pathinfo($item->book->file_path, PATHINFO_EXTENSION)),
                 'url' => URL::temporarySignedRoute(
                     'checkout.download',
                     now()->addDays(14),
@@ -37,6 +40,7 @@ class OrderPurchaseMail extends Mailable
                 ),
             ])
             ->values();
+
     }
 
     public function envelope(): Envelope

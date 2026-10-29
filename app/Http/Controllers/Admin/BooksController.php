@@ -1159,29 +1159,43 @@ class BooksController extends Controller
         );
     }
 
-    public function streamAudio(Book $book)
-    {
-        // Vérifie que l'auteur est bien propriétaire
-        $this->authorize('viewFile', $book);
+   
 
-
-        if ($book->type !== 'audio') {
-            abort(404);
-        }
-
-
-        if (!Storage::disk('local')->exists($book->file_path)) {
-            abort(404);
-        }
-
-
-        return response()->file(
-            Storage::disk('local')->path($book->file_path),
-            [
-                'Content-Type' => 'audio/mpeg',
-            ]
-        );
+    public function streamAudio(Audiobook $audiobook)
+{
+    if ($audiobook->status !== 'completed') {
+        abort(404);
     }
+
+    if (!$audiobook->final_audio_path) {
+        abort(404);
+    }
+
+    $disk = Storage::disk('local');
+
+    if (!$disk->exists($audiobook->final_audio_path)) {
+        abort(404);
+    }
+
+    $extension = strtolower(
+        pathinfo($audiobook->final_audio_path, PATHINFO_EXTENSION)
+    );
+
+    // Un ZIP ne peut pas être lu comme une piste audio.
+    if ($extension === 'zip') {
+        return $this->downloadAudiobook($audiobook);
+    }
+
+    abort_unless($extension === 'mp3', 415);
+
+    return response()->file(
+        $disk->path($audiobook->final_audio_path),
+        [
+            'Content-Type' => 'audio/mpeg',
+            'Accept-Ranges' => 'bytes',
+        ]
+    );
+}
 
     public function boost(Book $book)
     {
@@ -1646,32 +1660,48 @@ class BooksController extends Controller
         ]);
     }
 
-    public function streamAudiobook(Audiobook $audiobook)
-    {
-        if ($audiobook->status !== 'completed') {
-            abort(404);
-        }
-
-        if (!$audiobook->final_audio_path) {
-            abort(404);
-        }
-
-        if (!Storage::disk('local')->exists($audiobook->final_audio_path)) {
-            abort(404);
-        }
-
-        return response()->file(
-            Storage::disk('local')->path(
-                $audiobook->final_audio_path
-            ),
-            [
-                'Content-Type' => 'audio/mpeg',
-                'Accept-Ranges' => 'bytes',
-            ]
-        );
+   
+public function streamAudiobook(Audiobook $audiobook)
+{
+    if ($audiobook->status !== 'completed') {
+        abort(404);
     }
 
-    public function downloadAudiobook(Audiobook $audiobook)
+    if (!$audiobook->final_audio_path) {
+        abort(404);
+    }
+
+    $disk = Storage::disk('local');
+
+    if (!$disk->exists($audiobook->final_audio_path)) {
+        abort(404);
+    }
+
+    $extension = strtolower(
+        pathinfo($audiobook->final_audio_path, PATHINFO_EXTENSION)
+    );
+
+    // Les audiobooks générés par KaMa sont désormais des archives ZIP.
+    if ($extension === 'zip') {
+        return $this->downloadAudiobook($audiobook);
+    }
+
+    // Les anciens audiobooks au format MP3 restent lisibles.
+    abort_unless($extension === 'mp3', 415);
+
+    return response()->file(
+        $disk->path($audiobook->final_audio_path),
+        [
+            'Content-Type' => 'audio/mpeg',
+            'Accept-Ranges' => 'bytes',
+        ]
+    );
+}
+
+
+   
+
+        public function downloadAudiobook(Audiobook $audiobook)
     {
         if ($audiobook->status !== 'completed') {
             abort(404);
@@ -1687,19 +1717,23 @@ class BooksController extends Controller
             abort(404);
         }
 
-        $absolutePath = $disk->path(
-            $audiobook->final_audio_path
+        $extension = strtolower(
+            pathinfo($audiobook->final_audio_path, PATHINFO_EXTENSION)
         );
 
-        $filename = basename(
-            $audiobook->final_audio_path
-        );
+        abort_unless(in_array($extension, ['mp3', 'zip'], true), 415);
+
+        $filename = basename($audiobook->final_audio_path);
+
+        $contentType = $extension === 'zip'
+            ? 'application/zip'
+            : 'audio/mpeg';
 
         return response()->download(
-            $absolutePath,
+            $disk->path($audiobook->final_audio_path),
             $filename,
             [
-                'Content-Type' => 'audio/mpeg',
+                'Content-Type' => $contentType,
             ]
         );
     }

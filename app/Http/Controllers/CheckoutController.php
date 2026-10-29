@@ -368,11 +368,14 @@ class CheckoutController extends Controller
             return view('checkout.pending', compact('order'));
         }
 
+       
         $downloads = $order->items
             ->filter(fn ($item) => $item->book && filled($item->book->file_path))
             ->map(fn ($item) => [
                 'title' => $item->title,
-                'type' => $item->book_type === 'audio' ? 'Livre audio' : 'Ebook',
+                'type' => $item->book_type === 'audio' ? 'Livre audio (ZIP)' : 'Ebook',
+                'filename' => $item->book->original_file_name ?: basename($item->book->file_path),
+                'extension' => strtolower(pathinfo($item->book->file_path, PATHINFO_EXTENSION)),
                 'url' => URL::temporarySignedRoute(
                     'checkout.download',
                     now()->addDays(14),
@@ -381,24 +384,60 @@ class CheckoutController extends Controller
                         'book' => $item->book_id,
                     ]
                 ),
-            ]);
+            ])
+            ->values();
+
 
         return view('checkout.success', compact('order', 'downloads'));
     }
 
-    public function download(Request $request, Order $order, Book $book)
-    {
-        abort_unless($order->status === Order::STATUS_PAID, 404);
-        abort_unless(
-            $order->items()->where('book_id', $book->id)->exists(),
-            404
-        );
-        abort_unless(filled($book->file_path) && Storage::disk('local')->exists($book->file_path), 404);
+    // public function download(Request $request, Order $order, Book $book)
+    // {
+    //     abort_unless($order->status === Order::STATUS_PAID, 404);
+    //     abort_unless(
+    //         $order->items()->where('book_id', $book->id)->exists(),
+    //         404
+    //     );
+    //     abort_unless(filled($book->file_path) && Storage::disk('local')->exists($book->file_path), 404);
 
-        $filename = $book->original_file_name ?: basename($book->file_path);
+    //     $filename = $book->original_file_name ?: basename($book->file_path);
 
-        return Storage::disk('local')->download($book->file_path, $filename);
+    //     return Storage::disk('local')->download($book->file_path, $filename);
+    // }
+
+
+public function download(Request $request, Order $order, Book $book)
+{
+    abort_unless($order->status === Order::STATUS_PAID, 404);
+
+    abort_unless(
+        $order->items()->where('book_id', $book->id)->exists(),
+        404
+    );
+
+    abort_unless(
+        filled($book->file_path)
+        && Storage::disk('local')->exists($book->file_path),
+        404
+    );
+
+    $filename = $book->original_file_name ?: basename($book->file_path);
+
+    $extension = strtolower(pathinfo($book->file_path, PATHINFO_EXTENSION));
+
+    $headers = [];
+
+    if ($extension === 'zip') {
+        $headers['Content-Type'] = 'application/zip';
     }
+
+    return Storage::disk('local')->download(
+        $book->file_path,
+        $filename,
+        $headers
+    );
+}
+
 
     private function userOwnsBook(int $userId, int $bookId): bool
     {
