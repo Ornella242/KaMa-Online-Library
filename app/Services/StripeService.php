@@ -54,6 +54,9 @@ class StripeService
 
         $payload = [
             'mode' => 'payment',
+            'managed_payments' => [
+                'enabled' => false,
+            ],
             'success_url' => $successUrl ?: url('/'),
             'cancel_url' => $cancelUrl ?: url('/'),
             'line_items' => [[
@@ -66,7 +69,6 @@ class StripeService
                     ],
                 ],
             ]],
-            'payment_method_types' => ['card'],
         ];
 
         if (! empty($customer['email'])) {
