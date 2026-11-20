@@ -85,7 +85,7 @@
                     <div class="writer-book-meta-grid">
                         <div>
                             <small>Prix</small>
-                            <strong>{{ number_format((float) $book->price, 0, ',', ' ') }} FCFA</strong>
+                            <strong>{{ number_format((float) $book->price, 2, '.', ',') }} €</strong>
                         </div>
                         <div>
                             <small>Langue</small>
@@ -148,7 +148,72 @@
                                 <i class="bi bi-megaphone"></i>
                                 Sponsoriser
                             </a>
-                        @endif
+                            @if($book->type === 'ebook')
+                                    @php
+                                        $audiobookRequest = $book->audiobookRequests()
+                                            ->where('author_id', auth()->id())
+                                            ->latest()
+                                            ->first();
+
+                                        $audiobookAvailable = $audiobookRequest
+                                            && $audiobookRequest->status === \App\Models\AudiobookRequest::STATUS_COMPLETED
+                                            && $audiobookRequest->published_book_id;
+
+                                        $audiobookPendingPayment = $audiobookRequest
+                                            && $audiobookRequest->status === \App\Models\AudiobookRequest::STATUS_PENDING_PAYMENT;
+
+                                        $audiobookInProgress = $audiobookRequest
+                                            && in_array($audiobookRequest->status, [
+                                                \App\Models\AudiobookRequest::STATUS_PAID,
+                                                \App\Models\AudiobookRequest::STATUS_QUEUED,
+                                                \App\Models\AudiobookRequest::STATUS_GENERATING,
+                                                \App\Models\AudiobookRequest::STATUS_ASSEMBLING,
+                                            ], true);
+                                    @endphp
+
+                                    @if($audiobookAvailable)
+                                        <button
+                                            type="button"
+                                            class="btn-primary-action"
+                                            disabled
+                                            style="opacity: .6; cursor: not-allowed;"
+                                        >
+                                            <i class="bi bi-headphones"></i>
+                                            Audiobook disponible
+                                        </button>
+
+                                    @elseif($audiobookPendingPayment)
+                                        <a
+                                            href="{{ route('writer.books.audiobook.payment', $book) }}"
+                                            class="btn-primary-action js-loading-action"
+                                            data-loading-text="Redirection vers le paiement…"
+                                        >
+                                            <i class="bi bi-credit-card js-loading-icon"></i>
+                                            <span class="js-loading-label">Payer l'audiobook ({{ number_format((float) $audiobookRequest->total_amount, 2, ',', ' ') }} €)</span>
+                                        </a>
+
+                                    @elseif($audiobookInProgress)
+                                        <button
+                                            type="button"
+                                            class="btn-primary-action"
+                                            disabled
+                                            style="opacity: .6; cursor: not-allowed;"
+                                        >
+                                            <i class="bi bi-hourglass-split"></i>
+                                            Demande en cours de traitement
+                                        </button>
+
+                                    @else
+                                        <a
+                                            href="{{ route('writer.books.audiobook', $book) }}"
+                                            class="btn-primary-action"
+                                        >
+                                            <i class="bi bi-headset"></i>
+                                            Commander l'audiobook
+                                        </a>
+                                    @endif
+                                @endif
+                           @endif
                     </div>
                 </div>
             </div>
@@ -257,7 +322,7 @@
                         </div>
                         <div>
                             <dt>Prix de vente</dt>
-                            <dd>{{ number_format((float) $book->price, 0, ',', ' ') }} FCFA</dd>
+                            <dd>{{ number_format((float) $book->price, 2, '.', ',') }} €</dd>
                         </div>
                         @if($book->type === 'ebook')
                             <div>
@@ -352,7 +417,7 @@
             <div class="preview-end-content">
                 <h2>Fin de l'aperçu</h2>
                 <p>Vous venez de lire la dernière page sélectionnée.</p>
-                <h3>{{ number_format((float) $book->price, 0, ',', ' ') }} FCFA</h3>
+                <h3>{{ number_format((float) $book->price, 2, '.', ',') }} €</h3>
             </div>
         `;
         pages.push(finalPage);
@@ -478,12 +543,32 @@
 }
 .btn-primary-action { background: #fff; color: #b30000; }
 .btn-primary-action:hover { background: #ffe8e8; color: #910000; }
+.btn-primary-action.is-loading {
+    opacity: .85;
+    cursor: wait;
+    pointer-events: none;
+}
+.btn-primary-action.is-loading .spinner-border {
+    width: .95rem;
+    height: .95rem;
+    border-width: .15em;
+}
 .btn-secondary-action {
     background: transparent; color: #fff;
     border: 1px solid rgba(255,255,255,.35);
 }
 .btn-secondary-action:hover { background: rgba(255,255,255,.12); color: #fff; }
-.writer-book-audio audio { width: min(100%, 360px); }
+.writer-book-audio {
+    display: block !important;
+    width: 100% !important;
+    min-height: 54px;
+}
+
+.writer-book-audio audio {
+    display: block !important;
+    width: min(100%, 260px) !important;
+    height: 54px !important;
+}
 
 .writer-book-alert {
     display: flex; gap: 14px; align-items: flex-start;
@@ -591,4 +676,35 @@
     .writer-book-specs dd { text-align: left; }
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a.js-loading-action').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            if (link.classList.contains('is-loading')) {
+                event.preventDefault();
+                return;
+            }
+
+            const label = link.querySelector('.js-loading-label');
+            const icon = link.querySelector('.js-loading-icon, i:not(.spinner-border)');
+            const loadingText = link.dataset.loadingText || 'Chargement…';
+
+            link.classList.add('is-loading');
+            link.setAttribute('aria-busy', 'true');
+            link.setAttribute('aria-disabled', 'true');
+
+            if (icon) {
+                icon.className = 'spinner-border spinner-border-sm';
+            }
+
+            if (label) {
+                label.textContent = loadingText;
+            }
+        });
+    });
+});
+</script>
 @endpush

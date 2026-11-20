@@ -37,25 +37,17 @@ class BookUnderReviewNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Votre livre est en cours de vérification')
 
-            ->greeting('Bonjour '.$notifiable->firstname)
-
-            ->line(
-                'Votre livre "'.$this->book->title.'" est maintenant en cours de vérification éditoriale.'
+            ->subject(
+                'Votre livre est en cours de vérification - KaMa'
             )
 
-            ->line(
-                'Notre équipe KaMa examine actuellement votre contenu avant publication. La verification prendra 15 jours ouvrables.'
-            )
-
-            ->action(
-                'Voir mon livre',
-                route('writer.books.show',$this->book)
-            )
-
-            ->line(
-                'Vous recevrez une notification dès que la vérification sera terminée.'
+            ->view(
+                'emails.books.under-review',
+                [
+                    'user' => $notifiable,
+                    'book' => $this->book
+                ]
             );
     }
 

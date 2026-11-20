@@ -3,17 +3,128 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
+use App\Models\BookSponsorship;
 use App\Models\Payment;
 use App\Models\Review;
+use App\Models\User;
 use App\Models\Withdrawal;
+use App\Services\WalletService;
+use App\Services\WithdrawalService;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 
 class AuthorSpaceController extends Controller
 {
+    public function overview(WalletService $walletService)
+    {
+        $author = $this->authorAccount();
+        $userId = $author->id;
+
+        $publishedBooks = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', 'published')
+            ->count();
+
+        $booksGrowth = $this->growth(
+            Book::query()
+                ->where('user_id', $userId)
+                ->where('status', 'published')
+                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                ->count(),
+            Book::query()
+                ->where('user_id', $userId)
+                ->where('status', 'published')
+                ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+                ->count()
+        );
+
+        $purchases = Payment::query()
+            ->whereHas('book', fn ($query) => $query->where('user_id', $userId))
+            ->where('status', 'success')
+            ->where('type', 'purchase');
+
+        $totalRevenue = (float) (clone $purchases)->sum('amount');
+        $revenueGrowth = $this->growth(
+            (float) (clone $purchases)->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('amount'),
+            (float) (clone $purchases)->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->sum('amount')
+        );
+
+        $totalReaders = (int) (clone $purchases)->distinct('user_id')->count('user_id');
+        $readersGrowth = $this->growth(
+            (int) (clone $purchases)->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->distinct('user_id')->count('user_id'),
+            (int) (clone $purchases)->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->distinct('user_id')->count('user_id')
+        );
+
+        $reviewBase = Review::query()->whereHas('book', fn ($query) => $query->where('user_id', $userId));
+        $averageRating = (clone $reviewBase)->avg('rating');
+        $totalReviews = (clone $reviewBase)->count();
+
+        $bestBooks = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', 'published')
+            ->withCount([
+                'payments as sales_count' => function ($query) {
+                    $query->where('status', 'success')->where('type', 'purchase');
+                },
+            ])
+            ->withAvg('reviews', 'rating')
+            ->having('sales_count', '>', 0)
+            ->orderByDesc('sales_count')
+            ->take(5)
+            ->get();
+
+        $bookPerformance = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', 'published')
+            ->get()
+            ->map(function (Book $book) {
+                $publicationFee = (float) Payment::query()
+                    ->where('book_id', $book->id)
+                    ->where('status', 'success')
+                    ->where('type', 'publication')
+                    ->sum('amount');
+
+                $sponsorshipAmount = (float) BookSponsorship::query()
+                    ->where('book_id', $book->id)
+                    ->where('status', 'success')
+                    ->sum('amount');
+
+                $salesAmount = (float) Payment::query()
+                    ->where('book_id', $book->id)
+                    ->where('status', 'success')
+                    ->where('type', 'purchase')
+                    ->sum('amount');
+
+                return [
+                    'label' => $book->title,
+                    'investment' => round($publicationFee + $sponsorshipAmount, 2),
+                    'sales' => round($salesAmount, 2),
+                ];
+            })
+            ->values();
+
+        $wallet = $walletService->ensureWallet($author);
+
+        return view('admin.author.overview', compact(
+            'publishedBooks',
+            'booksGrowth',
+            'totalRevenue',
+            'revenueGrowth',
+            'totalReaders',
+            'readersGrowth',
+            'averageRating',
+            'totalReviews',
+            'bestBooks',
+            'bookPerformance',
+            'wallet',
+        ));
+    }
+
     public function reviews()
     {
-        $userId = Auth::id();
+        $userId = $this->authorAccount()->id;
 
         $reviews = Review::with(['book', 'user'])
             ->whereHas('book', fn ($query) => $query->where('user_id', $userId))
@@ -76,7 +187,8 @@ class AuthorSpaceController extends Controller
 
     public function revenues()
     {
-        $userId = Auth::id();
+        $author = $this->authorAccount();
+        $userId = $author->id;
 
         $purchaseBase = Payment::whereHas('book', fn ($q) => $q->where('user_id', $userId))
             ->where('status', 'success')
@@ -92,15 +204,16 @@ class AuthorSpaceController extends Controller
 
         $totalWithdrawn = Withdrawal::query()
             ->where('user_id', $userId)
-            ->where('status', 'approved')
-            ->sum('amount');
+            ->where('status', Withdrawal::STATUS_COMPLETED)
+            ->sum('net_amount');
 
         $pendingWithdrawals = Withdrawal::query()
             ->where('user_id', $userId)
-            ->where('status', 'pending')
-            ->sum('amount');
+            ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
+            ->sum('net_amount');
 
-        $availableBalance = max(0, $totalRevenue - $totalWithdrawn - $pendingWithdrawals);
+        $wallet = app(WalletService::class)->ensureWallet($author);
+        $availableBalance = (float) $wallet->balance;
 
         $pendingAmount = Payment::whereHas('book', fn ($q) => $q->where('user_id', $userId))
             ->where('status', 'pending')
@@ -132,5 +245,123 @@ class AuthorSpaceController extends Controller
             'totalWithdrawn',
             'pendingWithdrawals',
         ));
+    }
+
+    public function wallet(WalletService $walletService)
+    {
+        $author = $this->authorAccount();
+        $wallet = $walletService->ensureWallet($author);
+
+        $transactions = $wallet->transactions()
+            ->with(['payment.book', 'payment.user'])
+            ->latest()
+            ->paginate(15);
+
+        $totalCredited = (float) $wallet->transactions()
+            ->where('type', 'sale')
+            ->sum('amount');
+
+        $totalWithdrawn = (float) $wallet->transactions()
+            ->where('type', 'withdrawal')
+            ->sum('amount');
+
+        $salesThisMonth = (float) $wallet->transactions()
+            ->where('type', 'sale')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('amount');
+
+        return view('admin.author.wallet', compact(
+            'wallet',
+            'transactions',
+            'totalCredited',
+            'totalWithdrawn',
+            'salesThisMonth',
+        ));
+    }
+
+    public function withdrawals()
+    {
+        $author = $this->authorAccount();
+
+        $withdrawals = Withdrawal::query()
+            ->where('user_id', $author->id)
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.author.withdrawals-index', compact('withdrawals'));
+    }
+
+    public function createWithdrawal(WalletService $walletService, WithdrawalService $withdrawalService)
+    {
+        $author = $this->authorAccount();
+        $wallet = $walletService->ensureWallet($author);
+        $methods = Withdrawal::paymentMethods();
+        $commissionPercent = $withdrawalService->commissionPercent();
+        $minimumAmount = $withdrawalService->minimumAmount();
+
+        $openWithdrawal = Withdrawal::query()
+            ->where('user_id', $author->id)
+            ->whereIn('status', [Withdrawal::STATUS_INITIATED, Withdrawal::STATUS_PROCESSING])
+            ->latest()
+            ->first();
+
+        return view('admin.author.withdrawals-create', compact(
+            'wallet',
+            'methods',
+            'commissionPercent',
+            'minimumAmount',
+            'openWithdrawal',
+        ));
+    }
+
+    public function storeWithdrawal(Request $request, WithdrawalService $withdrawalService)
+    {
+        $author = $this->authorAccount();
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_method' => ['required', 'string', 'in:'.implode(',', array_keys(Withdrawal::paymentMethods()))],
+            'payout_details' => ['required', 'array'],
+        ]);
+
+        $details = collect($validated['payout_details'])
+            ->map(fn ($value) => is_string($value) ? trim($value) : $value)
+            ->all();
+
+        $withdrawal = $withdrawalService->request(
+            $author,
+            (float) $validated['amount'],
+            $validated['payment_method'],
+            $details
+        );
+
+        return redirect()
+            ->route('admin.author.wallet')
+            ->with('success', 'Demande de retrait #'.$withdrawal->id.' initiée. Montant net à recevoir : '
+                .number_format((float) $withdrawal->net_amount, 2, ',', ' ').' €'
+                .' (commission KaMa '.number_format((float) $withdrawal->commission_percent, 2, ',', ' ').' % : '
+                .number_format((float) $withdrawal->commission_amount, 2, ',', ' ').' €).');
+    }
+
+    private function authorAccount(): User
+    {
+        $user = Auth::user();
+        $authorId = $user->authorAccountUserId();
+
+        if ((int) $authorId === (int) $user->id) {
+            return $user;
+        }
+
+        return User::query()->findOrFail($authorId);
+    }
+
+    private function growth(float|int $current, float|int $previous): int
+    {
+        if ((float) $previous == 0.0) {
+            return $current > 0 ? 100 : 0;
+        }
+
+        return (int) round((((float) $current - (float) $previous) / (float) $previous) * 100);
     }
 }

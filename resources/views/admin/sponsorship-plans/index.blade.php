@@ -11,16 +11,23 @@
             <h2>Formules de sponsoring</h2>
             <p>Définissez les offres proposées aux auteurs pour mettre leurs livres en avant.</p>
         </div>
-        <button type="button" class="categories-add js-categories-open" data-overlay-target="createPlanOverlay">
-            <i class="bi bi-plus-lg"></i> Ajouter une formule
-        </button>
+        @if(auth()->user()->hasAdminPermission('sponsorship_plans.create'))
+            <button
+                type="button"
+                class="categories-add js-categories-open"
+                data-overlay-target="createPlanOverlay"
+            >
+                <i class="bi bi-plus-lg"></i>
+                Ajouter une formule
+            </button>
+        @endif
     </header>
 
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <section class="categories-panel">
+    <div class="categories-panel">
         <form method="GET" action="{{ route('admin.sponsorship-plans.index') }}" class="categories-toolbar">
             <div class="categories-search">
                 <i class="bi bi-search"></i>
@@ -53,16 +60,32 @@
                                 </div>
                             </td>
                             <td>{{ $plan->duration_days }} jour(s)</td>
-                            <td><strong>{{ number_format($plan->price, 0, ',', ' ') }} XOF</strong></td>
+                            <td><strong>{{ number_format($plan->price, 2, '.', ',') }} €</strong></td>
                             <td>{{ number_format($plan->sponsorships_count) }}</td>
                             <td>
                                 <div class="categories-row-actions">
-                                    <button type="button" class="edit js-categories-open" data-overlay-target="editPlan-{{ $plan->id }}">
-                                        <i class="bi bi-pencil"></i> Modifier
-                                    </button>
-                                    <button type="button" class="delete js-categories-open" data-overlay-target="deletePlan-{{ $plan->id }}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+
+                                    @if(auth()->user()->hasAdminPermission('sponsorship_plans.edit'))
+                                        <button
+                                            type="button"
+                                            class="edit js-categories-open"
+                                            data-overlay-target="editPlan-{{ $plan->id }}"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                            Modifier
+                                        </button>
+                                    @endif
+
+                                    @if(auth()->user()->hasAdminPermission('sponsorship_plans.delete'))
+                                        <button
+                                            type="button"
+                                            class="delete js-categories-open"
+                                            data-overlay-target="deletePlan-{{ $plan->id }}"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    @endif
+
                                 </div>
                             </td>
                         </tr>
@@ -86,7 +109,7 @@
                 {{ $plans->links() }}
             </footer>
         @endif
-    </section>
+    </div>
 
     {{-- Create --}}
     <div class="categories-overlay d-none" id="createPlanOverlay" role="dialog" aria-modal="true">
@@ -105,8 +128,8 @@
                     <input type="text" name="name" required placeholder="Ex : 1 mois">
                     <label>Durée (jours) *</label>
                     <input type="number" name="duration_days" min="1" max="365" required placeholder="30">
-                    <label>Prix (XOF) *</label>
-                    <input type="number" name="price" min="0" step="1" required placeholder="15000">
+                    <label>Prix (EUR) *</label>
+                    <input type="number" name="price" min="0" step="0.01" required placeholder="29.99">
                 </div>
                 <footer class="categories-overlay-footer">
                     <button type="button" class="js-categories-close">Annuler</button>
@@ -134,8 +157,8 @@
                         <input type="text" name="name" value="{{ $plan->name }}" required>
                         <label>Durée (jours) *</label>
                         <input type="number" name="duration_days" value="{{ $plan->duration_days }}" min="1" max="365" required>
-                        <label>Prix (XOF) *</label>
-                        <input type="number" name="price" value="{{ (int) $plan->price }}" min="0" step="1" required>
+                        <label>Prix (EUR) *</label>
+                        <input type="number" name="price" value="{{ number_format((float) $plan->price, 2, '.', '') }}" min="0" step="0.01" required>
                     </div>
                     <footer class="categories-overlay-footer">
                         <button type="button" class="js-categories-close">Annuler</button>

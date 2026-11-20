@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Services\PublicationService;
 use App\Models\Category;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -19,14 +20,18 @@ use App\Notifications\BookRejectedNotification;
 use App\Notifications\BookRevisionRequiredNotification;
 use App\Models\User;
 use Imagick;
+use ImagickException;
+use App\Services\Audiobook\AudiobookAnalyzer;
+use App\Models\Audiobook;
+use App\Models\AudiobookChunk;
+use App\Services\Audiobook\ElevenLabsService;
 
 class BooksController extends Controller
 {
 
     public function listBooks(Request $request)
     {
-        $userId = Auth::id();
-
+        $userId = Auth::user()->authorAccountUserId();
         $query = Book::query()->where('user_id', $userId)
             ->with([
                 'category',
@@ -118,7 +123,7 @@ class BooksController extends Controller
         return response()->json($subcategories);
     }
 
-      public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -153,7 +158,12 @@ class BooksController extends Controller
 
             'language' => 'required|string|max:50',
 
-            'publication_year' => 'required|digits:4',
+            'publication_year' => [
+                'required',
+                'integer',
+                'min:1000',
+                'max:' . now()->year,
+            ],
 
             'cover_image' => [
                 'required',
@@ -196,7 +206,7 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-        
+
 
         // Upload couverture
         $coverPath = $request
@@ -257,11 +267,11 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-     
+
        $fileSize = $file->getSize();
 
         $book = Book::create([
-            'user_id' => Auth::id(),
+            'user_id' => Auth::user()->authorAccountUserId(),
             'category_id' => $request->category_id,
             'subcategory_id' => $request->subcategory_id,
             'title' => $request->title,
@@ -317,7 +327,7 @@ class BooksController extends Controller
             ->with('book_created', true);
     }
 
-    public function show(Book $book)
+    public function show(Book $book, PublicationService $publicationService)
     {
         $book->load(['author', 'category', 'subcategory']);
 
@@ -337,6 +347,9 @@ class BooksController extends Controller
             ->where('status', 'success')
             ->exists();
 
+        $paymentRequired = $publicationService->shouldRequirePayment();
+
+
         return view('admin.books.show', compact(
             'book',
             'previewStart',
@@ -344,7 +357,7 @@ class BooksController extends Controller
             'activeSponsorship',
             'isOwnBook',
             'pendingPublicationPayment',
-            'depositPaid'
+            'depositPaid','paymentRequired'
         ));
     }
 
@@ -354,7 +367,7 @@ class BooksController extends Controller
 
         $categories = Category::all();
         $subcategories = $book->category->subcategories;
-
+        $author = $book->author;
         $isAudioBook = $book->type === 'audio';
         $existingFileName = $book->original_file_name
             ?: ($book->file_path ? basename($book->file_path) : null);
@@ -374,7 +387,8 @@ class BooksController extends Controller
             'isAudioBook',
             'existingFileName',
             'existingPreviewUrl',
-            'existingFileSize'
+            'existingFileSize',
+            'author'
         ));
     }
 
@@ -895,27 +909,17 @@ class BooksController extends Controller
             503,
             'Les frais de publication ne sont pas encore configurés pour ce format.'
         );
-        abort_unless(
-            strtoupper($fee->currency) === 'XOF',
-            503,
-            'Le tarif doit être enregistré en XOF pour être utilisé avec KKiaPay.'
-        );
 
-        $kkiapayPublicKey = config('services.kkiapay.public_key');
-        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
-        $kkiapayConfigured = filled($kkiapayPublicKey)
-            && filled(config('services.kkiapay.private_key'))
-            && filled(config('services.kkiapay.secret'));
+        $stripe = app(\App\Services\StripeService::class);
 
         return view(
             'admin.books.deposit',
-            compact(
-                'book',
-                'fee',
-                'kkiapayPublicKey',
-                'kkiapaySandbox',
-                'kkiapayConfigured'
-            )
+            [
+                'book' => $book,
+                'fee' => $fee,
+                'stripeConfigured' => $stripe->isConfigured(),
+                'stripeTestMode' => $stripe->isTestMode(),
+            ]
         );
     }
 
@@ -945,76 +949,80 @@ class BooksController extends Controller
             ->with('success', 'Votre livre a été renvoyé pour vérification éditoriale.');
     }
 
-     public function generatePreviewPages(Book $book)
-    {
-        if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
-            return;
-        }
 
-        if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
-            throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
-        }
-
-        $pdfPath = Storage::disk('local')->path($book->file_path);
-        $folder = storage_path('app/private/books/previews/'.$book->id);
-
-        if (! file_exists($folder)) {
-            mkdir($folder, 0755, true);
-        }
-
-        $start = (int) $book->preview_start_page;
-        $end = (int) $book->preview_end_page;
-
-        if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
-            throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
-        }
-
-        $pageCount = $this->getPdfPageCount($pdfPath);
-        if ($pageCount !== null && $end > $pageCount) {
-            throw new \RuntimeException(
-                "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
-            );
-        }
-
-        $pdftoppm = $this->resolvePdftoppmBinary();
-
-        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
-            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
-            $command = sprintf(
-                '%s -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
-                escapeshellarg($pdftoppm),
-                $pageNumber,
-                $pageNumber,
-                escapeshellarg($pdfPath),
-                escapeshellarg($tmpPrefix)
-            );
-
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            $source = $tmpPrefix.'.png';
-
-            if ($exitCode !== 0 || ! file_exists($source)) {
-                $details = trim(implode("\n", $output));
-                throw new \RuntimeException(
-                    'Impossible de générer l’extrait PDF'
-                    .($details !== '' ? ' : '.$details : '.')
-                );
-            }
-
-            $image = imagecreatefrompng($source);
-            if ($image === false) {
-                @unlink($source);
-                throw new \RuntimeException('Impossible de lire la page générée.');
-            }
-
-            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
-            imagedestroy($image);
-            unlink($source);
-        }
-
-        return 'Preview généré';
+public function generatePreviewPages(Book $book)
+{
+    if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
+        return;
     }
+
+    if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
+        throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
+    }
+
+    if (! extension_loaded('imagick')) {
+        throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
+    }
+
+    $pdfPath = Storage::disk('local')->path($book->file_path);
+    $folder = storage_path('app/private/books/previews/'.$book->id);
+
+    if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
+        throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
+    }
+
+    $start = (int) $book->preview_start_page;
+    $end = (int) $book->preview_end_page;
+
+    if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
+        throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
+    }
+
+    $pageCount = $this->getPdfPageCount($pdfPath);
+
+    if ($pageCount !== null && $end > $pageCount) {
+        throw new \RuntimeException(
+            "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
+        );
+    }
+
+    try {
+        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
+            $imagick = new \Imagick();
+
+            try {
+                $imagick->setResolution(150, 150);
+                $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
+                $imagick->setImageFormat('webp');
+                $imagick->setImageCompressionQuality(85);
+
+                $destination = $folder.'/page-'.$pageNumber.'.webp';
+
+                if (! $imagick->writeImage($destination)) {
+                    throw new \RuntimeException(
+                        "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
+                    );
+                }
+            } finally {
+                $imagick->clear();
+                $imagick->destroy();
+            }
+        }
+    } catch (\ImagickException $e) {
+        \Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
+            'book_id' => $book->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        throw new \RuntimeException(
+            'Impossible de générer les aperçus PDF avec Imagick.',
+            0,
+            $e
+        );
+    }
+
+    return 'Preview généré';
+}
 
     private function resolvePdftoppmBinary(): string
     {
@@ -1038,32 +1046,33 @@ class BooksController extends Controller
 
     private function getPdfPageCount(string $pdfPath): ?int
     {
-        foreach (['/usr/local/bin/pdfinfo', '/opt/homebrew/bin/pdfinfo', 'pdfinfo'] as $binary) {
-            $command = $binary === 'pdfinfo'
-                ? 'pdfinfo '.escapeshellarg($pdfPath).' 2>/dev/null'
-                : (is_executable($binary)
-                    ? escapeshellarg($binary).' '.escapeshellarg($pdfPath).' 2>/dev/null'
-                    : null);
-
-            if ($command === null) {
-                continue;
-            }
-
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            if ($exitCode !== 0) {
-                continue;
-            }
-
-            foreach ($output as $line) {
-                if (preg_match('/^Pages:\s+(\d+)/i', $line, $matches)) {
-                    return (int) $matches[1];
-                }
-            }
+        if (!extension_loaded('imagick') || !is_file($pdfPath)) {
+            return null;
         }
 
-        return null;
+        $imagick = null;
+
+        try {
+            $imagick = new Imagick();
+
+            $imagick->pingImage($pdfPath);
+
+            $pageCount = $imagick->getNumberImages();
+
+            return $pageCount > 0 ? $pageCount : null;
+        } catch (\ImagickException $e) {
+            \Log::warning('Impossible de compter les pages du PDF avec Imagick.', [
+                'file' => basename($pdfPath),
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        } finally {
+            if ($imagick instanceof Imagick) {
+                $imagick->clear();
+                $imagick->destroy();
+            }
+        }
     }
 
     public function previewPage(Book $book, $page)
@@ -1180,7 +1189,11 @@ class BooksController extends Controller
 
     public function boost(Book $book)
     {
-        abort_if($book->user_id !== Auth::id(), 403);
+        abort_unless(
+            $this->isOwnBook($book),
+            403,
+            'Vous ne pouvez promouvoir que les livres de votre espace auteur.'
+        );
 
         $social = Auth::user()->socialProfile;
 
@@ -1229,7 +1242,7 @@ class BooksController extends Controller
 
         $books = $query
             ->latest()
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         // Statistiques
@@ -1276,21 +1289,21 @@ class BooksController extends Controller
             return back()->with('error', 'Seul un livre en attente peut passer en vérification.');
         }
 
-        $payment = Payment::query()->where('book_id',$book->id)
-            ->where('type','publication')
-            ->where('status','success')
-            ->first();
+        // Vérifier seulement si ce livre nécessitait un dépôt
+        if ($book->payment_required) {
+            $payment = Payment::query()
+                ->where('book_id', $book->id)
+                ->where('type', 'publication')
+                ->where('status', 'success')
+                ->exists();
 
-
-        if(!$payment){
-            return back()->with(
-                'error',
-                'Le paiement du dépôt est requis avant la vérification.'
-            );
-
+            if (!$payment) {
+                return back()->with(
+                    'error',
+                    'Le paiement du dépôt est requis avant la vérification.'
+                );
+            }
         }
-
-
 
         $book->update([
             'status'=>'under_review'
@@ -1326,31 +1339,31 @@ class BooksController extends Controller
      $year = now()->year;
 
 
-    $waitingReviewBooks = Book::query()
-        ->where('status','waiting_review')
-        ->whereMonth('created_at', $month)
-        ->whereYear('created_at', $year)
-        ->count();
+        $waitingReviewBooks = Book::query()
+            ->where('status','waiting_review')
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->count();
 
 
 
-    $reviewBooks = Book::query()
-        ->where('status','under_review')
-        ->whereMonth('updated_at', $month)
-        ->whereYear('updated_at', $year)
-        ->count();
+        $reviewBooks = Book::query()
+            ->where('status','under_review')
+            ->whereMonth('updated_at', $month)
+            ->whereYear('updated_at', $year)
+            ->count();
 
 
 
-    $publishedBooks = Book::query()
-        ->where('status','published')
-        ->whereMonth('updated_at', $month)
-        ->whereYear('updated_at', $year)
-        ->count();
+        $publishedBooks = Book::query()
+            ->where('status','published')
+            ->whereMonth('updated_at', $month)
+            ->whereYear('updated_at', $year)
+            ->count();
 
 
 
-    $rejectedBooks = Book::query()
+        $rejectedBooks = Book::query()
         ->where('status','revision_required')
         ->whereMonth('updated_at', $month)
         ->whereYear('updated_at', $year)
@@ -1432,9 +1445,18 @@ class BooksController extends Controller
         );
     }
 
+
     private function isOwnBook(Book $book): bool
     {
-        return (int) $book->user_id === (int) Auth::id();
+        $user = Auth::user();
+
+        if (!$user || !$user->isAdmin()) {
+            return false;
+        }
+
+        $authorAccountUserId = $user->authorAccountUserId();
+
+        return (int) $book->user_id === (int) $authorAccountUserId;
     }
 
     private function notifyAuthorSafely(Book $book, object $notification): void
@@ -1449,4 +1471,619 @@ class BooksController extends Controller
             report($exception);
         }
     }
+
+    public function saveAudiobookVoice(
+        Request $request,
+        Audiobook $audiobook
+        ) {
+        $validated = $request->validate([
+            'voice_id' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        $audiobook->update([
+            'voice_id' => $validated['voice_id'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'La voix a été enregistrée.',
+            'voice_id' => $audiobook->voice_id,
+        ]);
+    }
+
+    public function audio($book)
+    {
+        $book = Book::findOrFail($book);
+
+        $result = app(AudiobookAnalyzer::class)
+            ->analyze($book->file_path);
+
+        $statistics = $result['statistics'];
+        $sections = $result['sections'];
+
+        $audiobook = Audiobook::with([
+            'sections.chunks',
+        ])
+            ->firstOrCreate([
+                'book_id' => $book->id,
+            ]);
+
+        $voices = app(ElevenLabsService::class)
+            ->getVoices();
+
+        return view('admin.books.audiobook', [
+            'book' => $book,
+            'statistics' => $statistics,
+            'sections' => $sections,
+            'audiobook' => $audiobook,
+            'voices' => $voices['voices'] ?? [],
+        ]);
+    }
+
+    public function generateAudiobook(
+        Audiobook $audiobook
+        ) {
+        try {
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1. Vérifier qu'une voix est enregistrée
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$audiobook->voice_id) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' =>
+                        'Veuillez sélectionner et enregistrer une voix avant de générer l’audiobook.',
+                ], 422);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. Récupérer le service
+            |--------------------------------------------------------------------------
+            */
+
+            $service = app(
+                \App\Services\Audiobook\AudiobookGenerationService::class
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3. Préparer l'audiobook si les chunks n'existent pas encore
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$audiobook->chunks()->exists()) {
+
+                $audiobook = $service->prepare(
+                    $audiobook->book,
+                    $audiobook->voice_id
+                );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4. Lancer la génération
+            |--------------------------------------------------------------------------
+            */
+
+            $service->generateAudiobook(
+                $audiobook
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | 5. Réponse
+            |--------------------------------------------------------------------------
+            */
+
+            return response()->json([
+                'success' => true,
+                'message' =>
+                    'La génération de l’audiobook a été lancée.',
+                'audiobook_id' => $audiobook->id,
+            ]);
+
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function audiobookStatus(
+        Audiobook $audiobook
+        ) {
+        $totalChunks = (int) ($audiobook->total_chunks ?? 0);
+        $completedChunks = (int) ($audiobook->completed_chunks ?? 0);
+
+        $totalCharacters = (int) ($audiobook->total_characters ?? 0);
+        $generatedCharacters = (int) ($audiobook->generated_characters ?? 0);
+
+        $chunkProgress = $totalChunks > 0
+        ? min(
+            100,
+            round(
+                ($completedChunks / $totalChunks) * 100
+            )
+        )
+        : 0;
+
+        $characterProgress = $totalCharacters > 0
+            ? min(
+                100,
+                round(
+                    ($generatedCharacters / $totalCharacters) * 100
+                )
+            )
+            : 0;
+
+        return response()->json([
+            'success' => true,
+
+            'status' => $audiobook->status,
+
+            'completed_chunks' => $completedChunks,
+            'total_chunks' => $totalChunks,
+
+            'generated_characters' => $generatedCharacters,
+            'total_characters' => $totalCharacters,
+
+            'chunk_progress' => $chunkProgress,
+            'character_progress' => $characterProgress,
+
+            'error_message' => $audiobook->error_message,
+
+            'final_audio_ready' => (
+                $audiobook->status === 'completed'
+            && !empty($audiobook->final_audio_path)
+        ),
+        ]);
+    }
+
+    public function streamAudiobook(Audiobook $audiobook)
+    {
+        if ($audiobook->status !== 'completed') {
+            abort(404);
+        }
+
+        if (!$audiobook->final_audio_path) {
+            abort(404);
+        }
+
+        if (!Storage::disk('local')->exists($audiobook->final_audio_path)) {
+            abort(404);
+        }
+
+        return response()->file(
+            Storage::disk('local')->path(
+                $audiobook->final_audio_path
+            ),
+            [
+                'Content-Type' => 'audio/mpeg',
+                'Accept-Ranges' => 'bytes',
+            ]
+        );
+    }
+
+    public function downloadAudiobook(Audiobook $audiobook)
+    {
+        if ($audiobook->status !== 'completed') {
+            abort(404);
+        }
+
+        if (!$audiobook->final_audio_path) {
+            abort(404);
+        }
+
+        $disk = Storage::disk('local');
+
+        if (!$disk->exists($audiobook->final_audio_path)) {
+            abort(404);
+        }
+
+        $absolutePath = $disk->path(
+            $audiobook->final_audio_path
+        );
+
+        $filename = basename(
+            $audiobook->final_audio_path
+        );
+
+        return response()->download(
+            $absolutePath,
+            $filename,
+            [
+                'Content-Type' => 'audio/mpeg',
+            ]
+        );
+    }
+
+    public function testAudiobookVoice()
+    {
+        $book = \App\Models\Book::findOrFail(11);
+
+        $result = app(\App\Services\Audiobook\AudiobookAnalyzer::class)
+            ->analyze($book->file_path);
+
+        $section = $result['sections'][0] ?? null;
+
+        if (!$section) {
+            abort(404, 'Aucune section détectée.');
+        }
+
+        $text = $section['narration_text'] ?? '';
+
+        // Test limité à 1 000 caractères
+        $text = mb_substr($text, 0, 1000);
+
+        $audio = app(\App\Services\Audiobook\ElevenLabsService::class)
+            ->generateSpeech(
+                $text,
+                'JBFqnCBsd6RMkjVDRZzb'
+            );
+
+        return response($audio)
+            ->header('Content-Type', 'audio/mpeg')
+            ->header(
+                'Content-Disposition',
+                'inline; filename="kama-real-chapter-test.mp3"'
+            );
+    }
+
+
+    public function testFreeVoices()
+    {
+        $voices = app(\App\Services\Audiobook\ElevenLabsService::class)
+            ->getFreeSharedVoices([
+                'language' => 'fr',
+            ]);
+
+        return response()->json([
+            'count' => count($voices),
+            'voices' => collect($voices)->map(function ($voice) {
+                return [
+                    'name' => $voice['name'] ?? null,
+                    'voice_id' => $voice['voice_id'] ?? null,
+                    'language' => $voice['language'] ?? null,
+                    'accent' => $voice['accent'] ?? null,
+                    'gender' => $voice['gender'] ?? null,
+                    'age' => $voice['age'] ?? null,
+                    'description' => $voice['description'] ?? null,
+                    'free_users_allowed' =>
+                        $voice['free_users_allowed'] ?? false,
+                    'preview_url' => $voice['preview_url'] ?? null,
+                ];
+            })->values(),
+        ]);
+    }
+
+
+    public function testElevenLabsQuota()
+    {
+        $subscription = app(
+            \App\Services\Audiobook\ElevenLabsService::class
+        )->getSubscription();
+
+        return response()->json($subscription);
+    }
+
+    public function testPrepareAudiobook(Book $book)
+    {
+        $audiobook = app(
+            \App\Services\Audiobook\AudiobookGenerationService::class
+        )->prepare($book);
+
+        $sections = $audiobook->sections()
+            ->with('chunks')
+            ->orderBy('position')
+            ->get();
+
+        return response()->json([
+            'audiobook_id' => $audiobook->id,
+
+            'status' => $audiobook->status,
+
+            'book_id' => $audiobook->book_id,
+
+            'voice_id' => $audiobook->voice_id,
+
+            'model' => $audiobook->model,
+
+            'total_characters' =>
+                $audiobook->total_characters,
+
+            'total_chunks' =>
+                $audiobook->total_chunks,
+
+            'estimated_cost' =>
+                $audiobook->estimated_cost,
+
+            'sections' =>
+                $sections->map(function ($section) {
+
+                    $sectionText =
+                        $section->narration_text ?? '';
+
+                    $chunks = $section->chunks
+                        ->sortBy('position')
+                        ->values();
+
+                    $chunkCharacters =
+                        $chunks->sum('characters');
+
+                    $reconstructedText =
+                        $chunks->pluck('text')->implode('');
+
+                    return [
+                        'id' =>
+                            $section->id,
+
+                        'position' =>
+                            $section->position,
+
+                        'type' =>
+                            $section->type,
+
+                        'number' =>
+                            $section->number,
+
+                        'title' =>
+                            $section->title,
+
+                        /*
+                        * Texte réellement stocké
+                        * dans narration_text.
+                        */
+                        'narration_characters' =>
+                            mb_strlen($sectionText),
+
+                        /*
+                        * Nombre de caractères enregistré
+                        * pour la section.
+                        */
+                        'section_characters' =>
+                            $section->characters,
+
+                        /*
+                        * Nombre total de caractères
+                        * dans les chunks.
+                        */
+                        'chunk_characters_total' =>
+                            $chunkCharacters,
+
+                        /*
+                        * Vérifie qu'aucun caractère n'a été
+                        * perdu ou ajouté pendant le découpage.
+                        */
+                        'chunk_integrity' =>
+                            $reconstructedText === $sectionText,
+
+                        'chunk_count' =>
+                            $chunks->count(),
+
+                        /*
+                        * Détail de chaque chunk.
+                        */
+                        'chunks' =>
+                            $chunks->map(function ($chunk) {
+
+                                return [
+                                    'id' =>
+                                        $chunk->id,
+
+                                    'position' =>
+                                        $chunk->position,
+
+                                    'characters' =>
+                                        $chunk->characters,
+
+                                    'status' =>
+                                        $chunk->status,
+
+                                    /*
+                                    * 100 premiers caractères.
+                                    */
+                                    'first_100' =>
+                                        mb_substr(
+                                            $chunk->text,
+                                            0,
+                                            100
+                                        ),
+
+                                    /*
+                                    * 100 derniers caractères.
+                                    */
+                                    'last_100' =>
+                                        mb_substr(
+                                            $chunk->text,
+                                            -100
+                                        ),
+                                ];
+                            })->values(),
+                    ];
+                })->values(),
+        ]);
+    }
+
+    public function inspectAudiobook(Audiobook $audiobook)
+    {
+        $audiobook->load([
+            'sections.chunks'
+        ]);
+
+        return response()->json([
+            'audiobook_id' =>
+                $audiobook->id,
+
+            'book_id' =>
+                $audiobook->book_id,
+
+            'status' =>
+                $audiobook->status,
+
+            'model' =>
+                $audiobook->model,
+
+            'total_characters' =>
+                $audiobook->total_characters,
+
+            'total_chunks' =>
+                $audiobook->total_chunks,
+
+            'estimated_cost' =>
+                $audiobook->estimated_cost,
+
+            'sections' =>
+                $audiobook->sections
+                    ->sortBy('position')
+                    ->values()
+                    ->map(function ($section) {
+
+                        $text =
+                            $section->narration_text ?? '';
+
+                        $chunks =
+                            $section->chunks
+                                ->sortBy('position')
+                                ->values();
+
+                        $reconstructed =
+                            $chunks
+                                ->pluck('text')
+                                ->implode('');
+
+                        return [
+                            'id' =>
+                                $section->id,
+
+                            'position' =>
+                                $section->position,
+
+                            'title' =>
+                                $section->title,
+
+                            'section_characters' =>
+                                $section->characters,
+
+                            'narration_characters' =>
+                                mb_strlen($text),
+
+                            'chunk_characters_total' =>
+                                $chunks->sum('characters'),
+
+                            'chunk_count' =>
+                                $chunks->count(),
+
+                            'chunk_integrity' =>
+                                $reconstructed === $text,
+
+                            'chunks' =>
+                                $chunks->map(function ($chunk) {
+
+                                    return [
+                                        'id' =>
+                                            $chunk->id,
+
+                                        'position' =>
+                                            $chunk->position,
+
+                                        'characters' =>
+                                            $chunk->characters,
+
+                                        'status' =>
+                                            $chunk->status,
+
+                                        'first_100' =>
+                                            mb_substr(
+                                                $chunk->text,
+                                                0,
+                                                100
+                                            ),
+
+                                        'last_100' =>
+                                            mb_substr(
+                                                $chunk->text,
+                                                -100
+                                            ),
+                                    ];
+                                })->values(),
+                        ];
+                    }),
+        ]);
+    }
+
+    public function testRecoverAudiobookChunk(
+    Audiobook $audiobook,
+    AudiobookChunk $chunk
+     ) {
+    $historyItemId = 'GACNvUrzLbEDNC5qLZvh';
+
+    $elevenLabs = app(
+        \App\Services\Audiobook\ElevenLabsService::class
+    );
+
+    $audio = $elevenLabs->downloadHistoryAudio(
+        $historyItemId
+    );
+
+    $path = sprintf(
+        'audiobooks/%d/sections/%d/chunks/%d.mp3',
+        $audiobook->id,
+        $chunk->section->position,
+        $chunk->position
+    );
+
+    \Illuminate\Support\Facades\Storage::disk('local')
+        ->put($path, $audio);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Audio récupéré depuis ElevenLabs.',
+        'history_item_id' => $historyItemId,
+        'audiobook_id' => $audiobook->id,
+        'chunk_id' => $chunk->id,
+        'path' => $path,
+        'size_bytes' => strlen($audio),
+    ]);
+}
+
+
+    public function testGenerateAudiobookChunk(
+        Audiobook $audiobook,
+        AudiobookChunk $chunk
+    ) {
+        if (
+            $chunk->audiobook_section_id !== null &&
+            $chunk->section->audiobook_id !== $audiobook->id
+        ) {
+            abort(404);
+        }
+
+        app(
+            \App\Services\Audiobook\AudiobookGenerationService::class
+        )->generateOneChunk(
+            $audiobook,
+            $chunk->id
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Le chunk a été envoyé dans la queue.',
+            'audiobook_id' => $audiobook->id,
+            'chunk_id' => $chunk->id,
+            'chunk_status' => $chunk->fresh()->status,
+        ]);
+    }
+
+
 }

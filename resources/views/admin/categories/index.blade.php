@@ -11,12 +11,19 @@
                 <h2>Gestion des catégories</h2>
                 <p>Structurez la bibliothèque en catégories et sous-catégories pour faciliter la découverte des livres.</p>
             </div>
-            <button type="button" class="categories-add js-categories-open" data-overlay-target="createCategoryOverlay">
-                <i class="bi bi-plus-lg"></i> Ajouter une catégorie
-            </button>
+            @if(auth()->user()->hasAdminPermission('categories.create'))
+                <button
+                    type="button"
+                    class="categories-add js-categories-open"
+                    data-overlay-target="createCategoryOverlay"
+                >
+                    <i class="bi bi-plus-lg"></i>
+                    Ajouter une catégorie
+                </button>
+            @endif
         </header>
 
-        <section class="categories-stats">
+        <div class="categories-stats">
             <article>
                 <span class="total"><i class="bi bi-tags-fill"></i></span>
                 <div><small>Catégories</small><strong>{{ number_format($totalCategories) }}</strong></div>
@@ -33,9 +40,9 @@
                 <span class="empty"><i class="bi bi-inbox"></i></span>
                 <div><small>Sans livre</small><strong>{{ number_format($emptyCategories) }}</strong></div>
             </article>
-        </section>
+        </div>
 
-        <section class="categories-panel">
+        <div class="categories-panel">
             <form method="GET" action="{{ route('admin.categories.index') }}" class="categories-toolbar">
                 <div class="categories-search">
                     <i class="bi bi-search"></i>
@@ -116,18 +123,28 @@
                                 </td>
                                 <td>
                                     <div class="categories-row-actions">
-                                        <button type="button"
+                                        @if(auth()->user()->hasAdminPermission('categories.edit'))
+                                            <button
+                                                type="button"
                                                 class="edit js-categories-open"
                                                 data-overlay-target="editCategory-{{ $category->id }}"
-                                                title="Modifier la catégorie">
-                                            <i class="bi bi-pencil"></i> Modifier
-                                        </button>
-                                        <button type="button"
+                                                title="Modifier la catégorie"
+                                            >
+                                                <i class="bi bi-pencil"></i>
+                                                Modifier
+                                            </button>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('categories.delete'))
+                                            <button
+                                                type="button"
                                                 class="delete js-categories-open"
                                                 data-overlay-target="deleteCategory-{{ $category->id }}"
-                                                title="Supprimer la catégorie">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                                title="Supprimer la catégorie"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -155,7 +172,7 @@
                     {{ $categories->onEachSide(1)->links() }}
                 </footer>
             @endif
-        </section>
+        </div>
 
         {{-- Overlay : nouvelle catégorie --}}
         <div class="categories-overlay d-none"

@@ -16,7 +16,7 @@
         </a>
     </header>
 
-    <section class="categories-stats">
+    <div class="categories-stats">
         <article>
             <span class="empty"><i class="bi bi-hourglass-split"></i></span>
             <div><small>En attente</small><strong>{{ number_format($stats['pending']) }}</strong></div>
@@ -27,9 +27,9 @@
         </article>
         <article>
             <span class="books"><i class="bi bi-cash-coin"></i></span>
-            <div><small>Revenus payés</small><strong>{{ number_format($stats['revenue'], 0, ',', ' ') }} <small>XOF</small></strong></div>
+            <div><small>Revenus payés</small><strong>{{ number_format($stats['revenue'], 2, '.', ',') }} €</strong></div>
         </article>
-    </section>
+    </div>
 
     <section class="categories-panel">
         <div class="sponsorship-tabs mb-3">
@@ -91,7 +91,7 @@
                                     <br><small>{{ $item->plan->duration_days }} jours</small>
                                 @endif
                             </td>
-                            <td><strong>{{ number_format($item->amount, 0, ',', ' ') }} XOF</strong></td>
+                            <td><strong>{{ number_format($item->amount, 2, '.', ',') }} €</strong></td>
                             <td>
                                 <small>{{ $item->paid_at?->format('d/m/Y H:i') ?? '—' }}</small>
                                 @if($item->transaction_reference)
@@ -112,19 +112,30 @@
                             @if($tab === 'pending')
                                 <td>
                                     <div class="categories-row-actions">
-                                        <form method="POST" action="{{ route('admin.sponsorships.approve', $item) }}">
-                                            @csrf
-                                            <button type="submit" class="edit">
-                                                <i class="bi bi-check-lg"></i> Valider
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ route('admin.sponsorships.reject', $item) }}"
-                                              onsubmit="return confirm('Refuser cette demande ?')">
-                                            @csrf
-                                            <button type="submit" class="delete">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </form>
+
+                                        @if(auth()->user()->hasAdminPermission('sponsorships.approve'))
+                                            <form method="POST" action="{{ route('admin.sponsorships.approve', $item) }}">
+                                                @csrf
+                                                <button type="submit" class="edit">
+                                                    <i class="bi bi-check-lg"></i>
+                                                    Valider
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        @if(auth()->user()->hasAdminPermission('sponsorships.reject'))
+                                            <form
+                                                method="POST"
+                                                action="{{ route('admin.sponsorships.reject', $item) }}"
+                                                onsubmit="return confirm('Refuser cette demande ?')"
+                                            >
+                                                @csrf
+                                                <button type="submit" class="delete">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
                                     </div>
                                 </td>
                             @endif

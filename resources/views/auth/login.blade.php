@@ -68,6 +68,16 @@
                     </div>
                 @endif
 
+                @if($errors->any())
+                    <div class="alert alert-danger" role="alert">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="login-header">
 
                     <h2>Connexion</h2>
@@ -95,6 +105,7 @@
                             <input
                                 type="email"
                                 name="email"
+                                value="{{ old('email') }}"
                                 placeholder="votre@email.com"
                                 required>
 
@@ -114,9 +125,19 @@
 
                             <input
                                 type="password"
+                                id="login_password"
                                 name="password"
                                 placeholder="••••••••"
-                                required>
+                                required
+                                autocomplete="current-password">
+
+                            <i
+                                class="bi bi-eye-slash toggle-password"
+                                data-target="login_password"
+                                role="button"
+                                tabindex="0"
+                                title="Afficher le mot de passe"
+                                aria-label="Afficher le mot de passe"></i>
 
                         </div>
 
@@ -125,13 +146,9 @@
                     <!-- OPTIONS -->
 
                     <div class="login-options">
-
                         <label class="remember-me">
-
-                            <input type="checkbox">
-
+                            <input type="checkbox" name="remember" value="1">
                             <span>Se souvenir de moi</span>
-
                         </label>
 
                         <a href="{{ url('/forgot-password') }}" class="forgot-password">
@@ -165,7 +182,7 @@
 
                         Vous n'avez pas encore de compte ?
 
-                        <a href="{{ url('/register') }}" >
+                        <a href="{{ url('/register') }}" class="login-register-link">
                             Inscrivez-vous
                         </a>
 

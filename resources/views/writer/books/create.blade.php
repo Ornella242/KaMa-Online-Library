@@ -416,7 +416,7 @@ Steps START -->
 
 														<div class="col-md-4">
 															<label class="form-label">
-																Prix en $ *
+																Prix en € *
 															</label>
 
 															<input
@@ -892,7 +892,7 @@ Steps START -->
 														</small>
 
 														<strong id="summary_price">
-															0 $
+															0 €
 														</strong>
 
 													</div>
@@ -1070,7 +1070,7 @@ Steps START -->
 												Montant du dépôt
 											</span>
 											<h1>
-												10 $
+												10 €
 											</h1>
 
 											<small>
@@ -1238,6 +1238,13 @@ Steps END -->
 	bookFileInput.addEventListener('change', function() {
 		const file = this.files[0];
 		if (!file) return;
+
+		const maxSizeBytes = 100 * 1024 * 1024;
+		if (file.size > maxSizeBytes) {
+			alert('Le fichier sélectionné est trop volumineux (' + (file.size / (1024 * 1024)).toFixed(1) + ' Mo). La taille maximale autorisée est de 100 Mo.');
+			this.value = '';
+			return;
+		}
 
 		initialState.classList.add('d-none');
 		progressState.classList.remove('d-none');

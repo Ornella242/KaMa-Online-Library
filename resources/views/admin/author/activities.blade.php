@@ -22,7 +22,7 @@
         @endif
     </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <div class="admin-books-table-header">
             <div>
                 <strong>{{ number_format($notifications->total()) }} notification(s)</strong>
@@ -58,7 +58,11 @@
                     $tone = $notifMeta[1];
                     $url = $notification->data['url']
                         ?? (isset($notification->data['book_id'])
-                            ? route('admin.books.show', $notification->data['book_id'])
+                            ? (
+                                ($book = \App\Models\Book::find($notification->data['book_id']))
+                                    ? route('books.show', ['book' => $book->slug])
+                                    : null
+                            )
                             : null);
                 @endphp
                 <article class="admin-author-notif {{ $notification->read_at ? '' : 'is-unread' }}">
@@ -96,7 +100,7 @@
                 {{ $notifications->onEachSide(1)->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </div>
 @endsection
 

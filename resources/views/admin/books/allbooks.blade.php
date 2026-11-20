@@ -11,10 +11,13 @@
                 <h2>Tous les livres</h2>
                 <p>Consultez les livres et suivez leur progression dans le cycle éditorial.</p>
             </div>
-            <a href="{{ route('admin.books.create') }}" class="admin-books-add">
-                <i class="bi bi-plus-lg"></i>
-                Ajouter un livre
-            </a>
+            
+            @if(auth()->user()->hasAdminPermission('author_books.create'))
+                <a href="{{ route('admin.books.create') }}" class="admin-books-add">
+                    <i class="bi bi-plus-lg"></i>
+                    Ajouter un livre
+                </a>
+            @endif
         </div>
 
         <div class="admin-books-stats">
@@ -44,7 +47,7 @@
             </a>
         </div>
 
-        <section class="admin-books-panel">
+        <div class="admin-books-panel">
             <form method="GET" action="{{ route('admin.books.all') }}" class="admin-books-toolbar">
                 <div class="admin-books-search">
                     <i class="bi bi-search"></i>
@@ -148,7 +151,7 @@
                                                     </small>
                                                 </div>
                                             </td>
-                                            <td><strong class="admin-books-price">{{ number_format($book->price, 2, ',', ' ') }} $</strong>
+                                            <td><strong class="admin-books-price">{{ number_format($book->price, 2, ',', ' ') }} €</strong>
                                             </td>
                                             <td>
                                                 <span class="admin-books-status {{ $statusClass }}">
@@ -161,20 +164,43 @@
                                                     <small>{{ $book->created_at?->diffForHumans() }}</small>
                                                 </div>
                                             </td>
-                                            <td>
+                                           <td>
                                                 <div class="admin-books-actions">
-                                                    <button type="button" class="js-open-book-detail"
-                                                        data-overlay-target="bookDetailOverlay-{{ $book->id }}" title="Voir le détail"
-                                                        aria-label="Voir le détail">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    @if($book->status === 'waiting_review')
-                                                        <button type="button" data-overlay-target="bookDetailOverlay-{{ $book->id }}"
-                                                            class="primary js-open-book-detail" title="Démarrer la vérification"
-                                                            aria-label="Démarrer la vérification">
+
+                                                    @php
+                                                        $isOwnBook = (int) $book->user_id === (int) auth()->user()->authorAccountUserId();
+                                                    @endphp
+
+                                                    {{-- Voir le détail --}}
+                                                    @if(auth()->user()->hasAdminPermission('books.show'))
+                                                        <button
+                                                            type="button"
+                                                            class="js-open-book-detail"
+                                                            data-overlay-target="bookDetailOverlay-{{ $book->id }}"
+                                                            title="Voir le détail"
+                                                            aria-label="Voir le détail"
+                                                        >
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                    @endif
+
+                                                    {{-- Démarrer la vérification --}}
+                                                    @if(
+                                                        auth()->user()->hasAdminPermission('books.editorial_review')
+                                                        && $book->status === 'waiting_review'
+                                                        && !$isOwnBook
+                                                    )
+                                                        <button
+                                                            type="button"
+                                                            data-overlay-target="bookDetailOverlay-{{ $book->id }}"
+                                                            class="primary js-open-book-detail"
+                                                            title="Démarrer la vérification"
+                                                            aria-label="Démarrer la vérification"
+                                                        >
                                                             <i class="bi bi-search"></i>
                                                         </button>
                                                     @endif
+
                                                 </div>
                                             </td>
                                         </tr>
@@ -202,7 +228,7 @@
                     {{ $books->onEachSide(1)->links() }}
                 </div>
             @endif
-        </section>
+        </div>
 
         @foreach($books as $book)
             @php
@@ -247,7 +273,7 @@
                                 <span class="admin-books-status {{ $modalStatusClass }}">
                                     <span></span>{{ $modalStatusLabel }}
                                 </span>
-                                <strong class="admin-book-modal-price">{{ number_format($book->price, 2, ',', ' ') }} $</strong>
+                                <strong class="admin-book-modal-price">{{ number_format($book->price, 2, ',', ' ') }} €</strong>
 
                                 @if($book->type === 'ebook')
                                     <a href="{{ route('admin.books.preview.file', $book) }}" target="_blank" rel="noopener"

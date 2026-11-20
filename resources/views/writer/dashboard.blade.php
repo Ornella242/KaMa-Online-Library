@@ -14,12 +14,12 @@
             </a>
         </header>
 
-        <section class="writer-metric-grid">
+        <div class="writer-metric-grid">
             <article class="writer-metric">
-                <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
+                <span class="writer-metric-icon red"><i class="bi bi-currency-euro"></i></span>
                 <div>
                     <small>Revenus bruts</small>
-                    <strong>{{ number_format($totalRevenue, 2, ',', ' ') }} $</strong>
+                    <strong>{{ number_format($totalRevenue, 2, ',', ' ') }} €</strong>
                     <span class="{{ $revenueGrowth >= 0 ? 'positive' : 'negative' }}">
                         <i class="bi {{ $revenueGrowth >= 0 ? 'bi-arrow-up' : 'bi-arrow-down' }}"></i>
                         {{ abs($revenueGrowth) }}% ce mois
@@ -59,9 +59,21 @@
                     <span class="neutral">{{ number_format($totalReviews) }} avis reçus</span>
                 </div>
             </article>
-        </section>
+        </div>
 
-        <section class="writer-panel">
+        <div class="writer-panel">
+            <div class="writer-panel-header">
+                <div>
+                    <span>Performance de vos livres</span>
+                    <h2>Revenus & investissements</h2>
+                    <p>Comparez vos investissements et vos revenus pour chaque livre.</p>
+                </div>
+                <span class="writer-panel-badge">Données réelles</span>
+            </div>
+            <div id="writerBookPerformanceChart"></div>
+        </div>
+
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Performance</span>
@@ -127,7 +139,100 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
     </div>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+const bookPerformanceElement = document.querySelector('#writerBookPerformanceChart');
+
+if (bookPerformanceElement && typeof ApexCharts !== 'undefined') {
+
+    new ApexCharts(bookPerformanceElement, {
+
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: {
+                show: false
+            },
+            fontFamily: 'DM Sans, sans-serif'
+        },
+
+        series: [
+            {
+                name: 'Budget investi',
+                data: @json($bookPerformance->pluck('investment')->values())
+            },
+            {
+                name: 'Ventes',
+                data: @json($bookPerformance->pluck('sales')->values())
+            }
+        ],
+
+        colors: ['#18191c', '#b30000'],
+
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '45%',
+                borderRadius: 4
+            }
+        },
+
+        dataLabels: {
+            enabled: false
+        },
+
+        xaxis: {
+            categories: @json($bookPerformance->pluck('label')->values()),
+
+            axisBorder: {
+                show: false
+            },
+
+            axisTicks: {
+                show: false
+            },
+
+            labels: {
+                rotate: -45,
+                trim: true,
+                maxHeight: 80
+            }
+        },
+
+        yaxis: {
+            min: 0,
+            forceNiceScale: true,
+
+            labels: {
+                formatter: function(value) {
+                    return value.toLocaleString() + ' €';
+                }
+            }
+        },
+
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return value.toLocaleString() + ' €';
+                }
+            }
+        },
+
+        grid: {
+            borderColor: '#eff0f2',
+            strokeDashArray: 4
+        },
+
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right'
+        }
+
+    }).render();
+}
+</script>
 @endsection

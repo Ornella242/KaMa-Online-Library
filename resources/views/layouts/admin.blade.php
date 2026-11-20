@@ -53,5 +53,6 @@
     </div>
 
     @include('partials.admin.scripts')
+    @stack('scripts')
 </body>
 </html>

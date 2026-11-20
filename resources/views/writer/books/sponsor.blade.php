@@ -45,8 +45,7 @@
                     @endif
                     <h3>{{ $plan->name }}</h3>
                     <div class="price">
-                        {{ number_format($plan->price, 0, ',', ' ') }}
-                        <small>XOF</small>
+                        {{ number_format($plan->price, 2, '.', ',') }} €
                     </div>
                     <p class="days">{{ $plan->duration_days }} jours de visibilité</p>
                     <ul>
@@ -74,7 +73,7 @@
 
 @push('styles')
 <style>
-.writer-sponsor-page { max-width:1100px; margin:0 auto; padding:10px 0 40px; }
+.writer-sponsor-page { max-width:1400px; margin:0 auto; padding:10px 0 40px; }
 .writer-sponsor-hero {
   display:flex; flex-wrap:wrap; justify-content:space-between; gap:18px; align-items:flex-end;
   margin-bottom:24px; padding:22px 24px; border-radius:18px; background:linear-gradient(135deg,#fff7f5,#fff); border:1px solid #f0e4e2;

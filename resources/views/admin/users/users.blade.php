@@ -19,12 +19,19 @@
                 <h2>Gestion des utilisateurs</h2>
                 <p>Gérez les lecteurs, écrivains et administrateurs de la plateforme KaMa.</p>
             </div>
-            <button type="button" class="users-add js-users-open" data-overlay-target="createUserOverlay">
-                <i class="bi bi-person-plus"></i> Ajouter un utilisateur
-            </button>
+            @if(auth()->user()->hasAdminPermission('users.create'))
+                <button
+                    type="button"
+                    class="users-add js-users-open"
+                    data-overlay-target="createUserOverlay"
+                >
+                    <i class="bi bi-person-plus"></i>
+                    Ajouter un utilisateur
+                </button>
+            @endif
         </header>
 
-        <section class="users-stats">
+        <div class="users-stats">
             <article>
                 <span class="total"><i class="bi bi-people-fill"></i></span>
                 <div><small>Utilisateurs</small><strong>{{ number_format($totalUsers) }}</strong></div>
@@ -41,9 +48,9 @@
                 <span class="admins"><i class="bi bi-shield-lock-fill"></i></span>
                 <div><small>Administrateurs</small><strong>{{ number_format($totalAdmins) }}</strong></div>
             </article>
-        </section>
+        </div>
 
-        <section class="users-panel">
+        <div class="users-panel">
             <form method="GET" action="{{ route('admin.users') }}" class="users-toolbar">
                 <div class="users-search">
                     <i class="bi bi-search"></i>
@@ -141,23 +148,41 @@
                                     </td>
                                     <td>
                                         <div class="users-row-actions">
-                                            <a href="{{ route('admin.show', $user) }}" class="view" title="Voir le profil">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <button type="button"
+                                           @if(auth()->user()->hasAdminPermission('users.show'))
+                                                <a
+                                                    href="{{ route('admin.show', $user) }}"
+                                                    class="view"
+                                                    title="Voir le profil"
+                                                >
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            @endif
+
+                                            @if(auth()->user()->hasAdminPermission('users.edit'))
+                                                <button
+                                                    type="button"
                                                     class="edit js-users-open"
                                                     data-overlay-target="editUser-{{ $user->id }}"
-                                                    title="Modifier">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            @if($user->id !== auth()->id())
-                                                <button type="button"
-                                                        class="delete js-users-open"
-                                                        data-overlay-target="deleteUser-{{ $user->id }}"
-                                                        title="Supprimer">
+                                                    title="Modifier"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            @endif
+
+                                            @if(
+                                                $user->id !== auth()->id()
+                                                && auth()->user()->hasAdminPermission('users.delete')
+                                            )
+                                                <button
+                                                    type="button"
+                                                    class="delete js-users-open"
+                                                    data-overlay-target="deleteUser-{{ $user->id }}"
+                                                    title="Supprimer"
+                                                >
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             @endif
+                                            
                                         </div>
                                     </td>
                                 </tr>
@@ -173,71 +198,281 @@
                     </footer>
                 @endif
             @endif
-        </section>
+        </div>
 
         {{-- Overlay : créer --}}
+      
         <div class="users-overlay d-none"
-             id="createUserOverlay"
-             role="dialog"
-             aria-modal="true"
-             aria-hidden="true"
-             aria-labelledby="createUserTitle">
+            id="createUserOverlay"
+            role="dialog"
+            aria-modal="true"
+            aria-hidden="true"
+            aria-labelledby="createUserTitle">
+
             <div class="users-overlay-container">
+
+                <!-- HEADER -->
                 <header class="users-overlay-header">
+
                     <div>
                         <span>Nouveau compte</span>
-                        <h2 id="createUserTitle">Ajouter un utilisateur</h2>
+
+                        <h2 id="createUserTitle">
+                            Ajouter un utilisateur
+                        </h2>
                     </div>
-                    <button type="button" class="js-users-close" aria-label="Fermer"><i class="bi bi-x-lg"></i></button>
+
+                    <button type="button"
+                            class="js-users-close"
+                            aria-label="Fermer">
+
+                        <i class="bi bi-x-lg"></i>
+
+                    </button>
+
                 </header>
-                <form method="POST" action="{{ route('admin.users.store') }}">
+
+
+                <!-- FORM -->
+                <form method="POST"
+                    action="{{ route('admin.users.store') }}">
+
                     @csrf
+
                     <div class="users-form-body">
+
+                        <!-- INTRO -->
                         <div class="users-form-intro">
-                            <span><i class="bi bi-person-plus-fill"></i></span>
+
+                            <span>
+                                <i class="bi bi-person-plus-fill"></i>
+                            </span>
+
                             <div>
+
                                 <small>Création</small>
-                                <strong>Un mot de passe temporaire sera généré</strong>
-                                <span>Les identifiants seront envoyés automatiquement par email.</span>
+
+                                <strong>
+                                    Un mot de passe temporaire sera généré
+                                </strong>
+
+                                <span>
+                                    Les identifiants seront envoyés automatiquement
+                                    par email.
+                                </span>
+
                             </div>
+
                         </div>
 
+
+                        <!-- FORM GRID -->
                         <div class="users-form-grid">
+
+
+                            <!-- PRÉNOM -->
                             <div>
-                                <label for="createFirstname">Prénom <span>*</span></label>
-                                <input type="text" id="createFirstname" name="firstname" value="{{ old('firstname') }}" required maxlength="255" placeholder="Ex : Ama">
+
+                                <label for="createFirstname">
+                                    Prénom <span>*</span>
+                                </label>
+
+                                <input type="text"
+                                    id="createFirstname"
+                                    name="firstname"
+                                    value="{{ old('firstname') }}"
+                                    required
+                                    maxlength="255"
+                                    placeholder="Ex : Ama">
+
                             </div>
+
+
+                            <!-- NOM -->
                             <div>
-                                <label for="createLastname">Nom <span>*</span></label>
-                                <input type="text" id="createLastname" name="lastname" value="{{ old('lastname') }}" required maxlength="255" placeholder="Ex : Koffi">
+
+                                <label for="createLastname">
+                                    Nom <span>*</span>
+                                </label>
+
+                                <input type="text"
+                                    id="createLastname"
+                                    name="lastname"
+                                    value="{{ old('lastname') }}"
+                                    required
+                                    maxlength="255"
+                                    placeholder="Ex : Koffi">
+
                             </div>
+
+
+                            <!-- EMAIL -->
                             <div class="full">
-                                <label for="createEmail">Email <span>*</span></label>
-                                <input type="email" id="createEmail" name="email" value="{{ old('email') }}" required placeholder="exemple@email.com">
+
+                                <label for="createEmail">
+                                    Email <span>*</span>
+                                </label>
+
+                                <input type="email"
+                                    id="createEmail"
+                                    name="email"
+                                    value="{{ old('email') }}"
+                                    required
+                                    placeholder="exemple@email.com">
+
                             </div>
+
+
+                            <!-- TÉLÉPHONE -->
                             <div>
-                                <label for="createPhone">Téléphone</label>
-                                <input type="text" id="createPhone" name="phone" value="{{ old('phone') }}" maxlength="30" placeholder="+229 …">
+
+                                <label for="createPhone">
+                                    Téléphone
+                                </label>
+
+                                <input type="text"
+                                    id="createPhone"
+                                    name="phone"
+                                    value="{{ old('phone') }}"
+                                    maxlength="30"
+                                    placeholder="+229 …">
+
                             </div>
+
+
+                            <!-- RÔLE PRINCIPAL -->
                             <div>
-                                <label for="createRole">Rôle <span>*</span></label>
-                                <select id="createRole" name="role_id" required>
-                                    <option value="">Choisir un rôle</option>
+
+                                <label for="createRole">
+                                    Rôle du compte <span>*</span>
+                                </label>
+
+                                <select id="createRole"
+                                        name="role_id"
+                                        required>
+
+                                    <option value="">
+                                        Choisir un rôle
+                                    </option>
+
                                     @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" @selected((string) old('role_id') === (string) $role->id)>
-                                            {{ $roleLabels[$role->name] ?? ucfirst($role->name) }}
-                                        </option>
+
+                                        @if(in_array($role->name, [
+                                            'reader',
+                                            'writer',
+                                            'admin'
+                                        ]))
+
+                                            <option value="{{ $role->id }}"
+                                                    data-role-name="{{ $role->name }}"
+                                                    @selected(
+                                                        (string) old('role_id') ===
+                                                        (string) $role->id
+                                                    )>
+
+                                                @if($role->name === 'reader')
+
+                                                    Lecteur
+
+                                                @elseif($role->name === 'writer')
+
+                                                    Auteur
+
+                                                @elseif($role->name === 'admin')
+
+                                                    Administrateur
+
+                                                @endif
+
+                                            </option>
+
+                                        @endif
+
                                     @endforeach
+
                                 </select>
+
                             </div>
+
+
+                            <!-- RÔLE ADMINISTRATIF -->
+                            <div class="full d-none"
+                                id="adminRoleField">
+
+                                <label for="createAdminRole">
+                                    Rôle administratif <span>*</span>
+                                </label>
+
+                                <select id="createAdminRole"
+                                        name="admin_role_id">
+
+                                    <option value="">
+                                        Choisir un rôle administratif
+                                    </option>
+
+                                    @foreach($roles as $role)
+
+                                        @if(!in_array($role->name, [
+                                            'reader',
+                                            'writer',
+                                            'admin'
+                                        ]))
+
+                                            <option value="{{ $role->id }}"
+                                                    @selected(
+                                                        (string) old('admin_role_id') ===
+                                                        (string) $role->id
+                                                    )>
+
+                                                {{ $role->label }}
+
+                                            </option>
+
+                                        @endif
+
+                                    @endforeach
+
+                                </select>
+
+                                <small class="text-muted">
+                                    Ce rôle détermine les permissions disponibles
+                                    dans l'administration de KaMa.
+                                </small>
+
+                            </div>
+
+
                         </div>
+
                     </div>
+
+
+                    <!-- FOOTER -->
                     <footer class="users-overlay-footer">
-                        <button type="button" class="secondary js-users-close">Annuler</button>
-                        <button type="submit" class="primary"><i class="bi bi-check2-circle"></i> Créer l’utilisateur</button>
+
+                        <button type="button"
+                                class="secondary js-users-close">
+
+                            Annuler
+
+                        </button>
+
+
+                        <button type="submit"
+                                class="primary">
+
+                            <i class="bi bi-check2-circle"></i>
+
+                            Créer l’utilisateur
+
+                        </button>
+
                     </footer>
+
                 </form>
+
             </div>
+
         </div>
 
         @foreach($users as $user)
@@ -996,5 +1231,55 @@
                 openOverlay('createUserOverlay');
             @endif
         });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const roleSelect = document.getElementById('createRole');
+        const adminRoleField = document.getElementById('adminRoleField');
+        const adminRoleSelect = document.getElementById('createAdminRole');
+
+        if (!roleSelect || !adminRoleField) {
+            return;
+        }
+
+        function toggleAdminRoleField() {
+
+            const selectedOption =
+                roleSelect.options[roleSelect.selectedIndex];
+
+            const selectedRole =
+                selectedOption
+                    ? selectedOption.getAttribute('data-role-name')
+                    : '';
+
+            if (selectedRole === 'admin') {
+
+                adminRoleField.classList.remove('d-none');
+
+                if (adminRoleSelect) {
+                    adminRoleSelect.required = true;
+                }
+
+            } else {
+
+                adminRoleField.classList.add('d-none');
+
+                if (adminRoleSelect) {
+                    adminRoleSelect.required = false;
+                    adminRoleSelect.value = '';
+                }
+            }
+        }
+
+        roleSelect.addEventListener('change', function () {
+            toggleAdminRoleField();
+        });
+
+        // Vérification initiale
+        toggleAdminRoleField();
+
+    });
     </script>
 @endpush

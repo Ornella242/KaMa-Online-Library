@@ -42,4 +42,37 @@ return [
         'sandbox' => env('KKIAPAY_SANDBOX', true),
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'test_mode' => env('STRIPE_TEST_MODE', true),
+    ],
+
+    'pawapay' => [
+        'api_token' => env('PAWAPAY_API_TOKEN'),
+        'sandbox' => env('PAWAPAY_SANDBOX', true),
+    ],
+
+    'currencyfreaks' => [
+        'api_key' => env('CURRENCYFREAKS_API_KEY'),
+        'cache_ttl' => (int) env('CURRENCYFREAKS_CACHE_TTL', 3600),
+        // Codes KaMa → code CurrencyFreaks si différent (ex. nouveau Leone).
+        'aliases' => [
+            'SLE' => 'SLL',
+        ],
+    ],
+   'elevenlabs' => [
+        'api_key' => env('ELEVENLABS_API_KEY'),
+
+        'voice_id' => env(
+            'ELEVENLABS_VOICE_ID'
+        ),
+
+        'model' => env(
+            'ELEVENLABS_MODEL',
+            'eleven_v3'
+        ),
+    ],
+
 ];

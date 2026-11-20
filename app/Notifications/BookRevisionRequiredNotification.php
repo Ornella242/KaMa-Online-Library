@@ -60,38 +60,19 @@ class BookRevisionRequiredNotification extends Notification
 
     public function toMail($notifiable)
     {
-
         return (new MailMessage)
 
             ->subject(
-                'Votre livre nécessite des modifications'
+                'Votre livre nécessite des modifications - KaMa'
             )
 
-            ->greeting(
-                'Bonjour '.$notifiable->firstname
-            )
-
-            ->line(
-                'Votre livre "'.$this->book->title.
-                '" a été examiné par notre équipe éditoriale.'
-            )
-
-            ->line(
-                'Motif : '.$this->book->rejection_reason
-            )
-
-            ->action(
-                'Modifier mon livre',
-                route(
-                    'writer.books.edit',
-                    $this->book
-                )
-            )
-
-            ->line(
-                'Après correction, vous pourrez le soumettre à nouveau.'
+            ->view(
+                'emails.books.needs-modifications',
+                [
+                    'user' => $notifiable,
+                    'book' => $this->book
+                ]
             );
-
     }
 
     /**

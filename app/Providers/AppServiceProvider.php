@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         view()->composer('partials.header', function ($view) {
-            $categories = Category::whereHas('books')->get();
+            $categories = Category::all();
             $cartCount = app(CartService::class)->count();
 
             $view->with([

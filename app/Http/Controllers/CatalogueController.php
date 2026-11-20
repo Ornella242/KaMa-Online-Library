@@ -16,7 +16,8 @@ class CatalogueController extends Controller
         $categories = Category::with('subcategories')->get();
 
         $query = Book::with(['author', 'category', 'subcategory'])
-            ->withAvg('reviews', 'rating');
+        ->where('status', 'published')
+        ->withAvg('reviews', 'rating');
 
         
         if ($request->filled('search')) {
@@ -51,12 +52,15 @@ class CatalogueController extends Controller
 
         
         if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
+            $query->whereHas('category', function ($categoryQuery) use ($request) {
+                $categoryQuery->where('slug', $request->category);
+            });
         }
 
-        
         if ($request->filled('subcategory')) {
-            $query->where('subcategory_id', $request->subcategory);
+            $query->whereHas('subcategory', function ($subcategoryQuery) use ($request) {
+                $subcategoryQuery->where('slug', $request->subcategory);
+            });
         }
 
         
@@ -88,7 +92,12 @@ class CatalogueController extends Controller
         }
 
         if ($request->filled('rating')) {
-            $query->having('reviews_avg_rating', '>=', $request->rating);
+
+            $query->whereRaw(
+                '(SELECT AVG(rating) FROM reviews WHERE reviews.book_id = books.id) >= ?',
+                [$request->rating]
+            );
+
         }
 
         if ($request->filled('type')) {
@@ -97,17 +106,31 @@ class CatalogueController extends Controller
 
         $books = $query
             ->latest()
-            ->paginate(9)
+            ->paginate(6)
             ->withQueryString();
 
-        $authors = User::whereHas('books')->get();
+        $authors = User::whereHas('books', function($query){
+            $query->where('status', 'published');
+        })->get();
+
         $sponsoredBooks = BookSponsorship::with([
             'book.author'
         ])
         ->where('status','paid')
         ->where('ends_at','>',now())
+        ->whereHas('book', function($query){
+            $query->where('status','published');
+        })
         ->get();
 
+        $representedCountries = User::whereHas('books', function($query){
+                $query->where('status', 'published');
+
+            })
+            ->whereNotNull('country_id')
+            ->distinct('country_id')
+            ->count('country_id');
+       
         $wishlistIds = auth()->check()
             ? \App\Models\Wishlist::query()
                 ->where('user_id', auth()->id())
@@ -120,7 +143,7 @@ class CatalogueController extends Controller
             'categories',
             'authors',
             'sponsoredBooks',
-            'wishlistIds'
+            'wishlistIds','representedCountries'
         ));
     }
 

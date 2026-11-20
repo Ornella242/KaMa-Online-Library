@@ -44,7 +44,7 @@
             </nav>
 
             <div class="tab-content writer-settings-content">
-                <section class="tab-pane fade show active writer-form-panel" id="writer-profile">
+                <div class="tab-pane fade show active writer-form-panel" id="writer-profile">
                     <header><span><i class="bi bi-person"></i></span><div><h2>Profil d’auteur</h2><p>Ces informations peuvent être visibles par vos lecteurs.</p></div></header>
                     <form method="POST" action="{{ route('writer.account.update') }}" enctype="multipart/form-data">
                         @csrf
@@ -95,9 +95,9 @@
 
                         <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer le profil</button></footer>
                     </form>
-                </section>
+                </div>
 
-                <section class="tab-pane fade writer-form-panel" id="writer-notifications">
+                <div class="tab-pane fade writer-form-panel" id="writer-notifications">
                     <header><span><i class="bi bi-bell"></i></span><div><h2>Notifications</h2><p>Choisissez les événements pour lesquels vous souhaitez être averti.</p></div></header>
                     <form method="POST" action="{{ route('writer.notifications.update') }}">
                         @csrf
@@ -108,9 +108,9 @@
                         </div>
                         <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer les préférences</button></footer>
                     </form>
-                </section>
+                </div>
 
-                <section class="tab-pane fade writer-form-panel" id="writer-security">
+                <div class="tab-pane fade writer-form-panel" id="writer-security">
                     <header><span><i class="bi bi-shield-lock"></i></span><div><h2>Sécurité du compte</h2><p>Utilisez un mot de passe unique et difficile à deviner.</p></div></header>
                     <form method="POST" action="{{ route('writer.password.update') }}" class="writer-security-form">
                         @csrf
@@ -120,9 +120,9 @@
                         <div class="writer-field"><label for="password_confirmation">Confirmer le mot de passe</label><input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password"></div>
                         <footer><button type="submit" class="writer-primary-action"><i class="bi bi-shield-check"></i> Modifier le mot de passe</button></footer>
                     </form>
-                </section>
+                </div>
 
-                <section class="tab-pane fade writer-form-panel" id="writer-social">
+                <div class="tab-pane fade writer-form-panel" id="writer-social">
                     <header><span><i class="bi bi-share"></i></span><div><h2>Réseaux sociaux</h2><p>Ajoutez uniquement les profils que vous souhaitez rendre publics.</p></div></header>
                     <form method="POST" action="{{ route('social.profile.save') }}">
                         @csrf
@@ -134,7 +134,7 @@
                         </div>
                         <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer les liens</button></footer>
                     </form>
-                </section>
+                </div>
             </div>
         </div>
     </div>

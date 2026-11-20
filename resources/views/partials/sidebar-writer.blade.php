@@ -7,7 +7,7 @@
     $notifications = $writer->unreadNotifications()->latest()->take(5)->get();
 @endphp
 
-<section class="writer-workspace">
+<div class="writer-workspace">
     <div class="container">
         <div class="writer-workspace-shell">
             <header class="writer-workspace-topbar">
@@ -118,6 +118,18 @@
                             <span>Mes livres</span>
                         </a>
 
+                        <a href="{{ route('writer.wallet') }}"
+                           class="{{ request()->routeIs('writer.wallet') ? 'active' : '' }}">
+                            <i class="bi bi-wallet2"></i>
+                            <span>Portefeuille</span>
+                        </a>
+
+                        <a href="{{ route('writer.withdrawals.index') }}"
+                           class="{{ request()->routeIs('writer.withdrawals.*') ? 'active' : '' }}">
+                            <i class="bi bi-cash-coin"></i>
+                            <span>Retraits</span>
+                        </a>
+
                         <a href="{{ route('writer.revenues') }}"
                            class="{{ request()->routeIs('writer.revenues') ? 'active' : '' }}">
                             <i class="bi bi-graph-up-arrow"></i>
@@ -153,4 +165,4 @@
             </div>
         </div>
     </div>
-</section>
+</div>

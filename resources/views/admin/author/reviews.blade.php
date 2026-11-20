@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <div class="admin-books-table-header">
             <div>
                 <strong>Répartition des notes</strong>
@@ -48,9 +48,9 @@
                 </div>
             @endfor
         </div>
-    </section>
+    </div>
 
-    <section class="admin-books-panel">
+    <div class="admin-books-panel">
         <div class="admin-books-table-header">
             <div>
                 <strong>{{ number_format($reviews->total()) }} avis</strong>
@@ -129,7 +129,7 @@
                 {{ $reviews->onEachSide(1)->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </div>
 @endsection
 

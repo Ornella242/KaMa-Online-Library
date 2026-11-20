@@ -11,7 +11,7 @@
             </div>
         </header>
 
-        <section class="writer-metric-grid">
+        <div class="writer-metric-grid">
             <article class="writer-metric">
                 <span class="writer-metric-icon red"><i class="bi bi-star-fill"></i></span>
                 <div><small>Note moyenne</small><strong>{{ number_format($averageRating, 1) }}/5</strong><span class="neutral">Tous les avis</span></div>
@@ -28,10 +28,10 @@
                 <span class="writer-metric-icon blue"><i class="bi bi-emoji-smile"></i></span>
                 <div><small>Satisfaction</small><strong>{{ $satisfaction }}%</strong><span class="neutral">Notes de 4 ou 5</span></div>
             </article>
-        </section>
+        </div>
 
         <div class="writer-reviews-layout">
-            <section class="writer-panel">
+            <div class="writer-panel">
                 <header class="writer-panel-header">
                     <div><span>Analyse</span><h2>Répartition des notes</h2><p>Distribution de 1 à 5 étoiles.</p></div>
                 </header>
@@ -46,9 +46,9 @@
                         </div>
                     @endfor
                 </div>
-            </section>
+            </div>
 
-            <section class="writer-panel writer-review-panel">
+            <div class="writer-panel writer-review-panel">
                 <header class="writer-panel-header">
                     <div><span>Derniers retours</span><h2>Commentaires des lecteurs</h2><p>{{ $reviews->total() }} avis au total.</p></div>
                 </header>

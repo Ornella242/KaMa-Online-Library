@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Imagick;
 use App\Models\User;
+use App\Services\PublicationService;
 use App\Notifications\BookResubmittedNotification;
 
 
@@ -26,12 +27,10 @@ class BooksController extends Controller
     /**
      * Liste des livres de l'auteur connecté
      */
-    public function listBooks(Request $request)
+    public function listBooks(Request $request, PublicationService $publicationService)
     {
 
-         $userId = Auth::id();
-
-
+        $userId = Auth::id();
         $query = Book::query()->where('user_id', $userId)
             ->with([
                 'category',
@@ -40,11 +39,9 @@ class BooksController extends Controller
             ]);
 
         if($request->filled('search')){
-
             $query->where('title','like',
                 '%'.$request->search.'%'
             );
-
         }
 
         if (
@@ -54,7 +51,6 @@ class BooksController extends Controller
             $query->where('status', $request->string('status')->toString());
         }
 
-
         if (
             $request->filled('type') &&
             in_array($request->string('type')->toString(), ['ebook', 'audio'], true)
@@ -62,20 +58,15 @@ class BooksController extends Controller
             $query->where('type', $request->string('type')->toString());
         }
 
-
         switch($request->sort){
             case 'oldest':
-
                 $query->oldest();
-
             break;
             case 'price_high':
-
                 $query->orderBy(
                     'price',
                     'desc'
                 );
-
             break;
 
             case 'price_low':
@@ -86,13 +77,9 @@ class BooksController extends Controller
             break;
 
             default:
-
                 $query->latest();
-
             break;
-
         }
-
 
         $books = $query
             ->paginate(9)
@@ -114,12 +101,14 @@ class BooksController extends Controller
             ->get()
             ->keyBy('book_type');
 
-        return view(
-            'writer.books.index',
-            compact('books', 'stats', 'publicationFees')
-        );
-    }
+        return view('writer.books.index', [
+            'books' => $books,
+            'stats' => $stats,
+            'publicationFees' => $publicationFees,
+            'paymentRequired' => $publicationService->shouldRequirePayment(),
+        ]);
 
+    }
 
     /**
      * Afficher le formulaire d'ajout
@@ -138,8 +127,6 @@ class BooksController extends Controller
                     ->get();
         return response()->json($subcategories);
     }
-
-   
 
     /**
      * Enregistrer un nouveau livre
@@ -161,41 +148,33 @@ class BooksController extends Controller
                 'required',
                 'in:ebook,audio'
             ],
-
             'price' => 'required|numeric|min:0',
-
             'pages' => [
                 'required_if:type,ebook',
                 'nullable',
                 'integer',
                 'min:1'
             ],
-
             'duration' => [
                 'required_if:type,audio',
                 'nullable',
                 'string',
                 'regex:/^\d{1,3}:[0-5]\d:[0-5]\d$/'
             ],
-
             'language' => 'required|string|max:50',
-
             'publication_year' => 'required|digits:4',
-
             'cover_image' => [
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120'
             ],
-
             'ebook_file' => [
                 'required_if:type,ebook',
                 'file',
                 'mimes:pdf',
                 'max:102400'
             ],
-
             'audio_file' => [
                 'required_if:type,audio',
                 'file',
@@ -222,25 +201,19 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-        
 
         // Upload couverture
         $coverPath = $request
             ->file('cover_image')
             ->store('books/covers', 'public');
 
-
         // Upload ebook/audio
         if ($request->type === 'ebook') {
-
             $file = $request->file('ebook_file');
             $fileType = 'pdf';
-
         } else {
-
             $file = $request->file('audio_file');
             $fileType = 'mp3';
-
         }
 
         $fileName = Str::uuid().'-'.Str::slug(
@@ -261,10 +234,8 @@ class BooksController extends Controller
             'local'
         );
         }
-     
 
        $fileSize = $file->getSize();
-
        $book = Book::create([
             // auteur connecté
             'user_id' => Auth::id(),
@@ -364,7 +335,7 @@ class BooksController extends Controller
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
 
-        if ($book->status === 'waiting_review' || $book->status === 'under_review') 
+        if ($book->status === 'waiting_review' || $book->status === 'under_review')
         {
 
             if (
@@ -577,7 +548,7 @@ class BooksController extends Controller
                 );
         }
 
-        
+
         // Code book status draft / revision_required
         $request->validate([
 
@@ -1001,27 +972,17 @@ class BooksController extends Controller
             503,
             'Les frais de publication ne sont pas encore configurés pour ce format.'
         );
-        abort_unless(
-            strtoupper($fee->currency) === 'XOF',
-            503,
-            'Le tarif doit être enregistré en XOF pour être utilisé avec KKiaPay.'
-        );
 
-        $kkiapayPublicKey = config('services.kkiapay.public_key');
-        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
-        $kkiapayConfigured = filled($kkiapayPublicKey)
-            && filled(config('services.kkiapay.private_key'))
-            && filled(config('services.kkiapay.secret'));
+        $stripe = app(\App\Services\StripeService::class);
 
         return view(
             'writer.books.deposit',
-            compact(
-                'book',
-                'fee',
-                'kkiapayPublicKey',
-                'kkiapaySandbox',
-                'kkiapayConfigured'
-            )
+            [
+                'book' => $book,
+                'fee' => $fee,
+                'stripeConfigured' => $stripe->isConfigured(),
+                'stripeTestMode' => $stripe->isTestMode(),
+            ]
         );
     }
 
@@ -1059,76 +1020,84 @@ class BooksController extends Controller
             ->route('writer.books.deposit', $book);
     }
 
-    public function generatePreviewPages(Book $book)
-    {
-        if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
-            return;
-        }
 
-        if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
-            throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
-        }
 
-        $pdfPath = Storage::disk('local')->path($book->file_path);
-        $folder = storage_path('app/private/books/previews/'.$book->id);
 
-        if (! file_exists($folder)) {
-            mkdir($folder, 0755, true);
-        }
+private function generatePreviewPages(Book $book): string
+{
+    if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
+        return 'Preview non requis';
+    }
 
-        $start = (int) $book->preview_start_page;
-        $end = (int) $book->preview_end_page;
+    if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
+        throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
+    }
 
-        if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
-            throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
-        }
+    if (! extension_loaded('imagick')) {
+        throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
+    }
 
-        $pageCount = $this->getPdfPageCount($pdfPath);
-        if ($pageCount !== null && $end > $pageCount) {
-            throw new \RuntimeException(
-                "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
-            );
-        }
+    $pdfPath = Storage::disk('local')->path($book->file_path);
+    $folder = storage_path('app/private/books/previews/'.$book->id);
 
-        $pdftoppm = $this->resolvePdftoppmBinary();
+    if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
+        throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
+    }
 
-        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
-            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
-            $command = sprintf(
-                '%s -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
-                escapeshellarg($pdftoppm),
-                $pageNumber,
-                $pageNumber,
-                escapeshellarg($pdfPath),
-                escapeshellarg($tmpPrefix)
-            );
+    $start = (int) $book->preview_start_page;
+    $end = (int) $book->preview_end_page;
 
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            $source = $tmpPrefix.'.png';
+    if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
+        throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
+    }
 
-            if ($exitCode !== 0 || ! file_exists($source)) {
-                $details = trim(implode("\n", $output));
+    $pageCount = $this->getPdfPageCount($pdfPath);
+
+    if ($pageCount !== null && $end > $pageCount) {
+        throw new \RuntimeException(
+            "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
+        );
+    }
+
+    $imagick = new Imagick();
+
+    try {
+    for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
+        $imagick = new Imagick();
+
+        try {
+            $imagick->setResolution(150, 150);
+            $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality(85);
+
+            $destination = $folder.'/page-'.$pageNumber.'.webp';
+
+            if (! $imagick->writeImage($destination)) {
                 throw new \RuntimeException(
-                    'Impossible de générer l’extrait PDF'
-                    .($details !== '' ? ' : '.$details : '.')
+                    "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
                 );
             }
-
-            $image = imagecreatefrompng($source);
-            if ($image === false) {
-                @unlink($source);
-                throw new \RuntimeException('Impossible de lire la page générée.');
-            }
-
-            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
-            imagedestroy($image);
-            unlink($source);
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
         }
-
-        return 'Preview généré';
     }
+} catch (\ImagickException $e) {
+    \Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
+        'book_id' => $book->id,
+        'error' => $e->getMessage(),
+    ]);
+
+    throw new \RuntimeException(
+        'Impossible de générer les aperçus PDF avec Imagick.',
+        0,
+        $e
+    );
+}
+    return 'Preview généré';
+}
+
 
     private function resolvePdftoppmBinary(): string
     {
@@ -1152,32 +1121,34 @@ class BooksController extends Controller
 
     private function getPdfPageCount(string $pdfPath): ?int
     {
-        foreach (['/usr/local/bin/pdfinfo', '/opt/homebrew/bin/pdfinfo', 'pdfinfo'] as $binary) {
-            $command = $binary === 'pdfinfo'
-                ? 'pdfinfo '.escapeshellarg($pdfPath).' 2>/dev/null'
-                : (is_executable($binary)
-                    ? escapeshellarg($binary).' '.escapeshellarg($pdfPath).' 2>/dev/null'
-                    : null);
-
-            if ($command === null) {
-                continue;
-            }
-
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            if ($exitCode !== 0) {
-                continue;
-            }
-
-            foreach ($output as $line) {
-                if (preg_match('/^Pages:\s+(\d+)/i', $line, $matches)) {
-                    return (int) $matches[1];
-                }
-            }
+        if (!extension_loaded('imagick') || !is_file($pdfPath)) {
+            return null;
         }
 
-        return null;
+        $imagick = null;
+
+        try {
+            $imagick = new Imagick();
+            $imagick->pingImage($pdfPath);
+
+            $pageCount = $imagick->getNumberImages();
+
+            return $pageCount > 0 ? $pageCount : null;
+
+        } catch (\ImagickException $e) {
+            \Log::warning('Impossible de compter les pages du PDF avec Imagick.', [
+                'file' => basename($pdfPath),
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+
+        } finally {
+            if ($imagick instanceof Imagick) {
+                $imagick->clear();
+                $imagick->destroy();
+            }
+        }
     }
 
     public function previewPage(Book $book, $page)

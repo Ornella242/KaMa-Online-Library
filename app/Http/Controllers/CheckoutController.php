@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\OrderPurchaseMail;
 use App\Models\Book;
 use App\Models\Country;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\CartService;
+use App\Services\PaymentFulfillmentService;
+use App\Services\PawaPayService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Kkiapay\Kkiapay;
 use Throwable;
 
 class CheckoutController extends Controller
@@ -110,7 +110,7 @@ class CheckoutController extends Controller
 
         $order = DB::transaction(function () use ($validated, $orderItems, $amount) {
             $order = Order::query()->create([
-                'reference' => 'ORD-' . strtoupper(Str::random(10)),
+                'reference' => 'ORD-'.strtoupper(Str::random(10)),
                 'user_id' => Auth::id(),
                 'firstname' => $validated['firstname'],
                 'lastname' => $validated['lastname'],
@@ -119,9 +119,9 @@ class CheckoutController extends Controller
                 'country_id' => $validated['country_id'],
                 'city' => $validated['city'],
                 'amount' => $amount,
-                'currency' => 'XOF',
+                'currency' => 'EUR',
                 'status' => Order::STATUS_PENDING,
-                'payment_method' => 'kkiapay',
+                'payment_method' => 'stripe',
             ]);
 
             foreach ($orderItems as $line) {
@@ -136,165 +136,237 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.payment', $order);
     }
 
-    public function payment(Order $order)
+    public function payment(Order $order, StripeService $stripe, PawaPayService $pawaPay)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
 
         $order->load(['items.book', 'country']);
 
-        $kkiapayConfigured = $this->kkiapayIsConfigured();
-        $kkiapayPublicKey = config('services.kkiapay.public_key');
-        $kkiapaySandbox = (bool) config('services.kkiapay.sandbox', true);
+        $momoCountry = $pawaPay->resolveCountry($order->country?->code);
+        $momoQuote = $momoCountry
+            ? $pawaPay->convertFromEur(
+                (float) $order->amount,
+                $momoCountry['currency'],
+                $momoCountry['decimals']
+            )
+            : null;
 
-        return view('checkout.payment', compact(
-            'order',
-            'kkiapayConfigured',
-            'kkiapayPublicKey',
-            'kkiapaySandbox'
-        ));
+        return view('checkout.payment', [
+            'order' => $order,
+            'stripeConfigured' => $stripe->isConfigured(),
+            'stripeTestMode' => $stripe->isTestMode(),
+            'pawaPayConfigured' => $pawaPay->isConfigured(),
+            'pawaPaySandbox' => $pawaPay->isSandbox(),
+            'momoCountry' => $momoCountry,
+            'momoQuote' => $momoQuote,
+            'momoAvailable' => $momoCountry !== null,
+        ]);
     }
 
-    public function preparePayment(Order $order)
+    public function preparePayment(Request $request, Order $order, StripeService $stripe, PawaPayService $pawaPay)
     {
         abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande n’est plus en attente de paiement.');
-        abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
-        abort_unless(
-            strtoupper($order->currency) === 'XOF',
-            409,
-            'KKiaPay exige un paiement en XOF.'
-        );
 
-        return response()->json([
-            'payment' => [
-                'reference' => $order->reference,
-                'amount' => (float) $order->amount,
-                'currency' => $order->currency,
-            ],
-            'customer' => [
-                'name' => $order->fullName(),
-                'email' => $order->email,
-                'phone' => $order->phone,
-            ],
-        ]);
-    }
+        $method = $request->input('method', 'card');
 
-    public function verify(Request $request, Order $order)
-    {
-        abort_unless($this->kkiapayIsConfigured(), 503, 'KKiaPay n’est pas encore configuré.');
-
-        $validated = $request->validate([
-            'transaction_id' => ['required', 'string', 'max:255'],
-        ]);
-
-        if ($order->status === Order::STATUS_PAID && $order->transaction_id === $validated['transaction_id']) {
-            return response()->json([
-                'redirect' => route('checkout.success', $order),
-                'message' => 'Paiement déjà confirmé.',
-            ]);
+        if ($method === 'momo' || $method === 'pawapay') {
+            return $this->preparePawaPay($order, $pawaPay);
         }
 
-        abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande ne peut plus être payée.');
-        abort_if(
-            Order::query()
-                ->where('transaction_id', $validated['transaction_id'])
-                ->where('id', '!=', $order->id)
-                ->exists(),
+        return $this->prepareStripe($order, $stripe);
+    }
+
+    private function prepareStripe(Order $order, StripeService $stripe)
+    {
+        abort_unless($stripe->isConfigured(), 503, 'Stripe n’est pas encore configuré.');
+        abort_unless(
+            strtoupper((string) $order->currency) === 'EUR',
             409,
-            'Cette transaction a déjà été utilisée.'
+            'Le paiement Stripe est configuré en EUR.'
         );
 
         try {
-            $kkiapay = new Kkiapay(
-                config('services.kkiapay.public_key'),
-                config('services.kkiapay.private_key'),
-                config('services.kkiapay.secret'),
-                (bool) config('services.kkiapay.sandbox', true)
+            $checkout = $stripe->createCheckout(
+                (float) $order->amount,
+                [
+                    'name' => $order->fullName(),
+                    'email' => $order->email,
+                    'custom' => [
+                        'type' => 'order',
+                        'order_id' => (string) $order->id,
+                        'order_reference' => $order->reference,
+                    ],
+                ],
+                route('checkout.success', $order).'?session_id={CHECKOUT_SESSION_ID}',
+                route('checkout.payment', $order),
+                'Commande KaMa '.$order->reference
             );
-            $verification = $kkiapay->verifyTransaction($validated['transaction_id']);
         } catch (Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'La vérification KKiaPay est momentanément indisponible. Réessayez sans effectuer un nouveau paiement.',
+                'message' => $exception->getMessage(),
             ], 502);
         }
 
-        abort_unless(
-            is_object($verification)
-                && strtoupper((string) ($verification->status ?? '')) === 'SUCCESS',
-            422,
-            'KKiaPay n’a pas confirmé cette transaction.'
-        );
-        abort_unless(
-            abs((float) ($verification->amount ?? -1) - (float) $order->amount) < 0.01,
-            422,
-            'Le montant confirmé par KKiaPay ne correspond pas à la commande.'
-        );
-
-        $partnerId = trim((string) ($verification->partnerId ?? ''));
-        abort_unless(
-            $partnerId === '' || hash_equals($order->reference, $partnerId),
-            422,
-            'La référence KKiaPay ne correspond pas à cette commande.'
-        );
-
-        DB::transaction(function () use ($order, $validated, $verification) {
-            $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
-            abort_unless($lockedOrder->status === Order::STATUS_PENDING, 409, 'Cette commande a déjà été traitée.');
-            abort_if(
-                Order::query()
-                    ->where('transaction_id', $validated['transaction_id'])
-                    ->where('id', '!=', $lockedOrder->id)
-                    ->exists(),
-                409,
-                'Cette transaction a déjà été utilisée.'
-            );
-
-            $method = strtolower((string) ($verification->source ?? 'kkiapay'));
-
-            $lockedOrder->update([
-                'status' => Order::STATUS_PAID,
-                'payment_method' => $method,
-                'transaction_id' => $validated['transaction_id'],
-            ]);
-
-            $lockedOrder->load('items');
-
-            foreach ($lockedOrder->items as $item) {
-                Payment::query()->updateOrCreate(
-                    [
-                        'order_id' => $lockedOrder->id,
-                        'book_id' => $item->book_id,
-                        'type' => 'purchase',
-                    ],
-                    [
-                        'user_id' => $lockedOrder->user_id,
-                        'guest_email' => $lockedOrder->user_id ? null : $lockedOrder->email,
-                        'reference' => $lockedOrder->reference . '-' . $item->book_id,
-                        'amount' => $item->unit_price,
-                        'currency' => $lockedOrder->currency,
-                        'status' => 'success',
-                        'payment_method' => $method,
-                        'transaction_id' => $validated['transaction_id'] . '-' . $item->book_id,
-                    ]
-                );
-            }
-        });
-
-        $order->refresh()->load('items.book');
-        $this->sendPurchaseEmail($order);
+        $order->update(['payment_method' => 'stripe']);
 
         return response()->json([
-            'redirect' => route('checkout.success', $order),
-            'message' => 'Paiement confirmé. Vos livres ont été envoyés par email.',
+            'checkout_url' => $checkout['url'],
+            'checkout_id' => $checkout['id'],
+            'payment' => [
+                'reference' => $order->reference,
+                'amount' => (float) $order->amount,
+                'currency' => 'EUR',
+            ],
         ]);
     }
 
-    public function success(Order $order)
+    private function preparePawaPay(Order $order, PawaPayService $pawaPay)
     {
-        abort_unless($order->status === Order::STATUS_PAID, 404);
+        abort_unless($pawaPay->isConfigured(), 503, 'PawaPay n’est pas encore configuré.');
 
+        $order->loadMissing('country');
+        $country = $pawaPay->resolveCountry($order->country?->code);
+
+        if (! $country) {
+            return response()->json([
+                'message' => 'Le Mobile Money n’est pas disponible pour le pays de votre commande ('.$order->country?->name.'). Choisissez la carte bancaire.',
+            ], 422);
+        }
+
+        try {
+            $quote = $pawaPay->convertFromEur(
+                (float) $order->amount,
+                $country['currency'],
+                $country['decimals']
+            );
+        } catch (Throwable $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        $depositId = (string) Str::uuid();
+
+        $order->update([
+            'payment_method' => 'pawapay',
+            'transaction_id' => $depositId,
+        ]);
+
+        try {
+            $session = $pawaPay->createPaymentPage(
+                $quote['amount'],
+                $quote['currency'],
+                $country['iso3'],
+                route('checkout.success', $order).'?depositId='.$depositId,
+                'Commande KaMa '.$order->reference,
+                [
+                    'type' => 'order',
+                    'orderId' => $order->reference,
+                    'order_id' => (string) $order->id,
+                    'order_reference' => $order->reference,
+                ],
+                $depositId
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 502);
+        }
+
+        return response()->json([
+            'checkout_url' => $session['redirect_url'],
+            'checkout_id' => $session['deposit_id'],
+            'payment' => [
+                'reference' => $order->reference,
+                'amount' => $quote['numeric'],
+                'currency' => $quote['currency'],
+                'amount_eur' => (float) $order->amount,
+                'label' => $quote['label'],
+            ],
+        ]);
+    }
+
+    public function verify(Order $order, PaymentFulfillmentService $fulfillment, PawaPayService $pawaPay)
+    {
+        if ($order->status === Order::STATUS_PAID) {
+            return response()->json([
+                'redirect' => route('checkout.success', $order),
+                'message' => 'Paiement confirmé.',
+            ]);
+        }
+
+        abort_unless($order->status === Order::STATUS_PENDING, 409, 'Cette commande ne peut plus être payée.');
+
+        // Soft-poll PawaPay if a deposit was started.
+        if (
+            $order->payment_method === 'pawapay'
+            && filled($order->transaction_id)
+            && $pawaPay->isConfigured()
+        ) {
+            $check = $pawaPay->checkDeposit((string) $order->transaction_id);
+            $depositStatus = strtoupper((string) data_get($check, 'data.status', ''));
+
+            if ($check['status'] === 'FOUND' && $depositStatus === 'COMPLETED') {
+                try {
+                    $fulfillment->handlePaidCheckout([
+                        'type' => 'order',
+                        'order_id' => (string) $order->id,
+                        'order_reference' => $order->reference,
+                    ], (string) $order->transaction_id, 'pawapay');
+                } catch (Throwable $exception) {
+                    report($exception);
+                }
+            }
+        }
+
+        $order->refresh();
+        if ($order->status === Order::STATUS_PAID) {
+            return response()->json([
+                'redirect' => route('checkout.success', $order),
+                'message' => 'Paiement confirmé.',
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Paiement en cours de confirmation…',
+            'pending' => true,
+        ], 202);
+    }
+
+    public function success(Order $order, PawaPayService $pawaPay, PaymentFulfillmentService $fulfillment)
+    {
         $order->load(['items.book', 'country']);
+
+        if (
+            $order->status === Order::STATUS_PENDING
+            && $order->payment_method === 'pawapay'
+            && filled($order->transaction_id)
+            && $pawaPay->isConfigured()
+        ) {
+            $check = $pawaPay->checkDeposit((string) $order->transaction_id);
+            $depositStatus = strtoupper((string) data_get($check, 'data.status', ''));
+
+            if ($check['status'] === 'FOUND' && $depositStatus === 'COMPLETED') {
+                try {
+                    $fulfillment->handlePaidCheckout([
+                        'type' => 'order',
+                        'order_id' => (string) $order->id,
+                        'order_reference' => $order->reference,
+                    ], (string) $order->transaction_id, 'pawapay');
+                    $order->refresh();
+                } catch (Throwable $exception) {
+                    report($exception);
+                }
+            }
+        }
+
+        if ($order->status !== Order::STATUS_PAID) {
+            return view('checkout.pending', compact('order'));
+        }
 
         $downloads = $order->items
             ->filter(fn ($item) => $item->book && filled($item->book->file_path))
@@ -328,15 +400,6 @@ class CheckoutController extends Controller
         return Storage::disk('local')->download($book->file_path, $filename);
     }
 
-    private function sendPurchaseEmail(Order $order): void
-    {
-        try {
-            Mail::to($order->email)->send(new OrderPurchaseMail($order));
-        } catch (Throwable $exception) {
-            report($exception);
-        }
-    }
-
     private function userOwnsBook(int $userId, int $bookId): bool
     {
         return Payment::query()
@@ -345,12 +408,5 @@ class CheckoutController extends Controller
             ->where('type', 'purchase')
             ->where('status', 'success')
             ->exists();
-    }
-
-    private function kkiapayIsConfigured(): bool
-    {
-        return filled(config('services.kkiapay.public_key'))
-            && filled(config('services.kkiapay.private_key'))
-            && filled(config('services.kkiapay.secret'));
     }
 }

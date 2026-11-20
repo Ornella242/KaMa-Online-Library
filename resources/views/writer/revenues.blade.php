@@ -9,16 +9,19 @@
                 <h1>Revenus</h1>
                 <p>Suivez les ventes de vos ouvrages et vos frais de publication.</p>
             </div>
+            <a href="{{ route('writer.wallet') }}" class="writer-primary-action">
+                <i class="bi bi-wallet2"></i> Mon portefeuille
+            </a>
         </header>
 
-        <section class="writer-metric-grid">
+        <div class="writer-metric-grid">
             <article class="writer-metric">
-                <span class="writer-metric-icon red"><i class="bi bi-currency-dollar"></i></span>
-                <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Achats confirmés</span></div>
+                <span class="writer-metric-icon red"><i class="bi bi-currency-euro"></i></span>
+                <div><small>Revenus bruts</small><strong>{{ number_format($totalRevenue, 2, ',', ' ') }}€</strong><span class="neutral">Prix des ventes, avant part KaMa</span></div>
             </article>
             <article class="writer-metric">
                 <span class="writer-metric-icon black"><i class="bi bi-calendar3"></i></span>
-                <div><small>Ce mois</small><strong>{{ number_format($monthlyRevenue, 2, ',', ' ') }} $</strong><span class="neutral">Revenus mensuels</span></div>
+                <div><small>Ce mois</small><strong>{{ number_format($monthlyRevenue, 2, ',', ' ') }}€</strong><span class="neutral">Revenus mensuels</span></div>
             </article>
             <article class="writer-metric">
                 <span class="writer-metric-icon blue"><i class="bi bi-bag-check"></i></span>
@@ -28,28 +31,28 @@
                 <span class="writer-metric-icon amber"><i class="bi bi-people"></i></span>
                 <div><small>Lecteurs</small><strong>{{ number_format($totalReaders) }}</strong><span class="neutral">Acheteurs uniques</span></div>
             </article>
-        </section>
+        </div>
 
-        <section class="writer-finance-summary">
+        <div class="writer-finance-summary">
             <div>
                 <span><i class="bi bi-wallet2"></i></span>
-                <div><small>Solde disponible estimé</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }} $</strong></div>
+                <div><small>Solde portefeuille</small><strong>{{ number_format($availableBalance, 2, ',', ' ') }}€</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-arrow-up-right"></i></span>
-                <div><small>Retraits approuvés</small><strong>{{ number_format($totalWithdrawn, 2, ',', ' ') }} $</strong></div>
+                <div><small>Retraits approuvés</small><strong>{{ number_format($totalWithdrawn, 2, ',', ' ') }}€</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-hourglass-split"></i></span>
-                <div><small>Retraits en attente</small><strong>{{ number_format($pendingWithdrawals, 2, ',', ' ') }} $</strong></div>
+                <div><small>Retraits en attente</small><strong>{{ number_format($pendingWithdrawals, 2, ',', ' ') }}€</strong></div>
             </div>
             <div>
                 <span><i class="bi bi-clock-history"></i></span>
-                <div><small>Ventes en attente</small><strong>{{ number_format($pendingAmount, 2, ',', ' ') }} $</strong></div>
+                <div><small>Ventes en attente</small><strong>{{ number_format($pendingAmount, 2, ',', ' ') }}€</strong></div>
             </div>
-        </section>
+        </div>
 
-        <section class="writer-panel">
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Transactions</span>
@@ -92,9 +95,9 @@
             @if($purchasePayments->hasPages())
                 <footer class="writer-panel-footer">{{ $purchasePayments->links() }}</footer>
             @endif
-        </section>
+        </div>
 
-        <section class="writer-panel">
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Publications</span>
@@ -139,7 +142,7 @@
             @if($publicationPayments->hasPages())
                 <footer class="writer-panel-footer">{{ $publicationPayments->links() }}</footer>
             @endif
-        </section>
+        </div>
     </div>
 </main>
 @endsection

@@ -14,6 +14,7 @@ use App\Models\Wallet;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -170,37 +171,208 @@ class UserController extends Controller
         );
     }
 
+
     public function store(Request $request)
     {
+        $data = $request->validate([
+            'firstname' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        $request->validate([
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'role_id' => 'required|exists:roles,id',
+            'lastname' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'unique:users,email',
+            ],
+
+            'role_id' => [
+                'required',
+                'exists:roles,id',
+            ],
+            'is_main_admin' => false,
+
+            'admin_role_id' => [
+                'nullable',
+                'exists:roles,id',
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Rôle principal
+        |--------------------------------------------------------------------------
+        */
 
-        // Génération mot de passe sécurisé
+        $primaryRole = Role::findOrFail($data['role_id']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Le rôle principal doit obligatoirement être :
+        | reader / writer / admin
+        |--------------------------------------------------------------------------
+        */
+
+        if (!in_array($primaryRole->name, [
+            'reader',
+            'writer',
+            'admin',
+        ])) {
+
+            return back()
+                ->withErrors([
+                    'role_id' => 'Le rôle sélectionné est invalide.',
+                ])
+                ->withInput();
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rôle administratif
+        |--------------------------------------------------------------------------
+        */
+
+        $adminRole = null;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Si le compte est administrateur,
+        | un rôle administratif doit être sélectionné.
+        |--------------------------------------------------------------------------
+        */
+
+        if ($primaryRole->name === 'admin') {
+
+            if (empty($data['admin_role_id'])) {
+
+                return back()
+                    ->withErrors([
+                        'admin_role_id' =>
+                            'Veuillez sélectionner un rôle administratif.',
+                    ])
+                    ->withInput();
+            }
+
+
+            $adminRole = Role::findOrFail(
+                $data['admin_role_id']
+            );
+
+
+            /*
+            | Les rôles système ne peuvent pas
+            | être utilisés comme rôles administratifs.
+            */
+
+            if (in_array($adminRole->name, [
+                'reader',
+                'writer',
+                'admin',
+            ])) {
+
+                return back()
+                    ->withErrors([
+                        'admin_role_id' =>
+                            'Ce rôle ne peut pas être utilisé comme rôle administratif.',
+                    ])
+                    ->withInput();
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Si le compte n'est pas admin,
+        | aucun rôle administratif ne doit être utilisé.
+        |--------------------------------------------------------------------------
+        */
+
+        if ($primaryRole->name !== 'admin') {
+
+            $adminRole = null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Génération du mot de passe
+        |--------------------------------------------------------------------------
+        */
 
         $password = strtoupper(Str::random(1))
             . strtolower(Str::random(4))
-            . rand(10,99)
+            . rand(10, 99)
             . '!';
 
 
-        $user = User::create([
+        /*
+        |--------------------------------------------------------------------------
+        | Création du compte + rôle administratif
+        |--------------------------------------------------------------------------
+        */
 
-            'firstname' => $request->firstname,
-            'lastname' => $request->lastname,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'role_id' => $request->role_id,
-            'password' => Hash::make($password),
-        ]);
+        $user = DB::transaction(function () use (
+            $data,
+            $primaryRole,
+            $adminRole,
+            $password
+        ) {
+
+            $user = User::create([
+
+                'firstname' => $data['firstname'],
+
+                'lastname' => $data['lastname'],
+
+                'email' => $data['email'],
+
+                'phone' => $data['phone'] ?? null,
+
+                'role_id' => $primaryRole->id,
+
+                'password' => Hash::make($password),
+
+            ]);
 
 
-        // Envoi email
+            /*
+            |--------------------------------------------------------------------------
+            | Attribution du rôle administratif
+            |--------------------------------------------------------------------------
+            */
+
+            if ($adminRole) {
+
+                $user->adminRoles()->sync([
+                    $adminRole->id,
+                ]);
+            }
+
+
+            return $user;
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Envoi de l'email
+        |--------------------------------------------------------------------------
+        */
 
         Mail::to($user->email)
             ->send(
@@ -211,13 +383,18 @@ class UserController extends Controller
             );
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Redirection
+        |--------------------------------------------------------------------------
+        */
+
         return redirect()
             ->route('admin.users')
             ->with(
                 'success',
                 'Utilisateur créé et identifiants envoyés par email.'
             );
-
     }
 
     public function becomeWriter(Request $request)
@@ -259,7 +436,7 @@ class UserController extends Controller
             Wallet::query()->create([
                 'user_id' => $user->id,
                 'balance' => 0,
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ]);
         }
 
@@ -268,85 +445,85 @@ class UserController extends Controller
             ->with('success', 'Bienvenue dans l’espace écrivain ! Votre espace auteur est prêt.');
     }
 
-   public function updateProfile(Request $request)
-{
-    
-    $user = Auth::user();
+    public function updateProfile(Request $request)
+    {
+        
+        $user = Auth::user();
 
-    $validated = $request->validate([
+        $validated = $request->validate([
 
-        'firstname' => [
-            'required',
-            'string',
-            'max:255'
-        ],
+            'firstname' => [
+                'required',
+                'string',
+                'max:255'
+            ],
 
-        'lastname' => [
-            'required',
-            'string',
-            'max:255'
-        ],
+            'lastname' => [
+                'required',
+                'string',
+                'max:255'
+            ],
 
-        'email' => [
-            'required',
-            'email',
-            'max:255',
-            Rule::unique('users', 'email')->ignore($user->id),
-        ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
 
-        'country_id' => [
-            'required',
-            'exists:countries,id'
-        ],
+            'country_id' => [
+                'required',
+                'exists:countries,id'
+            ],
 
-        'city' => [
-            'required',
-            'string',
-            'max:100'
-        ],
+            'city' => [
+                'required',
+                'string',
+                'max:100'
+            ],
 
-        'phone' => [
-            'nullable',
-            'string',
-            'max:50'
-        ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:50'
+            ],
 
-        'bio' => [
-            'nullable',
-            'string',
-            'max:255'
-        ],
+            'bio' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
 
-        'gender' => [
-            'nullable',
-            'in:male,female,other'
-        ],
+            'gender' => [
+                'nullable',
+                'in:male,female,other'
+            ],
 
-        'avatar' => [
-            'nullable',
-            'image',
-            'mimes:jpg,jpeg,png,webp',
-            'max:2048',
-        ],
+            'avatar' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
 
-    ]);
+        ]);
 
-    if ($request->hasFile('avatar')) {
-        $path = $request
-            ->file('avatar')
-            ->store('avatars', 'public');
+        if ($request->hasFile('avatar')) {
+            $path = $request
+                ->file('avatar')
+                ->store('avatars', 'public');
 
-        $validated['avatar'] = $path;
+            $validated['avatar'] = $path;
+        }
+        $user->update($validated);
+
+
+        return back()->with(
+            'success',
+            'Profil mis à jour'
+        );
+
     }
-    $user->update($validated);
-
-
-    return back()->with(
-        'success',
-        'Profil mis à jour'
-    );
-
-}
 
 
     public function changePassword(Request $request)

@@ -27,7 +27,7 @@
             </div>
         @endif
 
-        <section class="writer-panel">
+        <div class="writer-panel">
             <header class="writer-panel-header">
                 <div>
                     <span>Historique</span>
@@ -95,7 +95,7 @@
             @if($notifications->hasPages())
                 <footer class="writer-panel-footer">{{ $notifications->links() }}</footer>
             @endif
-        </section>
+        </div>
     </div>
 </main>
 @endsection

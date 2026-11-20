@@ -1,100 +1,42 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
-	<title>KaMa Online Library</title>
-	<!-- Meta Tags -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="author" content="Webestica.com">
-	<meta name="description" content="KaMa - KaMa Online Library est une librairie numérique dédiée à la valorisation de la littérature africaine. Elle propose un accès simple et rapide à une large sélection d’ouvrages d’auteurs africains, disponibles en formats ebook et audiolivre, permettant aux lecteurs de découvrir, lire et écouter des histoires authentiques issues du continent et de sa diaspora.">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="kama-afrika.com">
 
-	@yield('meta')
-	{{-- Dark mode désactivé : la plateforme reste toujours en mode clair.
-	<script>
-		const storedTheme = localStorage.getItem('theme')
- 
-		const getPreferredTheme = () => {
-			if (storedTheme) {
-				return storedTheme
-			}
-			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-		}
+    @hasSection('meta')
+        @yield('meta')
+    @else
+        <title>@yield('page_title', 'KaMa Online Library')</title>
+        <meta name="description" content="@yield('page_description', 'KaMa Afrika, votre librairie numérique dédiée à la littérature africaine.')">
+    @endif
 
-		const setTheme = function (theme) {
-			if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-				document.documentElement.setAttribute('data-bs-theme', 'dark')
-			} else {
-				document.documentElement.setAttribute('data-bs-theme', theme)
-			}
-		}
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 
-		setTheme(getPreferredTheme())
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap">
 
-		window.addEventListener('DOMContentLoaded', () => {
-		    var el = document.querySelector('.theme-icon-active');
-			if(el != 'undefined' && el != null) {
-				const showActiveTheme = theme => {
-				const activeThemeIcon = document.querySelector('.theme-icon-active use')
-				const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`)
-				const svgOfActiveBtn = btnToActive.querySelector('.mode-switch use').getAttribute('href')
-
-				document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
-					element.classList.remove('active')
-				})
-
-				btnToActive.classList.add('active')
-				activeThemeIcon.setAttribute('href', svgOfActiveBtn)
-			}
-
-			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-				if (storedTheme !== 'light' || storedTheme !== 'dark') {
-					setTheme(getPreferredTheme())
-				}
-			})
-
-			showActiveTheme(getPreferredTheme())
-
-			document.querySelectorAll('[data-bs-theme-value]')
-				.forEach(toggle => {
-					toggle.addEventListener('click', () => {
-						const theme = toggle.getAttribute('data-bs-theme-value')
-						localStorage.setItem('theme', theme)
-						setTheme(theme)
-						showActiveTheme(theme)
-					})
-				})
-
-			}
-		})
-		
-	</script>
-	--}}
-
-	<!-- Favicon -->
-	<link rel="shortcut icon" href="assets/images/favicon.ico">
-
-	<!-- Google Font -->
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap">
-
-	<!-- Plugins CSS -->
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/font-awesome/css/all.min.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/tiny-slider/tiny-slider.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/glightbox/css/glightbox.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/flatpickr/css/flatpickr.min.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/choices/css/choices.min.css')}}">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/stepper/css/bs-stepper.min.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/quill/css/quill.snow.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/dropzone/css/dropzone.css')}}">
+    <!-- Plugins CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/font-awesome/css/all.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/tiny-slider/tiny-slider.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/glightbox/css/glightbox.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/flatpickr/css/flatpickr.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/choices/css/choices.min.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/stepper/css/bs-stepper.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/quill/css/quill.snow.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/dropzone/css/dropzone.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/page-flip/dist/css/page-flip.css">
 
-	<!-- Theme CSS -->
-	<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
+    <!-- Theme CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
 
-	@stack('styles')
+    @stack('styles')
 </head>
 
 <body>
@@ -133,7 +75,6 @@
 	<script>
 		document.querySelectorAll('.toggle-password').forEach(icon => {
 			icon.addEventListener('click', function () {
-
 				const targetId = this.getAttribute('data-target');
 				const input = document.getElementById(targetId);
 
@@ -142,8 +83,29 @@
 				const isPassword = input.type === 'password';
 				input.type = isPassword ? 'text' : 'password';
 
-				this.classList.toggle('fa-eye');
-				this.classList.toggle('fa-eye-slash');
+				if (this.classList.contains('bi-eye') || this.classList.contains('bi-eye-slash')) {
+					this.classList.toggle('bi-eye');
+					this.classList.toggle('bi-eye-slash');
+				} else {
+					this.classList.toggle('fa-eye');
+					this.classList.toggle('fa-eye-slash');
+				}
+
+				this.setAttribute(
+					'title',
+					isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+				);
+				this.setAttribute(
+					'aria-label',
+					isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+				);
+			});
+
+			icon.addEventListener('keydown', function (event) {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					this.click();
+				}
 			});
 		});
 	</script>
@@ -169,6 +131,9 @@
 			const category = document.getElementById('category_id');
 			const subcategory = document.getElementById('subcategory_id');
 
+			if (!category || !subcategory) {
+				return;
+			}
 
 			category.addEventListener('change', function () {
 
@@ -420,8 +385,10 @@
 			// =========================
 
 			let title = document.querySelector('[name="title"]')?.value;
-			document.querySelector("#summary_title").innerText =
-				title || "Titre du livre";
+			const summaryTitle = document.querySelector("#summary_title");
+			if (summaryTitle) {
+				summaryTitle.innerText = title || "Titre du livre";
+			}
 
 			// =========================
 			// CATEGORIE
@@ -449,10 +416,12 @@
 			// =========================
 			// LANGUE
 			// =========================
+			const language = document.querySelector('[name="language"]')?.value;
+			const summaryLanguage = document.querySelector("#summary_language");
 
-			let language = document.querySelector('[name="language"]')?.value;
-			document.querySelector("#summary_language").innerText =
-				language || "Langue";
+			if (summaryLanguage) {
+				summaryLanguage.innerText = language || "Langue";
+			}
 
 			// =========================
 			// TYPE
@@ -472,8 +441,11 @@
 			// =========================
 
 			let price = document.querySelector('[name="price"]')?.value;
-			document.querySelector("#summary_price").innerText =
-				price ? price + " $" : "0 $";
+			const summaryPrice = document.querySelector("#summary_price");
+
+			if (summaryPrice) {
+				summaryPrice.innerText = price ? price + " €" : "0 €";
+			}
 
 		// =========================
 		// PAGES / DUREE AUDIO
@@ -675,8 +647,11 @@
 					// =========================
 
 					let year = document.querySelector('[name="publication_year"]')?.value;
-					document.querySelector("#summary_year").innerText =
-						year || "----";
+					const summaryYear = document.querySelector("#summary_year");
+
+					if (summaryYear) {
+						summaryYear.innerText = year || "----";
+					}
 
 					// =========================
 					// DESCRIPTION
@@ -685,8 +660,12 @@
 					let description =
 						document.querySelector('[name="short_description"]')?.value;
 
-					document.querySelector("#summary_short_description").innerText =
-						description || "Aucune description disponible.";
+					const summaryDescription = document.querySelector("#summary_short_description");
+
+					if (summaryDescription) {
+						summaryDescription.innerText =
+							description || "Aucune description disponible.";
+					}
 
 					// =========================
 					// COUVERTURE
@@ -840,8 +819,11 @@
 
 
 		// Changement du type d'aperçu
-		previewType.addEventListener('change', updatePreviewFields);
+		// previewType.addEventListener('change', updatePreviewFields);
 
+		if (previewType) {
+			previewType.addEventListener('change', updatePreviewFields);
+		}
 
 		// Initialisation
 		updatePreviewFields();
@@ -899,6 +881,29 @@
 			});
 
 	</script>
+
+	<script>
+		@if(session('success'))
+			Swal.fire({
+				icon: 'success',
+				title: 'Succès',
+				text: @json(session('success')),
+				confirmButtonColor: '#b30000',
+				timer: 2800,
+				timerProgressBar: true
+			});
+		@endif
+
+		@if(session('error'))
+			Swal.fire({
+				icon: 'error',
+				title: 'Oups',
+				text: @json(session('error')),
+				confirmButtonColor: '#b30000'
+			});
+		@endif
+	</script>
+	@include('partials.cookie-consent')
 	@stack('scripts')
 </body>
 </html>

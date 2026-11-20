@@ -225,33 +225,55 @@
 
                         <label>Mot de passe</label>
 
-                        <div class="input-icon-group">
+                        <div class="input-icon-group has-password-toggle">
 
                             <i class="bi bi-lock input-icon"></i>
 
                             <input
                                 type="password"
+                                id="password"
                                 name="password"
                                 placeholder="••••••••"
-                                required>
+                                required
+                                autocomplete="new-password">
+
+                            <i
+                                class="bi bi-eye-slash toggle-password password-toggle"
+                                data-target="password"
+                                role="button"
+                                tabindex="0"
+                                title="Afficher le mot de passe"
+                                aria-label="Afficher le mot de passe"></i>
+
                         </div>
 
                     </div>
 
-                     <!-- Password -->
+                    <!-- Confirm password -->
                     <div class="register-field">
 
-                        <label> Confirmer le mot de passe</label>
+                        <label>Confirmation du mot de passe</label>
 
-                        <div class="input-icon-group">
+                        <div class="input-icon-group has-password-toggle">
 
                             <i class="bi bi-lock input-icon"></i>
 
                             <input
                                 type="password"
+                                id="password_confirmation"
                                 name="password_confirmation"
                                 placeholder="••••••••"
-                                required>
+                                required
+                                autocomplete="new-password">
+
+                            <i
+                                class="bi bi-eye-slash toggle-password password-toggle"
+                                data-target="password_confirmation"
+                                role="button"
+                                tabindex="0"
+                                title="Afficher le mot de passe"
+                                aria-label="Afficher le mot de passe"></i>
+
                         </div>
 
                     </div>

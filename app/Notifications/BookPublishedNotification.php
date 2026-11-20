@@ -37,22 +37,23 @@ class BookPublishedNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+   public function toMail(object $notifiable): MailMessage
     {
+
         return (new MailMessage)
 
-            ->subject('Votre livre est publié sur KaMa')
-            ->greeting('Bonjour '.$notifiable->firstname)
-            ->line(
-                'Votre livre "'.$this->book->title.'" a été validé et publié sur KaMa.'
+            ->subject(
+                'Votre livre est publié sur KaMa'
             )
-            ->action(
-                'Voir mon livre',
-                route('books.show',$this->book)
-            )
-            ->line(
-                'Merci de contribuer à la bibliothèque KaMa.'
+
+            ->view(
+                'emails.books.published',
+                [
+                    'user' => $notifiable,
+                    'book' => $this->book
+                ]
             );
+
     }
 
     public function toDatabase($notifiable)

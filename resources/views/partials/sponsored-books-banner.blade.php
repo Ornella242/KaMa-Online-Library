@@ -2,17 +2,17 @@
 
 <section class="pb-2 pb-lg-5">
 
-    <div class="container">
+    <div class="kama-hero-container">
 
         <!-- Slider START -->
         <div class="tiny-slider arrow-round arrow-blur arrow-hover">
 
-            <div class="tiny-slider-inner"
+           <div class="tiny-slider-inner"
                 data-autoplay="true"
                 data-arrow="true"
                 data-edge="2"
                 data-dots="false"
-                data-items-xl="3"
+                data-items-xl="2"
                 data-items-lg="2"
                 data-items-md="1">
 
@@ -33,7 +33,7 @@
 
 
                                 <!-- Image -->
-                                <div class="col-sm-6">
+                                <div class="col-md-6">
 
                                     <img 
                                     src="{{ asset('storage/'.$sponsored->book->cover_image) }}"
@@ -45,7 +45,7 @@
 
 
                                 <!-- Title and content -->
-                                <div class="col-sm-6">
+                                <div class="col-md-6">
 
                                     <div class="card-body px-3">
 
