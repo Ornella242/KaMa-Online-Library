@@ -9,14 +9,13 @@ use Illuminate\Http\Request;
 
 class ResetPasswordController extends Controller
 {
-     public function show($token)
-    {
-
-        return view('auth.reset-password',[
-            'token'=>$token
-        ]);
-
-    }
+    public function show(Request $request, $token)
+{
+    return view('auth.reset-password', [
+        'token' => $token,
+        'email' => $request->query('email'),
+    ]);
+}
 
 
 

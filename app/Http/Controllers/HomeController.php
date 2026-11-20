@@ -72,18 +72,20 @@ class HomeController extends Controller
         $highestRatedBooks = Book::published()->with(['author', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
-            ->has('reviews', '>=', 3)
+            ->has('reviews', '>=', 1)
             ->orderByDesc('reviews_avg_rating')
             ->take(6)
             ->get();
 
-            $bestSellingBooks = Book::published()->with(['author', 'category'])
+           $bestSellingBooks = Book::published()
+            ->with(['author', 'category'])
             ->withCount([
                 'payments as sales_count' => function ($query) {
                     $query->where('type', 'purchase')
-                        ->where('status', 'success');
+                          ->where('status', 'success');
                 }
             ])
+            ->having('sales_count', '>', 0)
             ->orderByDesc('sales_count')
             ->take(6)
             ->get();

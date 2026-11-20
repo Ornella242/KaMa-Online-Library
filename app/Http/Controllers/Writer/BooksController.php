@@ -201,7 +201,7 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-        
+
         // Upload couverture
         $coverPath = $request
             ->file('cover_image')
@@ -234,7 +234,7 @@ class BooksController extends Controller
             'local'
         );
         }
-     
+
        $fileSize = $file->getSize();
        $book = Book::create([
             // auteur connecté
@@ -335,7 +335,7 @@ class BooksController extends Controller
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
 
-        if ($book->status === 'waiting_review' || $book->status === 'under_review') 
+        if ($book->status === 'waiting_review' || $book->status === 'under_review')
         {
 
             if (
@@ -548,7 +548,7 @@ class BooksController extends Controller
                 );
         }
 
-        
+
         // Code book status draft / revision_required
         $request->validate([
 
@@ -1020,76 +1020,84 @@ class BooksController extends Controller
             ->route('writer.books.deposit', $book);
     }
 
-    public function generatePreviewPages(Book $book)
-    {
-        if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
-            return;
-        }
 
-        if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
-            throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
-        }
 
-        $pdfPath = Storage::disk('local')->path($book->file_path);
-        $folder = storage_path('app/private/books/previews/'.$book->id);
 
-        if (! file_exists($folder)) {
-            mkdir($folder, 0755, true);
-        }
+private function generatePreviewPages(Book $book): string
+{
+    if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
+        return 'Preview non requis';
+    }
 
-        $start = (int) $book->preview_start_page;
-        $end = (int) $book->preview_end_page;
+    if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
+        throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
+    }
 
-        if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
-            throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
-        }
+    if (! extension_loaded('imagick')) {
+        throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
+    }
 
-        $pageCount = $this->getPdfPageCount($pdfPath);
-        if ($pageCount !== null && $end > $pageCount) {
-            throw new \RuntimeException(
-                "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
-            );
-        }
+    $pdfPath = Storage::disk('local')->path($book->file_path);
+    $folder = storage_path('app/private/books/previews/'.$book->id);
 
-        $pdftoppm = $this->resolvePdftoppmBinary();
+    if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
+        throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
+    }
 
-        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
-            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
-            $command = sprintf(
-                '%s -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
-                escapeshellarg($pdftoppm),
-                $pageNumber,
-                $pageNumber,
-                escapeshellarg($pdfPath),
-                escapeshellarg($tmpPrefix)
-            );
+    $start = (int) $book->preview_start_page;
+    $end = (int) $book->preview_end_page;
 
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            $source = $tmpPrefix.'.png';
+    if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
+        throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
+    }
 
-            if ($exitCode !== 0 || ! file_exists($source)) {
-                $details = trim(implode("\n", $output));
+    $pageCount = $this->getPdfPageCount($pdfPath);
+
+    if ($pageCount !== null && $end > $pageCount) {
+        throw new \RuntimeException(
+            "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
+        );
+    }
+
+    $imagick = new Imagick();
+
+    try {
+    for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
+        $imagick = new Imagick();
+
+        try {
+            $imagick->setResolution(150, 150);
+            $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality(85);
+
+            $destination = $folder.'/page-'.$pageNumber.'.webp';
+
+            if (! $imagick->writeImage($destination)) {
                 throw new \RuntimeException(
-                    'Impossible de générer l’extrait PDF'
-                    .($details !== '' ? ' : '.$details : '.')
+                    "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
                 );
             }
-
-            $image = imagecreatefrompng($source);
-            if ($image === false) {
-                @unlink($source);
-                throw new \RuntimeException('Impossible de lire la page générée.');
-            }
-
-            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
-            imagedestroy($image);
-            unlink($source);
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
         }
-
-        return 'Preview généré';
     }
+} catch (\ImagickException $e) {
+    \Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
+        'book_id' => $book->id,
+        'error' => $e->getMessage(),
+    ]);
+
+    throw new \RuntimeException(
+        'Impossible de générer les aperçus PDF avec Imagick.',
+        0,
+        $e
+    );
+}
+    return 'Preview généré';
+}
+
 
     private function resolvePdftoppmBinary(): string
     {

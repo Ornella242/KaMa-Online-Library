@@ -550,17 +550,21 @@ Meilleurs livres START-->
                         </div>
 
                         <div class="featured-actions">
-                            <a href="#" class="cart-btn">
-                                <i class="bi bi-cart"></i>
-                                Ajouter au panier
-                            </a>
+                            <form method="POST" action="{{ route('cart.store', $book) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="seller-btn">
+                                    <i class="bi bi-cart"></i>
+                                    Ajouter au panier
+                                </button>
+                            </form>
 
                             
-
-
-                            <button class="read-btn">
-                                Lire un extrait
-                            </button>
+                                <!-- <div class="mt-2 mt-sm-0">-->
+                                <!--    <a href="{{ route('books.show', ['book' => $book->slug]) }}" -->
+                                <!--    class="btn btn-sm p-3 btn-see mb-0">-->
+                                <!--        Lire un extrait-->
+                                <!--    </a>-->
+                                <!--</div>-->
                         </div>
                     </div>
                 </div>
@@ -756,7 +760,7 @@ Top Rated Books START
 
     {{-- Code donnees reel --}}
     <div class="top-rated-grid">
-        @foreach($topRatedBooks as $book)
+        @foreach($highestRatedBooks as $book)
             <div class="rated-card">
 
                 <div class="rated-cover">
@@ -804,13 +808,14 @@ Top Rated Books START
 
 
 
-                    <button class="rated-btn">
-
-                        <i class="bi bi-cart3"></i>
-
-                        Ajouter au panier
-
-                    </button>
+                    <form method="POST" action="{{ route('cart.store', $book) }}" class="d-inline">
+                        @csrf
+                       <button type="submit" class="seller-btn"
+                            style="background: #111827; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-cart"></i>
+                            Ajouter
+                        </button>
+                    </form>
 
 
                 </div>

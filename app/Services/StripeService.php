@@ -69,6 +69,7 @@ class StripeService
                     ],
                 ],
             ]],
+            // 'payment_method_types' => ['card'],
         ];
 
         if (! empty($customer['email'])) {

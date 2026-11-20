@@ -1,11 +1,12 @@
 
 @extends('layouts.app')
 
+
 @section('meta')
     @php
         $bookTitle = $book->title;
 
-        $bookDescription = Str::limit(
+        $bookDescription = \Illuminate\Support\Str::limit(
             trim(strip_tags(
                 $book->short_description
                 ?? 'Découvrez ce livre sur KaMa Online Library.'
@@ -24,22 +25,21 @@
 
     <meta name="description" content="{{ $bookDescription }}">
 
-    {{-- Open Graph : WhatsApp, Facebook et autres réseaux --}}
-    <meta property="og:site_name" content="KaMa Online Library">
+    <meta property="og:site_name" content="KaMa Afrika">
     <meta property="og:type" content="book">
-    <meta property="og:title" content="KaMa Online Library">
+    <meta property="og:title" content="{{ $bookTitle }} | KaMa Afrika">
     <meta property="og:description" content="{{ $bookDescription }}">
     <meta property="og:url" content="{{ $bookUrl }}">
     <meta property="og:image" content="{{ $bookCover }}">
     <meta property="og:image:secure_url" content="{{ $bookCover }}">
     <meta property="og:image:alt" content="Couverture du livre {{ $bookTitle }}">
 
-    {{-- Twitter / X --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="KaMa Online Library">
+    <meta name="twitter:title" content="{{ $bookTitle }} | KaMa Afrika">
     <meta name="twitter:description" content="{{ $bookDescription }}">
     <meta name="twitter:image" content="{{ $bookCover }}">
 @endsection
+
 
 
 @section('content')
