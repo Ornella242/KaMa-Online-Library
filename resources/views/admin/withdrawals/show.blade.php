@@ -158,7 +158,8 @@
 .admin-welcome-kicker{display:block;margin-bottom:5px;font-size:.78rem;font-weight:700;opacity:.76;text-transform:uppercase;letter-spacing:.08em}
 .admin-welcome-card h2{margin:0 0 7px;color:#fff;font-size:1.45rem}
 .admin-welcome-card p{margin:0;opacity:.8}
-.admin-welcome-actions .btn{padding:10px 15px;border-radius:10px;font-size:.8rem;font-weight:700}
+.admin-welcome-actions{display:flex;gap:10px;flex-shrink:0}
+.admin-welcome-actions .btn{width:auto;height:auto;padding:10px 15px;border-radius:10px;font-size:.8rem;font-weight:700}
 .admin-metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
 .admin-metric-card{display:flex;align-items:center;gap:15px;min-height:104px;padding:20px;border:1px solid #e7e8eb;border-radius:16px;background:#fff}
 .admin-metric-card span.admin-metric-icon{display:grid;width:62px;height:62px;flex:0 0 62px;place-items:center;border-radius:17px;font-size:1.7rem}
@@ -179,6 +180,6 @@
 .admin-status-list > div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #f0f1f3;font-size:.8rem}
 .admin-status-list > div:last-child{border-bottom:0}
 .admin-status-list span{color:#888}
-@media(max-width:900px){.admin-metric-grid,.admin-dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.admin-welcome-card{align-items:flex-start;flex-direction:column;padding:23px}.admin-welcome-actions{width:100%;flex-wrap:wrap}.admin-metric-grid,.admin-dashboard-grid{grid-template-columns:1fr}}
 </style>
 @endpush
