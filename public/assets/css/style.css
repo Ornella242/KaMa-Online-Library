@@ -51954,11 +51954,14 @@ font-size:13px;
 .kama-writer-library .book-payment-state.unavailable > span {
     background: #e4e5e7;
 }
-
 .kama-writer-library .book-card-utility-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 7px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .kama-writer-library .book-card-utility-actions > a,
@@ -51975,20 +51978,22 @@ font-size:13px;
     background: #fff;
     font-size: 10px;
     font-weight: 700;
+    box-sizing: border-box;
 }
 
 .kama-writer-library .book-card-utility-actions > a {
-    flex: 1;
+    flex: 1 1 auto;
+}
+
+.kama-writer-library .book-card-utility-actions > form {
+    margin: 0;
+    flex: 0 0 auto;
 }
 
 .kama-writer-library .book-card-utility-actions > a:hover {
     border-color: #b30000;
     color: #b30000;
     background: #fff5f5;
-}
-
-.kama-writer-library .book-card-utility-actions form {
-    margin: 0;
 }
 
 .kama-writer-library .book-card-utility-actions button.danger {
