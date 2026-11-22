@@ -233,6 +233,9 @@ Route::prefix('writer')->middleware(['auth', 'role:writer'])->group(function () 
         Route::delete('books/{book}', [BooksController::class, 'destroy'])
            ->name('writer.books.destroy');
 
+        Route::post('/books/{book}/withdraw', [BooksController::class, 'withdraw'])
+            ->name('writer.books.withdraw');
+
         Route::post('/books/{book}/publish', [BooksController::class, 'publish'])
             ->name('writer.books.publish');
 
@@ -797,6 +800,10 @@ Route::prefix('admin')
             ->middleware('admin.permission:author_books.delete')
             ->name('books.destroy');
 
+        Route::post('/books/{book}/withdraw', [AdminBooksController::class, 'withdraw'])
+            ->middleware('admin.permission:author_books.delete')
+            ->name('books.withdraw');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -821,48 +828,48 @@ Route::prefix('admin')
     });
 
 
-Route::post('/books/{book}/publication-payment',
-            [PaymentController::class,'payPublication']
-        )
-        ->middleware(['auth', 'role:writer,admin'])
-        ->name('books.payment.publication');
-Route::post('/books/{book}/publication-payment/verify',
-            [PaymentController::class, 'verifyPublication']
-        )
-        ->middleware(['auth', 'role:writer,admin'])
-        ->name('books.payment.publication.verify');
+    Route::post('/books/{book}/publication-payment',
+                [PaymentController::class,'payPublication']
+            )
+            ->middleware(['auth', 'role:writer,admin'])
+            ->name('books.payment.publication');
+    Route::post('/books/{book}/publication-payment/verify',
+                [PaymentController::class, 'verifyPublication']
+            )
+            ->middleware(['auth', 'role:writer,admin'])
+            ->name('books.payment.publication.verify');
 
-Route::post('/webhooks/stripe', \App\Http\Controllers\StripeWebhookController::class)
-    ->name('webhooks.stripe');
+    Route::post('/webhooks/stripe', \App\Http\Controllers\StripeWebhookController::class)
+        ->name('webhooks.stripe');
 
-Route::post('/webhooks/pawapay', \App\Http\Controllers\PawaPayWebhookController::class)
-    ->name('webhooks.pawapay');
-    // routes communes
-    Route::middleware('auth')->group(function(){
-    Route::delete('/notifications/clear',
-        [NotificationController::class,'clear']
-    )->name('notifications.clear');
-});
+    Route::post('/webhooks/pawapay', \App\Http\Controllers\PawaPayWebhookController::class)
+        ->name('webhooks.pawapay');
+        // routes communes
+        Route::middleware('auth')->group(function(){
+        Route::delete('/notifications/clear',
+            [NotificationController::class,'clear']
+        )->name('notifications.clear');
+    });
 
-// =============================
-// LEGAL
-// =============================
+    // =============================
+    // LEGAL
+    // =============================
 
-Route::prefix('legal')->name('legal.')->group(function () {
+    Route::prefix('legal')->name('legal.')->group(function () {
 
-    Route::view('/terms', 'legal.terms')
-        ->name('terms');
+        Route::view('/terms', 'legal.terms')
+            ->name('terms');
 
-    Route::view('/author-terms', 'legal.author-terms')
-        ->name('author-terms');
+        Route::view('/author-terms', 'legal.author-terms')
+            ->name('author-terms');
 
-    Route::view('/privacy', 'legal.privacy')
-        ->name('privacy');
+        Route::view('/privacy', 'legal.privacy')
+            ->name('privacy');
 
-    Route::view('/cookies', 'legal.cookies')
-        ->name('cookies');
+        Route::view('/cookies', 'legal.cookies')
+            ->name('cookies');
 
-    Route::view('/sales', 'legal.sales')
-        ->name('sales');
+        Route::view('/sales', 'legal.sales')
+            ->name('sales');
 
 });

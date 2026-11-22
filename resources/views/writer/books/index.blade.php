@@ -406,7 +406,7 @@
                                             <i class="bi bi-eye"></i><span>Détails</span>
                                         </a>
 
-                                        @if(in_array($book->status, ['draft', 'waiting_review', 'under_review'], true))
+                                        @if(in_array($book->status, ['draft', 'waiting_review', 'under_review','published'], true))
                                             <a href="{{ route('writer.books.edit', $book) }}">
                                                 <i class="bi bi-pencil"></i>
                                                 <span>Modifier</span>
@@ -417,9 +417,23 @@
                                             <a href="{{ route('writer.books.boost', $book) }}">
                                                 <i class="bi bi-share"></i><span>Booster</span>
                                             </a>
+
                                             <a href="{{ route('writer.books.sponsor', $book) }}">
                                                 <i class="bi bi-megaphone"></i><span>Sponsoriser</span>
                                             </a>
+
+                                            <form
+                                                method="POST"
+                                                action="{{ route('writer.books.withdraw', $book) }}"
+                                                class="withdraw-book-form"
+                                            >
+                                                @csrf
+
+                                                <button type="submit" style="background-color: #b30000; color:white">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                    <span>Retirer</span>
+                                                </button>
+                                            </form>
                                         @endif
 
                                         @if($book->status === 'draft')

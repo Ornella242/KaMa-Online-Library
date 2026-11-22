@@ -114,6 +114,7 @@
                                                 'published' => ['Publié', 'published'],
                                                 'revision_required' => ['À corriger', 'revision'],
                                                 'rejected' => ['Rejeté', 'rejected'],
+                                                'withdrawal_requested' => ['Retiré', 'withdrawn'],
                                                 default => ['Inconnu', 'unknown'],
                                             };
                                             $authorName = trim(
@@ -124,8 +125,8 @@
                                             <td>
                                                 <div class="admin-books-title-cell">
                                                     <img src="{{ $book->cover_image
-                            ? asset('storage/' . $book->cover_image)
-                            : asset('assets/images/book/01.jpg') }}" alt="">
+                                                    ? asset('storage/' . $book->cover_image)
+                                                    : asset('assets/images/book/01.jpg') }}" alt="">
                                                     <div>
                                                         <button type="button" class="admin-books-title-button js-open-book-detail"
                                                             data-overlay-target="bookDetailOverlay-{{ $book->id }}">
@@ -239,6 +240,7 @@
                     'published' => ['Publié', 'published'],
                     'revision_required' => ['À corriger', 'revision'],
                     'rejected' => ['Rejeté', 'rejected'],
+                    'withdrawal_requested' => ['Retiré', 'withdrawn'],
                     default => ['Inconnu', 'unknown'],
                 };
                 $modalAuthorName = trim(
@@ -266,8 +268,8 @@
                             <aside class="admin-book-modal-aside">
                                 <div class="admin-book-modal-cover">
                                     <img src="{{ $book->cover_image
-                ? asset('storage/' . $book->cover_image)
-                : asset('assets/images/book/01.jpg') }}"
+                                        ? asset('storage/' . $book->cover_image)
+                                        : asset('assets/images/book/01.jpg') }}"
                                         alt="Couverture de {{ $book->title }}">
                                 </div>
                                 <span class="admin-books-status {{ $modalStatusClass }}">

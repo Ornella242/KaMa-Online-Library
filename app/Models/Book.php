@@ -18,6 +18,7 @@ class Book extends Model
     public const STATUS_PUBLISHED = 'published';
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_REVISION_REQUIRED = 'revision_required';
+    public const STATUS_WITHDRAWAL_REQUESTED = 'withdrawal_requested';
 
     public const STATUSES = [
         self::STATUS_DRAFT,
@@ -26,6 +27,7 @@ class Book extends Model
         self::STATUS_PUBLISHED,
         self::STATUS_REJECTED,
         self::STATUS_REVISION_REQUIRED,
+        self::STATUS_WITHDRAWAL_REQUESTED,
     ];
 
      protected static function booted(): void
@@ -75,7 +77,8 @@ class Book extends Model
         'status',
         'rejection_reason',
         'copyright_accepted',
-        'copyright_accepted_at'
+        'copyright_accepted_at',
+        'withdrawal_requested_at',
     ];
 
     public function author()

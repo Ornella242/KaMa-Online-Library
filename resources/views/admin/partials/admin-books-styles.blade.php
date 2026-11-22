@@ -388,10 +388,12 @@
         }
 
         .admin-books-status.revision,
+        .admin-books-status.withdrawn,
         .admin-books-status.rejected {
             background: #fff0f0;
             color: #b30000
         }
+
 
         .admin-books-actions {
             display: flex;

@@ -14,34 +14,37 @@ use App\Models\PublicationFee;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Imagick;
+use ImagickException;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Services\PublicationService;
 use App\Notifications\BookResubmittedNotification;
+use Illuminate\Support\Facades\DB;
 
 
 
 class BooksController extends Controller
 {
 
-
     /**
      * Liste des livres de l'auteur connecté
      */
+   
     public function listBooks(Request $request, PublicationService $publicationService)
     {
-
         $userId = Auth::id();
-        $query = Book::query()->where('user_id', $userId)
+
+        $query = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', '!=', Book::STATUS_WITHDRAWAL_REQUESTED)
             ->with([
                 'category',
                 'subcategory',
                 'publicationPayment',
             ]);
 
-        if($request->filled('search')){
-            $query->where('title','like',
-                '%'.$request->search.'%'
-            );
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
         }
 
         if (
@@ -58,34 +61,32 @@ class BooksController extends Controller
             $query->where('type', $request->string('type')->toString());
         }
 
-        switch($request->sort){
+        switch ($request->sort) {
             case 'oldest':
                 $query->oldest();
-            break;
+                break;
+
             case 'price_high':
-                $query->orderBy(
-                    'price',
-                    'desc'
-                );
-            break;
+                $query->orderBy('price', 'desc');
+                break;
 
             case 'price_low':
-                $query->orderBy(
-                    'price',
-                    'asc'
-                );
-            break;
+                $query->orderBy('price', 'asc');
+                break;
 
             default:
                 $query->latest();
-            break;
+                break;
         }
 
         $books = $query
             ->paginate(9)
             ->withQueryString();
 
-        $authorBooks = Book::query()->where('user_id', $userId);
+        $authorBooks = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', '!=', Book::STATUS_WITHDRAWAL_REQUESTED);
+
         $stats = [
             'total' => (clone $authorBooks)->count(),
             'published' => (clone $authorBooks)->where('status', Book::STATUS_PUBLISHED)->count(),
@@ -107,8 +108,8 @@ class BooksController extends Controller
             'publicationFees' => $publicationFees,
             'paymentRequired' => $publicationService->shouldRequirePayment(),
         ]);
-
     }
+
 
     /**
      * Afficher le formulaire d'ajout
@@ -167,7 +168,7 @@ class BooksController extends Controller
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:5120'
+                'max:1024'
             ],
             'ebook_file' => [
                 'required_if:type,ebook',
@@ -201,11 +202,52 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-        
-        // Upload couverture
-        $coverPath = $request
-            ->file('cover_image')
-            ->store('books/covers', 'public');
+
+
+        // Upload et optimisation de la couverture en WebP
+        $cover = $request->file('cover_image');
+
+        $imagick = new Imagick();
+
+        try {
+            $imagick->readImage($cover->getRealPath());
+
+            // Redimensionner sans déformer l'image
+            $imagick->thumbnailImage(600, 900, true, true);
+
+            // Conversion WebP
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality(85);
+
+            // Générer un nom unique
+            $coverName = Str::uuid() . '.webp';
+
+            $coverPath = 'books/covers/' . $coverName;
+
+            // Enregistrer sur le disque public
+            Storage::disk('public')->put(
+                $coverPath,
+                $imagick->getImagesBlob()
+            );
+
+        } catch (\ImagickException $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Erreur lors de l’optimisation de la couverture.',
+                [
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            throw new \RuntimeException(
+                'Impossible de traiter la couverture du livre.',
+                0,
+                $e
+            );
+
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
+        }
 
         // Upload ebook/audio
         if ($request->type === 'ebook') {
@@ -234,7 +276,7 @@ class BooksController extends Controller
             'local'
         );
         }
-     
+
        $fileSize = $file->getSize();
        $book = Book::create([
             // auteur connecté
@@ -310,7 +352,7 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
         abort_unless(
-            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review'], true),
+            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review','published'], true),
             409,
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
@@ -330,12 +372,12 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
         abort_unless(
-            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review'], true),
+            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review', 'published'], true),
             409,
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
 
-        if ($book->status === 'waiting_review' || $book->status === 'under_review') 
+        if ($book->status === 'waiting_review' || $book->status === 'under_review' || $book->status === 'published' )
         {
 
             if (
@@ -345,7 +387,7 @@ class BooksController extends Controller
             ) {
                 return back()
                     ->withErrors([
-                        'file' => 'La couverture et le fichier du livre ne peuvent pas être modifiés pendant la vérification éditoriale.',
+                        'file' => 'La couverture et le fichier du livre ne peuvent plus être modifiés.',
                     ])
                     ->withInput();
             }
@@ -548,7 +590,7 @@ class BooksController extends Controller
                 );
         }
 
-        
+
         // Code book status draft / revision_required
         $request->validate([
 
@@ -915,6 +957,36 @@ class BooksController extends Controller
             );
     }
 
+    public function withdraw(Book $book)
+    {
+        DB::transaction(function () use ($book) {
+
+            $lockedBook = Book::query()
+                ->lockForUpdate()
+                ->findOrFail($book->id);
+
+            $this->authorize('withdraw', $lockedBook);
+
+            abort_unless(
+                $lockedBook->status === Book::STATUS_PUBLISHED,
+                409,
+                'Seul un livre publié peut être retiré du catalogue.'
+            );
+
+            $lockedBook->update([
+                'status' => Book::STATUS_WITHDRAWAL_REQUESTED,
+                'withdrawal_requested_at' => now(),
+            ]);
+        });
+
+        return redirect()
+            ->route('writer.books')
+            ->with(
+                'success',
+                'Votre livre a été retiré du catalogue. Les lecteurs qui l’ont déjà acheté conservent leur accès.'
+            );
+    }
+
     public function destroy(Book $book)
     {
         $this->authorize('delete', $book);
@@ -959,6 +1031,8 @@ class BooksController extends Controller
             );
 
     }
+
+
 
     public function deposit(Book $book)
     {
@@ -1020,21 +1094,28 @@ class BooksController extends Controller
             ->route('writer.books.deposit', $book);
     }
 
-    public function generatePreviewPages(Book $book)
+
+
+
+    private function generatePreviewPages(Book $book): string
     {
         if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
-            return;
+            return 'Preview non requis';
         }
 
         if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
             throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
         }
 
+        if (! extension_loaded('imagick')) {
+            throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
+        }
+
         $pdfPath = Storage::disk('local')->path($book->file_path);
         $folder = storage_path('app/private/books/previews/'.$book->id);
 
-        if (! file_exists($folder)) {
-            mkdir($folder, 0755, true);
+        if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
+            throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
         }
 
         $start = (int) $book->preview_start_page;
@@ -1045,51 +1126,50 @@ class BooksController extends Controller
         }
 
         $pageCount = $this->getPdfPageCount($pdfPath);
+
         if ($pageCount !== null && $end > $pageCount) {
             throw new \RuntimeException(
                 "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
             );
         }
 
-        $pdftoppm = $this->resolvePdftoppmBinary();
-
+        try {
         for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
-            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
-            $command = sprintf(
-                '%s -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
-                escapeshellarg($pdftoppm),
-                $pageNumber,
-                $pageNumber,
-                escapeshellarg($pdfPath),
-                escapeshellarg($tmpPrefix)
-            );
+            $imagick = new Imagick();
 
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            $source = $tmpPrefix.'.png';
+            try {
+                $imagick->setResolution(150, 150);
+                $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
+                $imagick->setImageFormat('webp');
+                $imagick->setImageCompressionQuality(85);
 
-            if ($exitCode !== 0 || ! file_exists($source)) {
-                $details = trim(implode("\n", $output));
-                throw new \RuntimeException(
-                    'Impossible de générer l’extrait PDF'
-                    .($details !== '' ? ' : '.$details : '.')
-                );
+                $destination = $folder.'/page-'.$pageNumber.'.webp';
+
+                if (! $imagick->writeImage($destination)) {
+                    throw new \RuntimeException(
+                        "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
+                    );
+                }
+            } finally {
+                $imagick->clear();
+                $imagick->destroy();
             }
-
-            $image = imagecreatefrompng($source);
-            if ($image === false) {
-                @unlink($source);
-                throw new \RuntimeException('Impossible de lire la page générée.');
-            }
-
-            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
-            imagedestroy($image);
-            unlink($source);
         }
+        } catch (ImagickException $e) {
+        Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
+                'book_id' => $book->id,
+                'error' => $e->getMessage(),
+            ]);
 
-        return 'Preview généré';
+            throw new \RuntimeException(
+                'Impossible de générer les aperçus PDF avec Imagick.',
+                0,
+                $e
+            );
+        }
+            return 'Preview généré';
     }
+
 
     private function resolvePdftoppmBinary(): string
     {

@@ -169,7 +169,7 @@ class BooksController extends Controller
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:5120'
+                'max:1024'
             ],
 
             'ebook_file' => [
@@ -206,12 +206,52 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-        
+
 
         // Upload couverture
-        $coverPath = $request
-            ->file('cover_image')
-            ->store('books/covers', 'public');
+        $cover = $request->file('cover_image');
+
+        $imagick = new Imagick();
+
+        try {
+            $imagick->readImage($cover->getRealPath());
+
+            // Redimensionner sans déformer l'image
+            $imagick->thumbnailImage(600, 900, true, true);
+
+            // Conversion WebP
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality(85);
+
+            // Générer un nom unique
+            $coverName = Str::uuid() . '.webp';
+
+            $coverPath = 'books/covers/' . $coverName;
+
+            // Enregistrer sur le disque public
+            Storage::disk('public')->put(
+                $coverPath,
+                $imagick->getImagesBlob()
+            );
+
+        } catch (\ImagickException $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Erreur lors de l’optimisation de la couverture.',
+                [
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            throw new \RuntimeException(
+                'Impossible de traiter la couverture du livre.',
+                0,
+                $e
+            );
+
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
+        }
 
 
         // Upload ebook/audio
@@ -267,7 +307,7 @@ class BooksController extends Controller
                     ->withInput();
             }
         }
-     
+
        $fileSize = $file->getSize();
 
         $book = Book::create([
@@ -898,6 +938,22 @@ class BooksController extends Controller
             ->with('success', 'Livre supprimé avec succès.');
     }
 
+    public function withdraw(Book $book)
+    {
+        abort_unless($this->isOwnBook($book), 403);
+
+        abort_unless($book->status === Book::STATUS_PUBLISHED, 403);
+
+        $book->update([
+            'status' => Book::STATUS_WITHDRAWAL_REQUESTED,
+            'withdrawal_requested_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('admin.books.index')
+            ->with('success', 'Le livre a été retiré du catalogue public.');
+    }
+
     public function deposit(Book $book)
     {
         abort_unless($this->isOwnBook($book), 403);
@@ -949,7 +1005,8 @@ class BooksController extends Controller
             ->with('success', 'Votre livre a été renvoyé pour vérification éditoriale.');
     }
 
-     public function generatePreviewPages(Book $book)
+
+    public function generatePreviewPages(Book $book)
     {
         if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
             return;
@@ -959,11 +1016,15 @@ class BooksController extends Controller
             throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
         }
 
+        if (! extension_loaded('imagick')) {
+            throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
+        }
+
         $pdfPath = Storage::disk('local')->path($book->file_path);
         $folder = storage_path('app/private/books/previews/'.$book->id);
 
-        if (! file_exists($folder)) {
-            mkdir($folder, 0755, true);
+        if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
+            throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
         }
 
         $start = (int) $book->preview_start_page;
@@ -974,47 +1035,46 @@ class BooksController extends Controller
         }
 
         $pageCount = $this->getPdfPageCount($pdfPath);
+
         if ($pageCount !== null && $end > $pageCount) {
             throw new \RuntimeException(
                 "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
             );
         }
 
-        $pdftoppm = $this->resolvePdftoppmBinary();
+        try {
+            for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
+                $imagick = new \Imagick();
 
-        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
-            $tmpPrefix = $folder.'/tmp-'.$pageNumber;
-            $command = sprintf(
-                '%s -png -singlefile -r 150 -f %d -l %d %s %s 2>&1',
-                escapeshellarg($pdftoppm),
-                $pageNumber,
-                $pageNumber,
-                escapeshellarg($pdfPath),
-                escapeshellarg($tmpPrefix)
+                try {
+                    $imagick->setResolution(150, 150);
+                    $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
+                    $imagick->setImageFormat('webp');
+                    $imagick->setImageCompressionQuality(85);
+
+                    $destination = $folder.'/page-'.$pageNumber.'.webp';
+
+                    if (! $imagick->writeImage($destination)) {
+                        throw new \RuntimeException(
+                            "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
+                        );
+                    }
+                } finally {
+                    $imagick->clear();
+                    $imagick->destroy();
+                }
+            }
+        } catch (\ImagickException $e) {
+            \Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
+                'book_id' => $book->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new \RuntimeException(
+                'Impossible de générer les aperçus PDF avec Imagick.',
+                0,
+                $e
             );
-
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-            $source = $tmpPrefix.'.png';
-
-            if ($exitCode !== 0 || ! file_exists($source)) {
-                $details = trim(implode("\n", $output));
-                throw new \RuntimeException(
-                    'Impossible de générer l’extrait PDF'
-                    .($details !== '' ? ' : '.$details : '.')
-                );
-            }
-
-            $image = imagecreatefrompng($source);
-            if ($image === false) {
-                @unlink($source);
-                throw new \RuntimeException('Impossible de lire la page générée.');
-            }
-
-            imagewebp($image, $folder.'/page-'.$pageNumber.'.webp', 85);
-            imagedestroy($image);
-            unlink($source);
         }
 
         return 'Preview généré';

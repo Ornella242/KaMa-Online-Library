@@ -5,7 +5,10 @@ namespace App\Services;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Withdrawal;
+use App\Notifications\WithdrawalCompletedNotification;
 use App\Notifications\WithdrawalInitiatedNotification;
+use App\Notifications\WithdrawalProcessingNotification;
+use App\Notifications\WithdrawalRejectedNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -125,7 +128,15 @@ class WithdrawalService
             'admin_note' => $note ?: $withdrawal->admin_note,
         ]);
 
-        return $withdrawal->fresh();
+        $withdrawal = $withdrawal->fresh();
+
+        try {
+            $withdrawal->user?->notify(new WithdrawalProcessingNotification($withdrawal));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $withdrawal;
     }
 
     public function markCompleted(Withdrawal $withdrawal, ?string $note = null, ?string $payoutReference = null): Withdrawal
@@ -145,14 +156,22 @@ class WithdrawalService
             'payout_reference' => $payoutReference ?: $withdrawal->payout_reference,
         ]);
 
-        return $withdrawal->fresh();
+        $withdrawal = $withdrawal->fresh();
+
+        try {
+            $withdrawal->user?->notify(new WithdrawalCompletedNotification($withdrawal));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $withdrawal;
     }
 
     public function reject(Withdrawal $withdrawal, ?string $note = null): Withdrawal
     {
         abort_unless($withdrawal->isOpen(), 409, 'Cette demande ne peut plus être refusée.');
 
-        return DB::transaction(function () use ($withdrawal, $note) {
+        $withdrawal = DB::transaction(function () use ($withdrawal, $note) {
             $locked = Withdrawal::query()->lockForUpdate()->findOrFail($withdrawal->id);
             abort_unless($locked->isOpen(), 409);
 
@@ -171,6 +190,14 @@ class WithdrawalService
 
             return $locked->fresh();
         });
+
+        try {
+            $withdrawal->user?->notify(new WithdrawalRejectedNotification($withdrawal));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $withdrawal;
     }
 
     /**
