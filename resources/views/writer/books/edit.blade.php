@@ -2,7 +2,7 @@
 
 @section('content')
 @php
-    $readOnlyReview = $book->status === 'under_review' || $book->status === 'waiting_review' ;
+    $readOnlyReview = $book->status === 'under_review' || $book->status === 'waiting_review' || $book->status === 'published' ;
 @endphp
 <!-- =======================
 Page Banner START -->
@@ -16,13 +16,13 @@ Page Banner START -->
                     <i class="bi bi-arrow-left me-2"></i>
                     Retour à ma bibliothèque
                 </a>
-                <h5 class="display-6 fw-bold mb-3">
+                <h6 class="display-6 fw-bold mb-3">
                     @if($book->status === 'revision_required')
-                        Corriger le livre <span class="text-red">{{ $book->title }}</span>
+                        Corriger <span class="text-red">{{ $book->title }}</span>
                     @else
-                        Modifier le livre <span class="text-red">{{ $book->title }}</span>
+                        Modifier <span class="text-red">{{ $book->title }}</span>
                     @endif
-                </h5>
+                </h6>
             </div>
         </div>
     </div>

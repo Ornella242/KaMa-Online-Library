@@ -72,4 +72,9 @@ class BookPolicy
     {
         return false;
     }
+
+    public function withdraw(User $user, Book $book): bool
+    {
+        return $user->id === $book->user_id;
+    }
 }

@@ -883,6 +883,45 @@
 	</script>
 
 	<script>
+		document.querySelectorAll('.withdraw-book-form').forEach(form => {
+			form.addEventListener('submit', function(e) {
+				e.preventDefault();
+
+				Swal.fire({
+					title: 'Retirer ce livre ?',
+
+					text: "Ce livre ne sera plus visible dans le catalogue et ne pourra plus être acheté. Les lecteurs qui l’ont déjà acheté conserveront leur accès.",
+
+					icon: 'warning',
+
+					showCancelButton: true,
+
+					confirmButtonText: 'Oui, retirer le livre',
+
+					cancelButtonText: 'Annuler',
+
+					reverseButtons: true,
+
+					customClass: {
+						popup: 'kama-delete-popup',
+						title: 'kama-delete-title',
+						htmlContainer: 'kama-delete-message',
+						actions: 'kama-delete-actions',
+						confirmButton: 'kama-delete-btn kama-delete-confirm',
+						cancelButton: 'kama-delete-btn kama-delete-cancel'
+					},
+
+					buttonsStyling: false
+				}).then((result) => {
+					if (result.isConfirmed) {
+						form.submit();
+					}
+				});
+			});
+		});
+	</script>
+
+	<script>
 		@if(session('success'))
 			Swal.fire({
 				icon: 'success',

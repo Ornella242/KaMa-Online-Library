@@ -17,31 +17,32 @@ use Imagick;
 use App\Models\User;
 use App\Services\PublicationService;
 use App\Notifications\BookResubmittedNotification;
+use Illuminate\Support\Facades\DB;
 
 
 
 class BooksController extends Controller
 {
 
-
     /**
      * Liste des livres de l'auteur connecté
      */
+   
     public function listBooks(Request $request, PublicationService $publicationService)
     {
-
         $userId = Auth::id();
-        $query = Book::query()->where('user_id', $userId)
+
+        $query = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', '!=', Book::STATUS_WITHDRAWAL_REQUESTED)
             ->with([
                 'category',
                 'subcategory',
                 'publicationPayment',
             ]);
 
-        if($request->filled('search')){
-            $query->where('title','like',
-                '%'.$request->search.'%'
-            );
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
         }
 
         if (
@@ -58,34 +59,32 @@ class BooksController extends Controller
             $query->where('type', $request->string('type')->toString());
         }
 
-        switch($request->sort){
+        switch ($request->sort) {
             case 'oldest':
                 $query->oldest();
-            break;
+                break;
+
             case 'price_high':
-                $query->orderBy(
-                    'price',
-                    'desc'
-                );
-            break;
+                $query->orderBy('price', 'desc');
+                break;
 
             case 'price_low':
-                $query->orderBy(
-                    'price',
-                    'asc'
-                );
-            break;
+                $query->orderBy('price', 'asc');
+                break;
 
             default:
                 $query->latest();
-            break;
+                break;
         }
 
         $books = $query
             ->paginate(9)
             ->withQueryString();
 
-        $authorBooks = Book::query()->where('user_id', $userId);
+        $authorBooks = Book::query()
+            ->where('user_id', $userId)
+            ->where('status', '!=', Book::STATUS_WITHDRAWAL_REQUESTED);
+
         $stats = [
             'total' => (clone $authorBooks)->count(),
             'published' => (clone $authorBooks)->where('status', Book::STATUS_PUBLISHED)->count(),
@@ -107,8 +106,8 @@ class BooksController extends Controller
             'publicationFees' => $publicationFees,
             'paymentRequired' => $publicationService->shouldRequirePayment(),
         ]);
-
     }
+
 
     /**
      * Afficher le formulaire d'ajout
@@ -310,7 +309,7 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
         abort_unless(
-            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review'], true),
+            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review','published'], true),
             409,
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
@@ -330,12 +329,12 @@ class BooksController extends Controller
     {
         $this->authorize('update', $book);
         abort_unless(
-            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review'], true),
+            in_array($book->status, ['draft', 'revision_required', 'waiting_review', 'under_review', 'published'], true),
             409,
             'Ce livre ne peut plus être modifié dans son état actuel.'
         );
 
-        if ($book->status === 'waiting_review' || $book->status === 'under_review')
+        if ($book->status === 'waiting_review' || $book->status === 'under_review' || $book->status === 'published' )
         {
 
             if (
@@ -345,7 +344,7 @@ class BooksController extends Controller
             ) {
                 return back()
                     ->withErrors([
-                        'file' => 'La couverture et le fichier du livre ne peuvent pas être modifiés pendant la vérification éditoriale.',
+                        'file' => 'La couverture et le fichier du livre ne peuvent plus être modifiés.',
                     ])
                     ->withInput();
             }
@@ -915,6 +914,36 @@ class BooksController extends Controller
             );
     }
 
+    public function withdraw(Book $book)
+    {
+        DB::transaction(function () use ($book) {
+
+            $lockedBook = Book::query()
+                ->lockForUpdate()
+                ->findOrFail($book->id);
+
+            $this->authorize('withdraw', $lockedBook);
+
+            abort_unless(
+                $lockedBook->status === Book::STATUS_PUBLISHED,
+                409,
+                'Seul un livre publié peut être retiré du catalogue.'
+            );
+
+            $lockedBook->update([
+                'status' => Book::STATUS_WITHDRAWAL_REQUESTED,
+                'withdrawal_requested_at' => now(),
+            ]);
+        });
+
+        return redirect()
+            ->route('writer.books')
+            ->with(
+                'success',
+                'Votre livre a été retiré du catalogue. Les lecteurs qui l’ont déjà acheté conservent leur accès.'
+            );
+    }
+
     public function destroy(Book $book)
     {
         $this->authorize('delete', $book);
@@ -959,6 +988,8 @@ class BooksController extends Controller
             );
 
     }
+
+
 
     public function deposit(Book $book)
     {
@@ -1023,80 +1054,80 @@ class BooksController extends Controller
 
 
 
-private function generatePreviewPages(Book $book): string
-{
-    if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
-        return 'Preview non requis';
-    }
+    private function generatePreviewPages(Book $book): string
+    {
+        if ($book->type !== 'ebook' || $book->preview_type !== 'pages') {
+            return 'Preview non requis';
+        }
 
-    if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
-        throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
-    }
+        if (! $book->file_path || ! Storage::disk('local')->exists($book->file_path)) {
+            throw new \RuntimeException('Le fichier PDF du livre est introuvable.');
+        }
 
-    if (! extension_loaded('imagick')) {
-        throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
-    }
+        if (! extension_loaded('imagick')) {
+            throw new \RuntimeException('Imagick n’est pas disponible pour PHP.');
+        }
 
-    $pdfPath = Storage::disk('local')->path($book->file_path);
-    $folder = storage_path('app/private/books/previews/'.$book->id);
+        $pdfPath = Storage::disk('local')->path($book->file_path);
+        $folder = storage_path('app/private/books/previews/'.$book->id);
 
-    if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
-        throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
-    }
+        if (! is_dir($folder) && ! mkdir($folder, 0755, true) && ! is_dir($folder)) {
+            throw new \RuntimeException('Impossible de créer le dossier des aperçus.');
+        }
 
-    $start = (int) $book->preview_start_page;
-    $end = (int) $book->preview_end_page;
+        $start = (int) $book->preview_start_page;
+        $end = (int) $book->preview_end_page;
 
-    if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
-        throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
-    }
+        if ($start < 1 || $end < $start || ($end - $start + 1) > 5) {
+            throw new \RuntimeException('La plage de pages d’aperçu est invalide (1 à 5 pages consécutives).');
+        }
 
-    $pageCount = $this->getPdfPageCount($pdfPath);
+        $pageCount = $this->getPdfPageCount($pdfPath);
 
-    if ($pageCount !== null && $end > $pageCount) {
-        throw new \RuntimeException(
-            "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
-        );
-    }
+        if ($pageCount !== null && $end > $pageCount) {
+            throw new \RuntimeException(
+                "Ce PDF ne contient que {$pageCount} page(s). Choisissez une plage entre 1 et {$pageCount}."
+            );
+        }
 
-    $imagick = new Imagick();
-
-    try {
-    for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
         $imagick = new Imagick();
 
         try {
-            $imagick->setResolution(150, 150);
-            $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
-            $imagick->setImageFormat('webp');
-            $imagick->setImageCompressionQuality(85);
+        for ($pageNumber = $start; $pageNumber <= $end; $pageNumber++) {
+            $imagick = new Imagick();
 
-            $destination = $folder.'/page-'.$pageNumber.'.webp';
+            try {
+                $imagick->setResolution(150, 150);
+                $imagick->readImage($pdfPath.'['.($pageNumber - 1).']');
+                $imagick->setImageFormat('webp');
+                $imagick->setImageCompressionQuality(85);
 
-            if (! $imagick->writeImage($destination)) {
-                throw new \RuntimeException(
-                    "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
-                );
+                $destination = $folder.'/page-'.$pageNumber.'.webp';
+
+                if (! $imagick->writeImage($destination)) {
+                    throw new \RuntimeException(
+                        "Impossible d'enregistrer l'aperçu de la page {$pageNumber}."
+                    );
+                }
+            } finally {
+                $imagick->clear();
+                $imagick->destroy();
             }
-        } finally {
-            $imagick->clear();
-            $imagick->destroy();
         }
-    }
-} catch (\ImagickException $e) {
-    \Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
-        'book_id' => $book->id,
-        'error' => $e->getMessage(),
-    ]);
+    } catch (\ImagickException $e) {
+        \Log::error('Erreur de génération des aperçus PDF avec Imagick.', [
+            'book_id' => $book->id,
+            'error' => $e->getMessage(),
+        ]);
 
-    throw new \RuntimeException(
-        'Impossible de générer les aperçus PDF avec Imagick.',
-        0,
-        $e
-    );
-}
-    return 'Preview généré';
-}
+        throw new \RuntimeException(
+            'Impossible de générer les aperçus PDF avec Imagick.',
+            0,
+            $e
+        );
+    }
+        return 'Preview généré';
+    }
 
 
     private function resolvePdftoppmBinary(): string

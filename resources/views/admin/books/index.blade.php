@@ -135,6 +135,7 @@
                                 'published' => ['Publié', 'published'],
                                 'revision_required' => ['À corriger', 'revision'],
                                 'rejected' => ['Rejeté', 'rejected'],
+                                'withdrawal_requested' => ['Retiré', 'withdrawn'],
                                 default => ['Inconnu', 'unknown'],
                             };
                             $statusLabel = $statusMeta[0];
@@ -193,14 +194,15 @@
                                         </a>
                                     @endif
 
-                                    @if(auth()->user()->hasAdminPermission('author_books.edit'))
-                                        <a
-                                            href="{{ route('admin.books.edit', $book) }}"
-                                            title="Modifier"
-                                            aria-label="Modifier"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
+                                    @if(auth()->user()->hasAdminPermission('author_books.edit')  && $book->status !== 'withdrawal_requested')
+                                      
+                                            <a
+                                                href="{{ route('admin.books.edit', $book) }}"
+                                                title="Modifier"
+                                                aria-label="Modifier"
+                                            >
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
                                     @endif
 
                                     @if($book->status === 'published')
@@ -258,6 +260,26 @@
                                     @endif
 
                                     @if(auth()->user()->hasAdminPermission('author_books.delete'))
+                                        
+                                        {{-- Retirer un livre du compte auteur principal --}}
+                                        @if($book->status === 'published')
+                                            <form
+                                                method="POST"
+                                                action="{{ route('admin.books.withdraw', $book) }}"
+                                                class="withdraw-book-form"
+                                            >
+                                                @csrf
+
+                                                <button
+                                                    type="submit"
+                                                    class="danger"
+                                                    title="Retirer le livre"
+                                                    aria-label="Retirer le livre"
+                                                >
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                         <form
                                             action="{{ route('admin.books.destroy', $book) }}"
                                             method="POST"
@@ -368,4 +390,41 @@
     padding-top: 0 !important;
 }
 </style>
+@endpush
+
+@push('scripts')
+
+<script>
+    document.addEventListener('submit', function (e) {
+    const form = e.target.closest('.withdraw-book-form');
+
+    if (!form) return;
+
+    e.preventDefault();
+
+    Swal.fire({
+        title: 'Retirer ce livre ?',
+        text: 'Ce livre ne sera plus visible dans le catalogue public. Les acheteurs existants conserveront leur accès.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Oui, retirer',
+        cancelButtonText: 'Annuler',
+        reverseButtons: true,
+        customClass: {
+            popup: 'kama-delete-popup',
+            title: 'kama-delete-title',
+            htmlContainer: 'kama-delete-message',
+            actions: 'kama-delete-actions',
+            confirmButton: 'kama-delete-btn kama-delete-confirm',
+            cancelButton: 'kama-delete-btn kama-delete-cancel'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+});
+</script>
+    
 @endpush
