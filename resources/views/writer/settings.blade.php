@@ -32,9 +32,9 @@
                 <button class="active" data-bs-toggle="tab" data-bs-target="#writer-profile" type="button">
                     <i class="bi bi-person"></i><span>Profil</span>
                 </button>
-                <button data-bs-toggle="tab" data-bs-target="#writer-notifications" type="button">
+                {{-- <button data-bs-toggle="tab" data-bs-target="#writer-notifications" type="button">
                     <i class="bi bi-bell"></i><span>Notifications</span>
-                </button>
+                </button> --}}
                 <button data-bs-toggle="tab" data-bs-target="#writer-security" type="button">
                     <i class="bi bi-shield-lock"></i><span>Sécurité</span>
                 </button>
@@ -96,7 +96,7 @@
                         <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer le profil</button></footer>
                     </form>
                 </div>
-
+{{-- 
                 <div class="tab-pane fade writer-form-panel" id="writer-notifications">
                     <header><span><i class="bi bi-bell"></i></span><div><h2>Notifications</h2><p>Choisissez les événements pour lesquels vous souhaitez être averti.</p></div></header>
                     <form method="POST" action="{{ route('writer.notifications.update') }}">
@@ -108,7 +108,7 @@
                         </div>
                         <footer><button type="submit" class="writer-primary-action"><i class="bi bi-check2"></i> Enregistrer les préférences</button></footer>
                     </form>
-                </div>
+                </div> --}}
 
                 <div class="tab-pane fade writer-form-panel" id="writer-security">
                     <header><span><i class="bi bi-shield-lock"></i></span><div><h2>Sécurité du compte</h2><p>Utilisez un mot de passe unique et difficile à deviner.</p></div></header>
