@@ -169,7 +169,7 @@ class BooksController extends Controller
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:5120'
+                'max:1024'
             ],
 
             'ebook_file' => [
@@ -209,9 +209,49 @@ class BooksController extends Controller
 
 
         // Upload couverture
-        $coverPath = $request
-            ->file('cover_image')
-            ->store('books/covers', 'public');
+        $cover = $request->file('cover_image');
+
+        $imagick = new Imagick();
+
+        try {
+            $imagick->readImage($cover->getRealPath());
+
+            // Redimensionner sans déformer l'image
+            $imagick->thumbnailImage(600, 900, true, true);
+
+            // Conversion WebP
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality(85);
+
+            // Générer un nom unique
+            $coverName = Str::uuid() . '.webp';
+
+            $coverPath = 'books/covers/' . $coverName;
+
+            // Enregistrer sur le disque public
+            Storage::disk('public')->put(
+                $coverPath,
+                $imagick->getImagesBlob()
+            );
+
+        } catch (\ImagickException $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Erreur lors de l’optimisation de la couverture.',
+                [
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            throw new \RuntimeException(
+                'Impossible de traiter la couverture du livre.',
+                0,
+                $e
+            );
+
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
+        }
 
 
         // Upload ebook/audio
