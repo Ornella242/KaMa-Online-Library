@@ -110,7 +110,7 @@
 
         @endif
 
-        @if(auth()->user()->hasAdminPermission('books.audio.generate'))
+        {{-- @if(auth()->user()->hasAdminPermission('books.audio.generate'))
 
             <a href="{{ route('admin.audiobooks.requests') }}"
             class="kama-admin-nav-link {{ request()->routeIs('admin.audiobooks.*') ? 'active' : '' }}">
@@ -121,7 +121,7 @@
 
             </a>
 
-        @endif
+        @endif --}}
 
 
         {{-- Catégories --}}

@@ -203,14 +203,14 @@
                                             Demande en cours de traitement
                                         </button>
 
-                                    @else
+                                    {{-- @else
                                         <a
                                             href="{{ route('writer.books.audiobook', $book) }}"
                                             class="btn-primary-action"
                                         >
                                             <i class="bi bi-headset"></i>
                                             Commander l'audiobook
-                                        </a>
+                                        </a> --}}
                                     @endif
                                 @endif
                            @endif
