@@ -38,23 +38,6 @@
                        @checked(data_get($settings->settings, 'favorite_author_books'))>
             </div>
 
-            <div class="reader-switch">
-                <div>
-                    <strong>Rappels de lecture</strong>
-                    <small>Pour reprendre une lecture en cours</small>
-                </div>
-                <input class="form-check-input" type="checkbox" name="reading_reminders"
-                       @checked(data_get($settings->settings, 'reading_reminders'))>
-            </div>
-
-            <div class="reader-switch">
-                <div>
-                    <strong>Recommandations</strong>
-                    <small>Suggestions selon vos goûts</small>
-                </div>
-                <input class="form-check-input" type="checkbox" name="recommendations"
-                       @checked(data_get($settings->settings, 'recommendations'))>
-            </div>
 
             <div class="reader-switch">
                 <div>
