@@ -11,6 +11,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 class AuthController extends Controller
@@ -38,7 +39,19 @@ class AuthController extends Controller
             ],
             'city'   => 'required|string|max:255',
             'role_id'   => 'required|exists:roles,id',
-            'password'  => 'required|string|min:8|confirmed',
+           'password' => [
+                'required',
+                'string',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+                'confirmed',
+            ],
+            [
+                'password.Password' => 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.',
+                'password.confirmed' => 'Les deux mots de passe ne correspondent pas.',
+            ]
         ]);
 
         $user = User::create([
